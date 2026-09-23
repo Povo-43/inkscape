@@ -348,6 +348,14 @@ void draw_circle(Cairo::Context &cr, double size, double pixel_width)
     cr.arc(center, center, size / 2.0, 0, 2 * M_PI);
 }
 
+void draw_circle_line(Cairo::Context &cr, double size, double pixel_width)
+{
+    double center = pixel_width * 0.5;
+    cr.arc(center, center, size / 2.0, 0, 2 * M_PI);
+    cr.move_to(center - size/2.0, center);
+    cr.line_to(center + size/2.0, center);
+}
+
 void draw_square(Cairo::Context &cr, double size)
 {
     cr.rectangle(0, 0, size, size);
@@ -423,6 +431,10 @@ void draw_cairo_path(CanvasItemCtrlShape shape, Cairo::Context &cr, double size,
             draw_circle(cr, size, width);
             break;
 
+        case CANVAS_ITEM_CTRL_SHAPE_CIRCLE_LINE:
+            draw_circle_line(cr, size, width);
+            break;
+
         case CANVAS_ITEM_CTRL_SHAPE_SQUARE:
             draw_square(cr, size);
             break;
@@ -466,6 +478,7 @@ std::shared_ptr<Cairo::ImageSurface const> draw_uncached(RenderParams const &p)
     if (p.size_parity >= 0) {
         switch (p.shape) {
             case CANVAS_ITEM_CTRL_SHAPE_CIRCLE:
+            case CANVAS_ITEM_CTRL_SHAPE_CIRCLE_LINE:
                 // for circle edge alignment doesn't matter too much
                 // it can be centered where necessary without affecting size
                 total_size = effective_outline + size;
