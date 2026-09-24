@@ -21,6 +21,8 @@ Where 'shape' is one of:
     'square'
     'diamond'
     'circle'
+    'circle-line'
+    'target'
     'triangle'
     'triangle-angled'
     'cross'
@@ -125,6 +127,12 @@ Notes:
 .inkscape-anchor, /* various drawing tools */
 .inkscape-sizer {
     shape: "square";
+    size-extra: 2px;
+}
+
+.inkscape-node-smooth {
+    shape: "target";
+    scale: 2.256758; /* 4 / sqrt(PI) */
     size-extra: 2px;
 }
 
