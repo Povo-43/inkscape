@@ -302,24 +302,31 @@ bool Color::_isnear(std::vector<double> const &other, double epsilon) const
 /**
  * Create an optional color if value is valid.
  */
-std::optional<Color> Color::parse(char const *value)
+std::optional<Color> Color::parse(char const *value, bool forgiving)
 {
     if (!value) {
         return {};
     }
-    return parse(std::string(value));
+    return parse(std::string(value), forgiving);
 }
 
 /**
  * Create an optional color, if possible, from the given string.
+ *
+ * @arg value     - The string to parse
+ * @arg forgiving - If true, allows inputs which would normally not be accepted
+ *                  this is useful for user input which can be variable.
  */
-std::optional<Color> Color::parse(std::string const &value)
+std::optional<Color> Color::parse(std::string const &value, bool forgiving)
 {
     Space::Type space_type;
     std::string cms_name;
     std::vector<double> values;
     std::vector<double> fallback;
     if (Parsers::get().parse(value, space_type, cms_name, values, fallback)) {
+        return ifValid(space_type, std::move(values));
+    }
+    if (forgiving && ForgivingParsers::get().parse(value, space_type, cms_name, values, fallback)) {
         return ifValid(space_type, std::move(values));
     }
     // Couldn't be parsed as a color at all

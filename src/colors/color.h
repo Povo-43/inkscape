@@ -29,8 +29,8 @@ public:
     Color(Space::Type space_type, std::vector<double> values);
     explicit Color(uint32_t color, bool alpha = true);
 
-    static std::optional<Color> parse(char const *value);
-    static std::optional<Color> parse(std::string const &value);
+    static std::optional<Color> parse(char const *value, bool forgiving = false);
+    static std::optional<Color> parse(std::string const &value, bool forgiving = false);
     static std::optional<Color> ifValid(Space::Type space_type, std::vector<double> values);
 
     bool operator==(Color const &other) const;

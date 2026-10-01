@@ -58,6 +58,12 @@ TEST(ColorsColor, parse)
     ASSERT_FALSE(Color::parse(nullptr));
 }
 
+TEST(ColorsColor, parse_forgiving)
+{
+    ASSERT_FALSE(Color::parse("ffffff", false));
+    ASSERT_TRUE(Color::parse("ffffff", true));
+}
+
 TEST(ColorsColor, setter)
 {
     auto color = *Color::parse("purple");

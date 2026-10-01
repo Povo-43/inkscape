@@ -33,7 +33,12 @@
 
 namespace Inkscape::Colors {
 
-Parsers::Parsers()
+Parsers &Parsers::get()
+{
+    return StrictParsers::get();
+}
+
+StrictParsers::StrictParsers()
 {
     addParser(new HexParser());
     addParser(new Space::NamedColor::NameParser());
@@ -54,6 +59,11 @@ Parsers::Parsers()
     addParser(new CssParser("xyz", Space::Type::XYZ, 3));
     addParser(new CssParser("xyz-d65", Space::Type::XYZ, 3));
     addParser(new CssParser("xyz-d50", Space::Type::XYZ50, 3));
+}
+
+ForgivingParsers::ForgivingParsers()
+{
+    addParser(new HexParser(true));
 }
 
 /**

@@ -33,11 +33,10 @@ protected:
 private:
     void _onColorChanged();
     void _inputCheck(guint pos, const gchar * /*chars*/, guint /*n_chars*/);
-    bool looksLikeHex(const Glib::ustring &text) const;
 
     std::shared_ptr<Colors::ColorSet> _colors;
     bool _updating;
-    bool _updatingrgba;
+    bool _updating_color;
     int _prevpos;
     sigc::signal<void (Glib::ustring)> _signal_out_of_gamut;
     bool _warning = false;

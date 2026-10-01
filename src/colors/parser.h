@@ -72,8 +72,8 @@ protected:
 class HexParser : public Parser
 {
 public:
-    HexParser()
-        : Parser("#", Space::Type::RGB)
+    HexParser(bool without_prefix = false)
+        : Parser(without_prefix ? "" : "#", Space::Type::RGB)
     {}
     bool parse(std::istringstream &input, std::vector<double> &output, bool &more) const override;
 };
@@ -94,19 +94,13 @@ private:
 
 class Parsers
 {
-private:
     Parsers(Parsers const &) = delete;
     void operator=(Parsers const &) = delete;
 
 public:
-    Parsers();
     ~Parsers() = default;
 
-    static Parsers &get()
-    {
-        static Parsers instance;
-        return instance;
-    }
+    static Parsers &get();
 
     bool parse(std::string const &input, Space::Type &type, std::string &cms, std::vector<double> &values,
                std::vector<double> &fallback) const;
@@ -114,6 +108,7 @@ public:
 protected:
     friend class Manager;
 
+    Parsers() = default;
     void addParser(Parser *parser);
 
 private:
@@ -121,6 +116,28 @@ private:
                 std::vector<double> &fallback) const;
 
     std::map<std::string, std::vector<std::shared_ptr<Parser>>> _parsers;
+};
+
+class StrictParsers : public Parsers
+{
+public:
+    StrictParsers();
+
+    static StrictParsers &get() {
+        static StrictParsers instance;
+        return instance;
+    }
+};
+
+class ForgivingParsers : public Parsers
+{
+public:
+    ForgivingParsers();
+
+    static ForgivingParsers &get() {
+        static ForgivingParsers instance;
+        return instance;
+    }
 };
 
 } // namespace Inkscape::Colors
