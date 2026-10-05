@@ -22,7 +22,7 @@ namespace Inkscape::Colors::Space {
 class NamedColor : public RGB
 {
 public:
-    NamedColor(): RGB(Type::CSSNAME, "CSSNAME", "CSS", "color-selector-named") {}
+    NamedColor(): RGB(Type::CSSNAME, "CSSNAME", "Named", "color-selector-named") {}
     ~NamedColor() override = default;
 
     Type getComponentType() const override { return Type::RGB; }

@@ -32,14 +32,14 @@ protected:
 
 private:
     void _onColorChanged();
-    void _inputCheck(guint pos, const gchar * /*chars*/, guint /*n_chars*/);
 
     std::shared_ptr<Colors::ColorSet> _colors;
-    bool _updating;
-    bool _updating_color;
-    int _prevpos;
-    sigc::signal<void (Glib::ustring)> _signal_out_of_gamut;
+
+    bool _updating = false;
+    bool _updating_color = false;
     bool _warning = false;
+
+    sigc::signal<void (Glib::ustring)> _signal_out_of_gamut;
     sigc::connection _color_changed_connection;
 };
 

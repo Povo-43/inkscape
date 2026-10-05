@@ -74,9 +74,11 @@ public:
     // Some color spaces (like XYZ or LAB) do not put restrictions on valid ranges of values;
     // others (like sRGB) do, which means that channels outside those bounds represent colors out of gamut.
     bool isUnbounded() const { return _spaceIsUnbounded; }
+
     // Check if 'color' is out of gamut in '*this' color space;
     // use epsilon value to ignore some small deviations from valid domain (they can arise during conversions).
     bool isOutOfGamut(const Colors::Color& color, double eps = 0.0001);
+
     // Bring 'color' into gamut of '*this' color space
     Color toGamut(const Colors::Color& color);
 
@@ -87,6 +89,9 @@ public:
      * Returns true almost always. Only CMS could have a different return value.
      */
     virtual bool hasValidCmsProfile() const { return true; }
+
+    // If this space can be printed in the SVG or CSS Color Module output, mostly true
+    virtual bool canToString() const { return true; }
 
     virtual bool spaceToProfile(std::vector<double> &io) const = 0;
     virtual bool profileToProfile(std::vector<double> &io, std::shared_ptr<Colors::CMS::Profile> const &profile, RenderingIntent intent) const = 0;
@@ -129,6 +134,7 @@ private:
     std::string _shortName;
     std::string _icon;
     bool _spaceIsUnbounded;
+    bool _can_print;
 };
 
 template <bool isDirect = true>

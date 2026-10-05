@@ -26,6 +26,7 @@ public:
     OkHsv(): RGBBase(Type::OKHSV, "OkHsv", "OkHsv", "color-selector-okhsv") {}
     ~OkHsv() override = default;
 
+    bool canToString() const override { return false; }
     std::string toString(std::vector<double> const &values, bool opacity) const override { return ""; }
 
     template <typename T, bool PremultipliedAlpha = false>

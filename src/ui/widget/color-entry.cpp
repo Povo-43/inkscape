@@ -23,13 +23,11 @@ ColorEntry::ColorEntry(std::shared_ptr<Colors::ColorSet> colors)
     : _colors(std::move(colors))
     , _updating(false)
     , _updating_color(false)
-    , _prevpos(0)
 {
     set_name("ColorEntry");
 
     _color_changed_connection = _colors->signal_changed.connect(sigc::mem_fun(*this, &ColorEntry::_onColorChanged));
     signal_activate().connect(sigc::mem_fun(*this, &ColorEntry::_onColorChanged));
-    get_buffer()->signal_inserted_text().connect(sigc::mem_fun(*this, &ColorEntry::_inputCheck));
     _onColorChanged();
 
     set_tooltip_text(_("Value of the color in the stored color space."));
@@ -38,13 +36,6 @@ ColorEntry::ColorEntry(std::shared_ptr<Colors::ColorSet> colors)
 ColorEntry::~ColorEntry()
 {
     _color_changed_connection.disconnect();
-}
-
-void ColorEntry::_inputCheck(guint pos, const gchar * /*chars*/, guint n_chars)
-{
-    // remember position of last character, so we can remove it.
-    // we only overflow by 1 character at most.
-    _prevpos = pos + n_chars - 1;
 }
 
 void ColorEntry::on_changed()

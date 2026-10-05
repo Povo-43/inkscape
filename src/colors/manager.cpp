@@ -102,7 +102,7 @@ bool Manager::removeSpace(std::shared_ptr<Space::AnySpace> space)
 std::vector<std::shared_ptr<Space::AnySpace>> Manager::spaces(Space::Traits traits) {
     std::vector<std::shared_ptr<Space::AnySpace>> out;
     std::copy_if(_spaces.begin(), _spaces.end(), std::back_inserter(out), [=](auto& p) {
-        return (p->getComponents().traits() & traits) != Space::Traits::None;
+        return p->getComponents().getType() == p->getType() && (p->getComponents().traits() & traits) != Space::Traits::None;
     });
     return out;
 }

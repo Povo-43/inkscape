@@ -122,6 +122,7 @@ public:
         }
     }
 
+    bool canToString() const override { return false; }
     std::string toString(std::vector<double> const &values, bool opacity) const override { return ""; }
 
     static std::array<Geom::Line, 6> get_bounds(double l);
