@@ -104,9 +104,9 @@
     <!-- ROUGHLY IN MENU ORDER -->
 
     <!-- File -->
-    <bind gaction="win.document-new"                       keys="&lt;Primary&gt;n" />
-    <bind gaction="win.document-dialog-templates"          keys="&lt;Primary&gt;&lt;Shift&gt;n" />
-    <bind gaction="win.document-open"                      keys="&lt;Primary&gt;o" />
+    <bind gaction="app.document-new"                       keys="&lt;Primary&gt;n" />
+    <bind gaction="app.document-dialog-templates"          keys="&lt;Primary&gt;&lt;Shift&gt;n" />
+    <bind gaction="app.document-open"                      keys="&lt;Primary&gt;o" />
     <bind gaction="win.document-revert" 			 keys="F12"/>
     <bind gaction="win.document-save"                      keys="&lt;Primary&gt;s" />
     <bind gaction="win.document-save-as"                   keys="&lt;Primary&gt;&lt;Shift&gt;s" />

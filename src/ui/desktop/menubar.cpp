@@ -38,7 +38,10 @@ static void rewrite_menu(Glib::RefPtr<Gio::Menu> const &menu, int use_icons);
 
 void build_menu()
 {
-    auto const filename = Inkscape::IO::Resource::get_filename(Inkscape::IO::Resource::UIS, "menus.ui");
+    auto app = InkscapeApplication::instance();
+    auto const has_desktops = app->get_number_of_desktops();
+    auto const menufile = has_desktops ? "menus.ui" : "menus-no-windows.ui";
+    auto const filename = Inkscape::IO::Resource::get_filename(Inkscape::IO::Resource::UIS, menufile);
     auto const builder = Gtk::Builder::create();
 
     try {
@@ -56,12 +59,11 @@ void build_menu()
         return;
     }
 
-    auto app = InkscapeApplication::instance();
     enable_effect_actions(app, false);
     auto &label_to_tooltip_map = app->get_menu_label_to_tooltip_map();
     label_to_tooltip_map.clear();
 
-    { // Filters and Extensions
+    if (has_desktops) { // Filters and Extensions
         auto const effects_menu = builder->get_object<Gio::Menu>("effect-menu-effects");
         auto const filters_menu = builder->get_object<Gio::Menu>("filter-menu-filters");
         if (!filters_menu) {

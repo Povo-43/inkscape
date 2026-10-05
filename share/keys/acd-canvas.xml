@@ -97,9 +97,9 @@ Scissor tool - C
 
 <!-- FILE MENU -->
 
-  <bind gaction="win.document-new"      keys="&lt;ctrl&gt;n, &lt;ctrl&gt;N" />
+  <bind gaction="app.document-new"      keys="&lt;ctrl&gt;n, &lt;ctrl&gt;N" />
 
-  <bind gaction="win.document-open"         keys="&lt;ctrl&gt;o, &lt;ctrl&gt;O" />
+  <bind gaction="app.document-open"         keys="&lt;ctrl&gt;o, &lt;ctrl&gt;O" />
 
   <bind gaction="win.document-close"        keys="&lt;ctrl&gt;F4" />
 

@@ -20,7 +20,18 @@
 
 namespace Inkscape::UI {
 
+NewFromTemplate::NewFromTemplate() : Dialog(_("New From Template"), true)
+{
+    _construct();
+}
+
 NewFromTemplate::NewFromTemplate(Gtk::Window& parent) : Dialog(_("New From Template"), parent, true)
+{
+    set_transient_for(parent);
+    _construct();
+}
+
+void NewFromTemplate::_construct()
 {
     auto size = Preferences::get()->getPoint("/dialogs/now-from-template/size", Geom::Point(750, 500));
     set_default_size(size.x(), size.y());
@@ -57,7 +68,6 @@ NewFromTemplate::NewFromTemplate(Gtk::Window& parent) : Dialog(_("New From Templ
 
     _cancel.signal_clicked().connect([this]{ _onClose(Gtk::ResponseType::CANCEL); });
 
-    set_transient_for(parent);
     set_visible();
     _list.templates().focus();
 }
@@ -86,9 +96,9 @@ void NewFromTemplate::_onClose(int responseCode)
     response(responseCode);
 }
 
-void NewFromTemplate::load_new_from_template(Gtk::Window& parent)
+void NewFromTemplate::load_new_from_template(Gtk::Window *parent)
 {
-    NewFromTemplate dl(parent);
+    auto dl = parent ? NewFromTemplate(*parent) : NewFromTemplate();
     UI::dialog_run(dl);
 }
 

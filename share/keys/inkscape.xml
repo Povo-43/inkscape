@@ -134,9 +134,9 @@ override) the bindings in the main default.xml.
   <!-- ROUGHLY IN MENU ORDER -->
 
   <!-- File -->
-  <bind gaction="win.document-new"                       keys="&lt;primary&gt;n" />
-  <bind gaction="win.document-dialog-templates"          keys="&lt;primary&gt;&lt;alt&gt;n" />
-  <bind gaction="win.document-open"                      keys="&lt;primary&gt;o" />
+  <bind gaction="app.document-new"                       keys="&lt;primary&gt;n" />
+  <bind gaction="app.document-dialog-templates"          keys="&lt;primary&gt;&lt;alt&gt;n" />
+  <bind gaction="app.document-open"                      keys="&lt;primary&gt;o" />
   <bind gaction="win.document-revert" />
   <bind gaction="win.document-save"                      keys="&lt;primary&gt;s" />
   <bind gaction="win.document-save-as"                   keys="&lt;primary&gt;&lt;shift&gt;s" />

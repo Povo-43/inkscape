@@ -7,17 +7,17 @@
       <section>
         <item>
           <attribute name="label" translatable="yes">_New</attribute>
-          <attribute name="action">win.document-new</attribute>
+          <attribute name="action">app.document-new</attribute>
           <attribute name="icon">document-new</attribute>
         </item>
         <item>
           <attribute name="label" translatable="yes">New from _Template...</attribute>
-          <attribute name="action">win.document-dialog-templates</attribute>
+          <attribute name="action">app.document-dialog-templates</attribute>
           <attribute name="icon">dialog-templates</attribute>
         </item>
         <item>
           <attribute name="label" translatable="yes">_Open...</attribute>
-          <attribute name="action">win.document-open</attribute>
+          <attribute name="action">app.document-open</attribute>
           <attribute name="icon">document-open</attribute>
         </item>
       </section>

@@ -30,8 +30,8 @@ target_sources(inkscape_base PRIVATE
   actions-element-a.cpp
   actions-element-image.h
   actions-element-image.cpp
-  actions-file-window.h
-  actions-file-window.cpp
+  actions-file-gui.h
+  actions-file-gui.cpp
   actions-file.h
   actions-file.cpp
   actions-helper.h

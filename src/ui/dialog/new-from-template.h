@@ -23,15 +23,17 @@ namespace Inkscape::UI {
 class NewFromTemplate : public Gtk::Dialog
 {
 public:
-    static void load_new_from_template(Gtk::Window& parent);
+    static void load_new_from_template(Gtk::Window *parent);
     ~NewFromTemplate() override = default;
 
 private:
+    NewFromTemplate();
     NewFromTemplate(Gtk::Window& parent);
     UI::Widget::DocumentTemplates _list;
     Gtk::Button _create_template_button{_("Create from template")};
     Gtk::Button _cancel{_("Cancel")};
 
+    void _construct();
     void _createFromTemplate();
     void _onClose(int responseCode);
 };

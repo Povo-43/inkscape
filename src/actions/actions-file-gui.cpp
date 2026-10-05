@@ -15,7 +15,7 @@
 #include <giomm.h>
 #include <glibmm/i18n.h>
 
-#include "actions-file-window.h"
+#include "actions-file-gui.h"
 #include "actions-helper.h"
 
 #include "inkscape-application.h"
@@ -31,26 +31,21 @@
 #include "ui/dialog/new-from-template.h"
 #include "ui/icon-names.h"
 
-void
-document_new(InkscapeWindow* win)
+void document_new(InkscapeApplication *app)
 {
     sp_file_new_default();
 }
 
-void
-document_dialog_templates(InkscapeWindow* win)
+void document_dialog_templates(InkscapeApplication *app)
 {
-    if (win) {
-        Inkscape::UI::NewFromTemplate::load_new_from_template(*win);
-    }
+    Inkscape::UI::NewFromTemplate::load_new_from_template(app->get_active_window());
 }
 
-void
-document_open(InkscapeWindow* win)
+void document_open(InkscapeApplication *app)
 {
     // Open File Dialog
+    auto win = app->get_active_window();
     auto files = Inkscape::choose_file_open_images(_("Select file(s) to open"), win, "/dialog/open/path", _("Open"));
-    auto *app = InkscapeApplication::instance();
     for (auto& file : files) {
         app->create_window(file);
     }
@@ -140,12 +135,18 @@ void document_close(InkscapeWindow *win)
 
 const Glib::ustring SECTION = NC_("Action Section", "Window-File");
 
+std::vector<std::vector<Glib::ustring>> raw_data_dialog_app =
+{
+    // clang-format off
+    {"app.document-new",              N_("New"),               SECTION, N_("Create new document from the default template")},
+    {"app.document-dialog-templates", N_("New from Template"), SECTION, N_("Create new project from template")},
+    {"app.document-open",             N_("Open File Dialog"),  SECTION, N_("Open an existing document")},
+    // clang-format on
+};
+
 std::vector<std::vector<Glib::ustring>> raw_data_dialog_window =
 {
     // clang-format off
-    {"win.document-new",              N_("New"),               SECTION,   N_("Create new document from the default template")},
-    {"win.document-dialog-templates", N_("New from Template"), SECTION,   N_("Create new project from template")},
-    {"win.document-open",             N_("Open File Dialog"),  SECTION,   N_("Open an existing document")},
     {"win.document-revert",           N_("Revert"),            SECTION,   N_("Revert to the last saved version of document (changes will be lost)")},
     {"win.document-save",             N_("Save"),              SECTION,   N_("Save document")},
     {"win.document-save-as",          N_("Save As"),           SECTION,   N_("Save document under a new name")},
@@ -159,12 +160,23 @@ std::vector<std::vector<Glib::ustring>> raw_data_dialog_window =
 };
 
 void
+add_actions_file_app(InkscapeApplication *app)
+{
+    auto *gapp = app->gio_app();
+
+    // clang-format off
+    gapp->add_action("document-new",              sigc::bind(sigc::ptr_fun(&document_new),              app));
+    gapp->add_action("document-dialog-templates", sigc::bind(sigc::ptr_fun(&document_dialog_templates), app));
+    gapp->add_action("document-open",             sigc::bind(sigc::ptr_fun(&document_open),             app));
+    // clang-format on
+
+    app->get_action_extra_data().add_data(raw_data_dialog_app);
+}
+
+void
 add_actions_file_window(InkscapeWindow* win)
 {
     // clang-format off
-    win->add_action( "document-new",                sigc::bind(sigc::ptr_fun(&document_new),               win));
-    win->add_action( "document-dialog-templates",   sigc::bind(sigc::ptr_fun(&document_dialog_templates),  win));
-    win->add_action( "document-open",               sigc::bind(sigc::ptr_fun(&document_open),              win));
     win->add_action( "document-revert",             sigc::bind(sigc::ptr_fun(&document_revert),            win));
     win->add_action( "document-save",               sigc::bind(sigc::ptr_fun(&document_save),              win));
     win->add_action( "document-save-as",            sigc::bind(sigc::ptr_fun(&document_save_as),           win));

@@ -33,7 +33,7 @@
 #include "actions/actions-canvas-transform.h"
 #include "actions/actions-dialogs.h"
 #include "actions/actions-edit-window.h"
-#include "actions/actions-file-window.h"
+#include "actions/actions-file-gui.h"
 #include "actions/actions-help-url.h"
 #include "actions/actions-layer.h"
 #include "actions/actions-node-align.h" // Node alignment.
@@ -141,7 +141,7 @@ InkscapeWindow::InkscapeWindow(SPDesktop *desktop)
 
     // Show dialogs after the main window, otherwise dialogs may be associated as the main window of the program.
     // Restore short-lived floating dialogs state if this is the first window being opened
-    bool include_short_lived = _app->get_number_of_windows() == 1;
+    bool include_short_lived = _app->get_number_of_desktops() == 1;
     DialogManager::singleton().restore_dialogs_state(_desktop_widget->getDialogContainer(), include_short_lived);
 
     // ================= Menu icons/tooltips =================

@@ -206,8 +206,7 @@ std::vector<Glib::RefPtr<Gio::File>> choose_file_open_images(Glib::ustring const
     bool responded = false;
     std::vector<Glib::RefPtr<Gio::File>> files;
 
-    file_dialog->open_multiple(*parent, [&](Glib::RefPtr<Gio::AsyncResult> const &result)
-    {
+    auto file_chosen_cb = [&](Glib::RefPtr<Gio::AsyncResult> const &result) {
         try {
             responded = true;
 
@@ -228,7 +227,12 @@ std::vector<Glib::RefPtr<Gio::File>> choose_file_open_images(Glib::ustring const
                 throw;
             }
         }
-    }, Glib::RefPtr<Gio::Cancellable>{});
+    };
+    if (parent) {
+        file_dialog->open_multiple(*parent, file_chosen_cb);
+    } else {
+        file_dialog->open_multiple(file_chosen_cb);
+    }
 
     auto const main_context = Glib::MainContext::get_default();
     while (!responded) {

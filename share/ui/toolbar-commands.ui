@@ -12,7 +12,7 @@
         <property name="focus-on-click">False</property>
         <property name="receives-default">True</property>
         <property name="tooltip-text" translatable="yes">New</property>
-        <property name="action-name">win.document-new</property>
+        <property name="action-name">app.document-new</property>
         <property name="has-frame">False</property>
         <property name="icon-name">document-new</property>
         <style>
@@ -27,7 +27,7 @@
         <property name="focus-on-click">False</property>
         <property name="receives-default">True</property>
         <property name="tooltip-text" translatable="yes">Open...</property>
-        <property name="action-name">win.document-open</property>
+        <property name="action-name">app.document-open</property>
         <property name="has-frame">False</property>
         <property name="icon-name">document-open</property>
         <style>
