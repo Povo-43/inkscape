@@ -59,6 +59,7 @@ public:
     bool operator!=(Type type) const { return type != _type; }
 
     Type getType() const { return _type; }
+    int getId() const { return _id; }
     std::string const& getName() const { return _name; }
     std::string const& getShortName() const { return _shortName; }
     std::string getSvgName() const { return _svgNames.empty() ? "" : _svgNames[0]; }
@@ -130,6 +131,7 @@ private:
     mutable std::map<std::string, std::shared_ptr<Colors::CMS::GamutChecker>> _gamut_checkers;
     Type _type;
     int _components;
+    int _id;
     std::string _name;
     std::string _shortName;
     std::string _icon;

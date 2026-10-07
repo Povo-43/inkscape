@@ -71,6 +71,7 @@ public:
     void setRenderingIntent(std::string const &name, RenderingIntent intent);
 
     std::shared_ptr<Space::CMS> getSpace(std::string const &name) const;
+    std::shared_ptr<Space::CMS> getSpace(int id) const;
 
     ColorProfile *getColorProfileForSpace(std::string const &name) const;
     ColorProfile *getColorProfileForSpace(std::shared_ptr<Space::CMS> space) const;

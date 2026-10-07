@@ -326,6 +326,21 @@ std::shared_ptr<Space::CMS> DocumentCMS::getSpace(std::string const &name) const
 }
 
 /**
+ * Get the specific color space using a unique id int.
+ *
+ * @arg id - The unique id of the color space from space->getId()
+ */
+std::shared_ptr<Space::CMS> DocumentCMS::getSpace(int id) const
+{
+    for (auto &link : _links) {
+        if (link->space && link->space->getId() == id) {
+            return link->space;
+        }
+    }
+    return nullptr;
+}
+
+/**
  * Get the document color-profile SPObject for the named cms profile. Returns nullptr
  * if the name is not found, if the link has not yet been made or the space is
  * not a CMS color space (i.e. sRGB).

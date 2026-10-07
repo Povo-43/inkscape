@@ -14,6 +14,7 @@
 
 #include "color-picker-panel.h"
 #include "colors/color-set.h"
+#include "colors/document-cms.h"
 #include "colors/manager.h"
 #include "colors/spaces/base.h"
 #include "style-internal.h"
@@ -97,10 +98,12 @@ class FlatColorEditor : public Gtk::Box {
     const char* _prefs = "/color-editor";
     std::unique_ptr<ColorPickerPanel> _picker;
 public:
-    FlatColorEditor(Space::Type space, std::shared_ptr<Colors::ColorSet> colors) :
-        _picker(ColorPickerPanel::create(space, get_plate_type_preference(_prefs, ColorPickerPanel::Rect), colors)) {
+    FlatColorEditor(Space::Type initial_space, std::shared_ptr<Colors::ColorSet> colors) :
+        _picker(ColorPickerPanel::create(initial_space, get_plate_type_preference(_prefs, ColorPickerPanel::Rect), colors)) {
         append(*_picker);
     }
+    void set_desktop(SPDesktop *desktop) { _picker->set_desktop(desktop); }
+    void set_document(SPDocument *doc) { _picker->set_document(doc); }
     void set_color_picker_plate(ColorPickerPanel::PlateType type) {
         _picker->set_plate_type(type);
         set_plate_type_preference(_prefs, type);
@@ -143,8 +146,8 @@ Space::Type get_color_type() {
     return space ? space->getType() : Space::Type::HSL;
 }
 
-void store_color_type(Space::Type type) {
-    if (auto space = Manager::get().find(type)) {
+void store_color_space(std::shared_ptr<Colors::Space::AnySpace> const &space) {
+    if (space) {
         Preferences::get()->setString("/color-picker/sel-color-type", space->getName());
     }
 }
@@ -158,7 +161,7 @@ public:
     void set_desktop(SPDesktop* desktop) override {
 
         _desktop = desktop;
-
+        _flat_color.set_desktop(desktop);
         _swatch.set_desktop(desktop);
 
         if (desktop) {
@@ -186,6 +189,7 @@ public:
 
     void set_document(SPDocument* document) override {
         _document = document;
+        _flat_color.set_document(document);
         _mesh.set_document(document);
         _swatch.set_document(document);
         _pattern.set_document(document);
@@ -427,7 +431,7 @@ PaintSwitchImpl::PaintSwitchImpl(bool support_no_paint, bool support_fill_rule, 
     }
 
     _flat_color.get_picker().get_color_space_changed().connect([](auto type) {
-        store_color_type(type);
+        store_color_space(type);
     });
 
     _mesh.signal_changed().connect([this](auto mesh) { fire_mesh_changed(mesh); });
@@ -442,7 +446,7 @@ PaintSwitchImpl::PaintSwitchImpl(bool support_no_paint, bool support_fill_rule, 
         fire_swatch_changed(swatch, EditOperation::Rename, nullptr, {}, label);
     });
     _swatch.get_picker().get_color_space_changed().connect([](auto type) {
-        store_color_type(type);
+        store_color_space(type);
     });
     _fill_rule_btn.signal_clicked().connect([this] {
         if (_update.pending()) return;
@@ -458,7 +462,7 @@ PaintSwitchImpl::PaintSwitchImpl(bool support_no_paint, bool support_fill_rule, 
     _gradient.signal_changed().connect([this](auto gradient) { fire_gradient_changed(gradient, _mode); });
     _gradient.set_margin_top(4);
     _gradient.get_picker().get_color_space_changed().connect([](auto type) {
-        store_color_type(type);
+        store_color_space(type);
     });
 
     auto& separator = get_widget<Gtk::Separator>(_builder, "separator");

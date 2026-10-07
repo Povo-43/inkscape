@@ -20,10 +20,13 @@
 #include "desktop.h"
 #include "generic/icon-combobox.h"
 #include "generic/spin-button.h"
+#include "document.h"
 #include "inkscape.h"
 #include "colors/color.h"
 #include "colors/manager.h"
+#include "colors/document-cms.h"
 #include "colors/spaces/base.h"
+#include "colors/spaces/cms.h"
 #include "ui/tools/dropper-tool.h"
 #include "ui/util.h"
 
@@ -38,7 +41,7 @@ using namespace Colors;
 
 class ColorPickerPanelImpl : public ColorPickerPanel {
 public:
-    ColorPickerPanelImpl(Space::Type space, PlateType type, std::shared_ptr<ColorSet> color, bool with_expander);
+    ColorPickerPanelImpl(Space::Type initial_space, PlateType type, std::shared_ptr<ColorSet> color, bool with_expander);
 
     void update_color() {
         if (_color_set && !_color_set->isEmpty()) {
@@ -62,22 +65,21 @@ public:
         }
     }
 
-    void create_color_page(Space::Type type, PlateType plate_type) {
-        auto space = Manager::get().find(type);
+    void create_color_page(std::shared_ptr<Colors::Space::AnySpace> const &space, PlateType plate_type) {
         _page = std::make_unique<ColorPage>(space, _color_set);
         _page->show_expander(false);
         _page->set_spinner_size_pattern(spinner_pattern);
         _page->attach_page(_first_column, _last_column);
         attach(*_page, 0, ROW_PAGE, 3);
         if (plate_type == Circle) {
-            _plate = _page->create_color_wheel(type, true);
+            _plate = _page->create_color_wheel(space->getComponentType(), true);
             if (_plate) {
                 _plate->get_widget().set_margin_top(4);
                 _plate->get_widget().set_margin_bottom(4);
             }
         }
         else if (plate_type == Rect) {
-            _plate = _page->create_color_wheel(type, false);
+            _plate = _page->create_color_wheel(space->getComponentType(), false);
             if (_plate) {
                 _plate->get_widget().set_margin_bottom(0);
             }
@@ -100,12 +102,14 @@ public:
     }
 
     void set_desktop(SPDesktop* dekstop) override;
+    void set_document(SPDocument* document) override;
     void set_color(const Color& color) override;
-    void set_picker_type(Space::Type type) override;
+    void set_picker_space(std::shared_ptr<Colors::Space::AnySpace> const &space) override;
     void set_plate_type(PlateType plate) override;
     PlateType get_plate_type() const override;
-    void switch_page(Space::Type space, PlateType plate_type);
+    void switch_page(std::shared_ptr<Colors::Space::AnySpace> const &space, PlateType plate_type);
     void pick_color();
+    void rebuild_color_space_list();
 
     Glib::RefPtr<Gtk::SizeGroup> get_first_column_size() override {
         return _first_column;
@@ -115,7 +119,7 @@ public:
         return _last_column;
     }
 
-    sigc::signal<void (Space::Type)> get_color_space_changed() override {
+    sigc::signal<void (std::shared_ptr<Colors::Space::AnySpace> const &space)> get_color_space_changed() override {
         return _color_space_changed;
     }
 
@@ -133,25 +137,27 @@ public:
     // color type space selector
     IconComboBox _spaces = IconComboBox(true, IconComboBox::LabelOnly);
     bool _with_expander = true;
-    // color type this picker is working in
-    Space::Type _space_type = Space::Type::NONE;
+    // color space this picker is working in
+    std::shared_ptr<Colors::Space::AnySpace> _space;
     std::shared_ptr<ColorSet> _color_set;
     PlateType _plate_type;
     std::unique_ptr<ColorPage> _page;
     ColorWheel* _plate = nullptr;
     sigc::scoped_connection _color_picking;
+    SPDocument* _document = nullptr;
     SPDesktop* _desktop = nullptr;
-    sigc::signal<void (Space::Type)> _color_space_changed;
+    sigc::signal<void (std::shared_ptr<Colors::Space::AnySpace> const &)> _color_space_changed;
+    sigc::connection _cms_space_changed;
 };
 
-std::unique_ptr<ColorPickerPanel> ColorPickerPanel::create(Space::Type space, PlateType type, std::shared_ptr<ColorSet> color) {
-    return std::make_unique<ColorPickerPanelImpl>(space, type, color, false);
+std::unique_ptr<ColorPickerPanel> ColorPickerPanel::create(Space::Type initial_space, PlateType type, std::shared_ptr<ColorSet> color) {
+    return std::make_unique<ColorPickerPanelImpl>(initial_space, type, color, false);
 }
 
-ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type space, PlateType type, std::shared_ptr<ColorSet> color, bool with_expander):
+ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type initial_space, PlateType type, std::shared_ptr<ColorSet> color, bool with_expander):
     _rgb_edit(color),
     _with_expander(with_expander),
-    _space_type(space),
+    _space(Colors::Manager::get().find(initial_space)),
     _color_set(color),
     _plate_type(type)
 {
@@ -160,21 +166,21 @@ ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type space, PlateType type, st
     set_row_spacing(0);
     set_column_spacing(0);
 
-    // list available color space types
-    for (auto&& meta : Manager::get().spaces(Space::Traits::Picker)) {
-        _spaces.add_row(meta->getIcon(), _(meta->getShortName().c_str()), int(meta->getType()));
-    }
+
     _spaces.refilter();
     _spaces.set_tooltip_text(_("Select color picker type"));
     // Important: add "regular" class to render non-symbolic color icons;
     // otherwise they will be rendered black&white
     _spaces.add_css_class("regular");
-    _spaces.set_active_by_id(int(space));
+    _spaces.set_active_by_id(_space->getId());
     _spaces.signal_changed().connect([this](int id) {
-        auto type = static_cast<Space::Type>(id);
-        if (type != Space::Type::NONE) {
-            set_picker_type(type);
-            _color_space_changed.emit(type);
+        auto space = Colors::Manager::get().findById(id);
+        if (!space && _document) {
+            space = _document->getDocumentCMS().getSpace(id);
+        }
+        if (space) {
+            set_picker_space(space);
+            _color_space_changed.emit(space);
         }
     });
 
@@ -226,31 +232,61 @@ ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type space, PlateType type, st
     attach(_frame, 1, ROW_EDIT);
     attach(_spaces, 2, ROW_EDIT);
 
-    create_color_page(space, type);
+    create_color_page(_space, type);
 }
 
 void ColorPickerPanelImpl::set_desktop(SPDesktop* dekstop) {
     _desktop = dekstop;
+}
+void ColorPickerPanelImpl::set_document(SPDocument* doc) {
+    _document = doc;
+    _cms_space_changed.disconnect();
+    if (_document) {
+        _cms_space_changed = _document->getDocumentCMS().connectChanged([this]() {
+            rebuild_color_space_list();
+        });
+        rebuild_color_space_list();
+    }
 }
 
 void ColorPickerPanelImpl::set_color(const Color& color) {
     _color_set->set(color);
 }
 
-void ColorPickerPanelImpl::set_picker_type(Space::Type type) {
-    switch_page(type, _plate_type);
+void ColorPickerPanelImpl::set_picker_space(std::shared_ptr<Colors::Space::AnySpace> const &space) {
+    switch_page(space, _plate_type);
 }
 
 void ColorPickerPanelImpl::set_plate_type(PlateType plate) {
     if (plate == _plate_type) return;
 
-    switch_page(_space_type, plate);
+    switch_page(_space, plate);
 }
 
-void ColorPickerPanelImpl::switch_page(Space::Type space, PlateType plate_type) {
+void ColorPickerPanelImpl::rebuild_color_space_list()
+{
+    _spaces.clear();
+
+    // list available color space types
+    for (auto&& meta : Manager::get().spaces(Space::Traits::Picker)) {
+        _spaces.add_row(meta->getIcon(), _(meta->getShortName().c_str()), int(meta->getType()));
+    }
+    // list of document color management profiles
+    if (_document) {
+        auto cms_spaces = _document->getDocumentCMS().getSpaces();
+        if (!cms_spaces.empty()) {
+            _spaces.add_separator();
+            for (auto&& cms : cms_spaces) {
+                _spaces.add_row(cms->getIcon(), _(cms->getShortName().c_str()), int(cms->getType()));
+            }
+        }
+    }
+}
+
+void ColorPickerPanelImpl::switch_page(std::shared_ptr<Colors::Space::AnySpace> const &space, PlateType plate_type) {
     remove_widgets();
     create_color_page(space, plate_type);
-    _space_type = space;
+    _space = space;
     _plate_type = plate_type;
 }
 

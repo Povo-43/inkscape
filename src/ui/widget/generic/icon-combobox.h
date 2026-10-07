@@ -35,6 +35,9 @@ public:
     void add_row(Glib::ustring const &icon_name, Glib::ustring const &label, int id);
     void add_row(const Glib::ustring& icon_name, const Glib::ustring& full_name, const Glib::ustring& short_name, int id);
     void add_row(Cairo::RefPtr<Cairo::Surface> image, const Glib::ustring& label, int id);
+    void add_separator();
+    void clear();
+
     // Set selected (aka active) item
     void set_active_by_id(int id);
     // Show/hide an item in store
@@ -76,6 +79,7 @@ struct IconComboBox::ListItem : Glib::Object {
     Glib::ustring icon;         // icon's name to load if icons have been enabled
     Glib::RefPtr<Gdk::Texture> image;  // image to present instead of icon if icons are disabled
     bool is_visible = true;     // true if item is to be visible/included
+    bool is_separator = false;  // true if the item is a separator instead
     std::string uid;            // user-defined unique ID (optional)
     void* data = nullptr;       // user-defined data (optional)
 
@@ -85,6 +89,12 @@ struct IconComboBox::ListItem : Glib::Object {
         Glib::RefPtr<Gdk::Texture> image
     ) {
         return create(id, label, {}, {}, image);
+    }
+    static Glib::RefPtr<ListItem> create_separator()
+    {
+        auto item = Glib::make_refptr_for_instance<ListItem>(new ListItem());
+        item->is_separator = true;
+        return item;
     }
     static Glib::RefPtr<ListItem> create(
         int id,

@@ -16,6 +16,7 @@
 #include "colors/color.h"
 
 class SPDesktop;
+class SPDocument;
 
 namespace Inkscape::UI::Widget {
 
@@ -24,12 +25,13 @@ public:
     // color plate type - rectangular, color wheel, no plate (only sliders)
     enum PlateType {Rect, Circle, None};
     // create a new color picker
-    static std::unique_ptr<ColorPickerPanel> create(Colors::Space::Type space, PlateType type, std::shared_ptr<Colors::ColorSet> color);
+    static std::unique_ptr<ColorPickerPanel> create(Colors::Space::Type initial_space, PlateType type, std::shared_ptr<Colors::ColorSet> color);
 
     virtual void set_desktop(SPDesktop* dekstop) = 0;
+    virtual void set_document(SPDocument* document) = 0;
     virtual void set_color(const Colors::Color& color) = 0;
     // request color type/space change
-    virtual void set_picker_type(Colors::Space::Type type) = 0;
+    virtual void set_picker_space(std::shared_ptr<Colors::Space::AnySpace> const &space) = 0;
     // request type of color wheel/plate
     virtual void set_plate_type(PlateType plate) = 0;
     virtual PlateType get_plate_type() const = 0;
@@ -38,7 +40,7 @@ public:
     // width of widgets in the last column: component entry boxes
     virtual Glib::RefPtr<Gtk::SizeGroup> get_last_column_size() = 0;
     // get a color space type change signal
-    virtual sigc::signal<void (Colors::Space::Type)> get_color_space_changed() = 0;
+    virtual sigc::signal<void (std::shared_ptr<Colors::Space::AnySpace> const &)> get_color_space_changed() = 0;
 };
 
 // get a plate type from preferences

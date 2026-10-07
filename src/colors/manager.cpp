@@ -145,6 +145,16 @@ std::shared_ptr<Space::AnySpace> Manager::findSvgColorSpace(std::string const &i
     return {};
 }
 
+/**
+ * Find any color space by a unique integer id attached at creation time. Used for
+ * some historical data-model driven UI which can't use void pointers.
+ */
+std::shared_ptr<Space::AnySpace> Manager::findById(int id) const
+{
+    auto it = std::find_if(_spaces.begin(), _spaces.end(), [id](auto &v) { return v->getId() == id; });
+    return it != _spaces.end() ? *it : nullptr;
+}
+
 } // namespace Inkscape::Colors
 
 /*

@@ -41,7 +41,10 @@ AnySpace::AnySpace(Type type, int components, std::string name, std::string shor
     , _shortName(std::move(shortName))
     , _icon(std::move(icon))
     , _spaceIsUnbounded(spaceIsUnbounded)
-{}
+{
+    static int next_id = 0;
+    _id = ++next_id;
+}
 
 /**
  * Return true if the given data would be valid for this color space.

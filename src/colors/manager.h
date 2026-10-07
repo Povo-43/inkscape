@@ -46,6 +46,7 @@ public:
     std::shared_ptr<Space::AnySpace> find(Space::Type type) const;
     std::shared_ptr<Space::AnySpace> find(std::string const &name) const;
     std::shared_ptr<Space::AnySpace> findSvgColorSpace(std::string const &input) const;
+    std::shared_ptr<Space::AnySpace> findById(int id) const;
 
 protected:
     Manager();
