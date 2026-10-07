@@ -40,7 +40,7 @@ ColorPage::ColorPage(std::shared_ptr<Space::AnySpace> space, std::shared_ptr<Col
     _specific_changed_connection = _specific_colors->signal_changed.connect([this]() {
         auto scoped = SignalBlocker{_selected_changed_connection};
         for (auto &[id, color] : *_specific_colors) {
-            _selected_colors->set(id, color);
+            _selected_colors->set(id, color, false);
         }
     });
 

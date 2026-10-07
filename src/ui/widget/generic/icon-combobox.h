@@ -57,11 +57,14 @@ public:
     // apply filter to show items after adding them
     void refilter();
 
+    void set_label_max_chars(int c) { _label_max_chars = c; }
+
 private:
     void construct(Glib::RefPtr<Gio::ListStore<ListItem>> store, bool use_icons, HeaderType header);
     bool is_item_visible(const Glib::RefPtr<Glib::ObjectBase>& item) const;
     std::pair<std::shared_ptr<IconComboBox::ListItem>, int> find_by_id(int id, bool visible_only);
 
+    int _label_max_chars = 0;
     Geom::Point _image_size{16, 16};
     Glib::RefPtr<Gtk::SignalListItemFactory> _factory;
     Glib::RefPtr<Gtk::SignalListItemFactory> _compact_factory;

@@ -79,6 +79,10 @@ void IconComboBox::construct(Glib::RefPtr<Gio::ListStore<ListItem>> store, bool 
         label->set_hexpand();
         label->set_xalign(0);
         label->set_valign(Gtk::Align::CENTER);
+        if (_label_max_chars) {
+            label->set_max_width_chars(_label_max_chars);
+            label->set_ellipsize(Pango::EllipsizeMode::END);
+        }
 
         set_up_image(*box, get_image_size(), false);
         box->append(*label);
@@ -154,6 +158,10 @@ void IconComboBox::construct(Glib::RefPtr<Gio::ListStore<ListItem>> store, bool 
             label->set_hexpand();
             label->set_xalign(0.5);
             label->set_valign(Gtk::Align::FILL);
+            if (_label_max_chars) {
+                label->set_max_width_chars(_label_max_chars);
+                label->set_ellipsize(Pango::EllipsizeMode::END);
+            }
             list_item->set_child(*label);
         });
 

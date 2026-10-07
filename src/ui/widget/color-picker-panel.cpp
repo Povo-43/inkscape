@@ -166,7 +166,7 @@ ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type initial_space, PlateType 
     set_row_spacing(0);
     set_column_spacing(0);
 
-
+    _spaces.set_label_max_chars(10);
     _spaces.refilter();
     _spaces.set_tooltip_text(_("Select color picker type"));
     // Important: add "regular" class to render non-symbolic color icons;
@@ -268,8 +268,8 @@ void ColorPickerPanelImpl::rebuild_color_space_list()
     _spaces.clear();
 
     // list available color space types
-    for (auto&& meta : Manager::get().spaces(Space::Traits::Picker)) {
-        _spaces.add_row(meta->getIcon(), _(meta->getShortName().c_str()), int(meta->getType()));
+    for (auto&& space : Manager::get().spaces(Space::Traits::Picker)) {
+        _spaces.add_row(space->getIcon(), _(space->getShortName().c_str()), space->getId());
     }
     // list of document color management profiles
     if (_document) {
@@ -277,7 +277,7 @@ void ColorPickerPanelImpl::rebuild_color_space_list()
         if (!cms_spaces.empty()) {
             _spaces.add_separator();
             for (auto&& cms : cms_spaces) {
-                _spaces.add_row(cms->getIcon(), _(cms->getShortName().c_str()), int(cms->getType()));
+                _spaces.add_row(cms->getIcon(), _(cms->getShortName().c_str()), cms->getId());
             }
         }
     }
