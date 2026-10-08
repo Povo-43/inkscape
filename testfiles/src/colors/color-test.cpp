@@ -447,6 +447,18 @@ TEST(ColorsColor, average)
     ASSERT_EQ(c1.toString(), "#1a1a1a1a");
 }
 
+TEST(ColorsColor, toArray)
+{
+    std::array<double, 4> rgba = Color(0x45454580).toArray();
+    EXPECT_TRUE(VectorIsNear(rgba, {0.27, 0.27, 0.27, 0.5}, 0.01));
+
+    std::array<double, 3> rgb = Color(0x45454580).toArray<double, 3>();
+    EXPECT_TRUE(VectorIsNear(rgb, {0.27, 0.27, 0.27}, 0.01));
+
+    std::array<float, 4> floater = Color(0x45454580).toArray<float>();
+    EXPECT_TRUE(VectorIsNear(floater, {0.27, 0.27, 0.27, 0.5}, 0.01));
+}
+
 } // namespace
 
 /*

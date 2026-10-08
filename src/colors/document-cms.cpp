@@ -272,6 +272,19 @@ std::pair<std::string, bool> DocumentCMS::checkProfileName(Colors::CMS::Profile 
 }
 
 /**
+ * Ensure that the given color space is available in the current document.
+ */
+std::shared_ptr<Inkscape::Colors::Space::AnySpace> DocumentCMS::ensureColorSpaceIsInstalled(std::shared_ptr<Inkscape::Colors::Space::AnySpace> const &space)
+{
+    // Only cms profiles need to be made available
+    if (auto cms = std::dynamic_pointer_cast<Space::CMS>(space)) {
+        auto new_name = attachProfileToDoc(*cms->getProfile(), ColorProfileStorage::HREF_DATA, Colors::RenderingIntent::AUTO);
+        return findSvgColorSpace(new_name);
+    }
+    return space;
+}
+
+/**
  * Attach the named profile to the document. The name is used as a look-up in
  * the CMS::System database then attached to the manager's document using the
  * given storage mechanism.
@@ -416,6 +429,16 @@ std::vector<ColorProfile *> DocumentCMS::getObjects() const
         }
     }
     return ret;
+}
+
+std::shared_ptr<Inkscape::Colors::Space::AnySpace> DocumentCMS::getDocumentColorSpace() const
+{
+    return _document->getRoot()->getColorSpace();
+}
+
+bool DocumentCMS::setDocumentColorSpace(std::shared_ptr<Inkscape::Colors::Space::AnySpace> const &space)
+{
+    return _document->getRoot()->setColorSpace(space);
 }
 
 } // namespace Inkscape::Colors

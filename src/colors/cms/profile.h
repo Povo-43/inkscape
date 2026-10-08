@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+#include <glibmm.h>
+
 namespace Inkscape::Colors::CMS {
 
 class Profile
@@ -24,6 +26,7 @@ public:
     static std::shared_ptr<Profile> create_from_copy(cmsHPROFILE handle);
     static std::shared_ptr<Profile> create_from_uri(std::string path, bool in_home = false);
     static std::shared_ptr<Profile> create_from_data(std::string const &contents);
+    static std::shared_ptr<Profile> create_from_data(Glib::RefPtr<Glib::Bytes> bytes);
 
     /* LittleCMS based identity profiles */
     static std::shared_ptr<Profile> create_gray();

@@ -64,6 +64,7 @@ public:
     }
 
     std::pair<std::string, bool> checkProfileName(Colors::CMS::Profile const &profile, RenderingIntent intent, std::optional<std::string> name = {}) const;
+    std::shared_ptr<Inkscape::Colors::Space::AnySpace> ensureColorSpaceIsInstalled(std::shared_ptr<Inkscape::Colors::Space::AnySpace> const &space);
     std::optional<std::string> attachProfileToDoc(std::string const &lookup, ColorProfileStorage storage,
                                                   RenderingIntent intent);
     std::string attachProfileToDoc(Colors::CMS::Profile const &profile, ColorProfileStorage storage,
@@ -80,6 +81,9 @@ public:
     std::vector<ColorProfile *> getObjects() const;
 
     std::shared_ptr<Space::AnySpace> findSvgColorSpace(std::string const &input) const;
+
+    std::shared_ptr<Inkscape::Colors::Space::AnySpace> getDocumentColorSpace() const;
+    bool setDocumentColorSpace(std::shared_ptr<Inkscape::Colors::Space::AnySpace> const &space);
 private:
     void refreshResources();
 

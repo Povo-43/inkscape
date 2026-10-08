@@ -19,7 +19,9 @@
 #include <glibmm/i18n.h>
 
 #include "attributes.h"
+#include "colors/document-cms.h"
 #include "colors/manager.h"
+#include "colors/spaces/base.h"
 #include "conditions.h"
 #include "conn-avoid-ref.h"
 #include "desktop.h"
@@ -1960,6 +1962,24 @@ void SPItem::move_rel(Geom::Translate const &tr, bool compensate)
     set_i2d_affine(i2dt_affine() * tr);
 
     doWriteTransform(transform, nullptr, compensate);
+}
+
+std::shared_ptr<Inkscape::Colors::Space::AnySpace> SPItem::getColorSpace() const
+{
+    return style->color_interpolation.getInterpolationSpace();
+}
+
+bool SPItem::setColorSpace(std::shared_ptr<Inkscape::Colors::Space::AnySpace> const &space)
+{
+    if (SPCSSAttr *style = sp_css_attr_from_object(this)) {
+        if (auto doc_space = document->getDocumentCMS().ensureColorSpaceIsInstalled(space)) {
+            sp_repr_css_set_property(style, "color-interpolation", doc_space->getSvgName().c_str());
+            sp_repr_css_set(getRepr(), style, "style");
+            sp_repr_css_attr_unref(style);
+            return true;
+        }
+    }
+    return false;
 }
 
 /*

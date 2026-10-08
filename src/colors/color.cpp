@@ -58,10 +58,14 @@ Color::Color(uint32_t rgba, bool opacity)
  *               formatted opacity parsing but is not expected to be written by Inkscape
  *               when being generated.
  */
-Color::Color(std::shared_ptr<Space::AnySpace> space, std::vector<double> colors)
-    : _values(std::move(colors))
+Color::Color(std::shared_ptr<Space::AnySpace> space, std::vector<double> values)
+    : _values(std::move(values))
     , _space(std::move(space))
 {
+    if (_values.empty()) {
+        // Default always has alpha and is invisible
+        _values.resize(_space->getComponentCount() + 1, 0.0);
+    }
     assert(_space->isValidData(_values));
 }
 
@@ -469,6 +473,16 @@ Color Color::withOpacity(double opacity) const
 {
     Color copy = *this;
     copy.addOpacity(opacity);
+    return copy;
+}
+
+/**
+ * Make a copy and remove any opacity.
+ */
+Color Color::withoutOpacity() const
+{
+    Color copy = *this;
+    copy.enableOpacity(false);
     return copy;
 }
 

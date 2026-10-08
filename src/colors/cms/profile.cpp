@@ -84,6 +84,18 @@ std::shared_ptr<Profile> Profile::create_from_data(std::string const &contents)
 }
 
 /**
+ * Construct a color profile object from the raw data.
+ */
+std::shared_ptr<Profile> Profile::create_from_data(Glib::RefPtr<Glib::Bytes> bytes)
+{
+    gsize length;
+    unsigned char *byte_ptr = (unsigned char*)bytes->get_data(length);
+    if (cmsHPROFILE profile = cmsOpenProfileFromMem(byte_ptr, length))
+        return Profile::create(profile, "", false);
+    return nullptr;
+}
+
+/**
  * Construct a D65 gray identity profile.
  */
 std::shared_ptr<Profile> Profile::create_gray()
