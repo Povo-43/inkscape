@@ -191,7 +191,7 @@ void IconComboBox::construct(Glib::RefPtr<Gio::ListStore<ListItem>> store, bool 
     set_model(_selection_model);
     refilter();
 
-    property_selected_item().signal_changed().connect([this]() {
+    _item_changed_connection = property_selected_item().signal_changed().connect([this]() {
         auto item = current_item();
         _signal_current_changed.emit(item ? item->id : -1);
     });

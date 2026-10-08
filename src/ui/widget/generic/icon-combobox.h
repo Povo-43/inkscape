@@ -73,6 +73,7 @@ private:
     Glib::RefPtr<Gtk::BoolFilter> _filter;
     Glib::RefPtr<Gio::ListStore<IconComboBox::ListItem>> _store;
     sigc::signal<void (int)> _signal_current_changed = sigc::signal<void (int)>();
+    sigc::scoped_connection _item_changed_connection;
 };
 
 struct IconComboBox::ListItem : Glib::Object {
