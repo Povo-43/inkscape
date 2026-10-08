@@ -35,6 +35,7 @@ private:
 
     std::shared_ptr<Colors::ColorSet> _colors;
 
+    bool _show_real = true;
     bool _updating = false;
     bool _updating_color = false;
     bool _warning = false;

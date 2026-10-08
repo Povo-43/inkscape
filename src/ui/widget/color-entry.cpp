@@ -13,6 +13,7 @@
 
 #include "color-entry.h"
 
+#include "colors/manager.h"
 #include "colors/spaces/gamut.h"
 #include "colors/spaces/base.h"
 #include "svg/css-ostringstream.h"
@@ -28,6 +29,14 @@ ColorEntry::ColorEntry(std::shared_ptr<Colors::ColorSet> colors)
 
     _color_changed_connection = _colors->signal_changed.connect(sigc::mem_fun(*this, &ColorEntry::_onColorChanged));
     signal_activate().connect(sigc::mem_fun(*this, &ColorEntry::_onColorChanged));
+    set_icon_from_icon_name("visible", IconPosition::SECONDARY);
+    set_icon_tooltip_text(_("Show color in RGBA hex format or its real value."));
+    signal_icon_press().connect([this](Gtk::Entry::IconPosition) {
+        _show_real = !_show_real;
+        set_icon_from_icon_name(_show_real ? "visible" : "hidden", IconPosition::SECONDARY);
+        _onColorChanged();
+    });
+
     _onColorChanged();
 
     set_tooltip_text(_("Value of the color in the stored color space."));
@@ -70,6 +79,10 @@ void ColorEntry::_onColorChanged()
     }
 
     auto color = _colors->getAverage();
+    if (!_show_real) {
+        static auto rgb = Colors::Manager::get().find(Colors::Space::Type::RGB);
+        color = *color.converted(rgb);
+    }
     if (Colors::out_of_gamut(color, color.getSpace())) {
         _signal_out_of_gamut.emit(Glib::ustring::compose(_("Color %1 is out of gamut for %2.\nIt has been mapped to sRGB gamut."), color.toString().c_str(), color.getSpace()->getName().c_str()));
         _warning = true;
