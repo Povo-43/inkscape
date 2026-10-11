@@ -301,6 +301,12 @@ void FontInstance::find_font_metrics()
     // otmMacDescent values:
     //   http://microsoft.public.win32.programmer.gdi.narkive.com/LV6k4BDh/msdn-documentation-outlinetextmetrics-clarification
     // The otmAscent and otmDescent values are the maximum ascent and maximum descent of all the glyphs in a font.
+
+    // TO DO: Convert this to using HarfBuzz. Harfbuzz has more complete fallback provisions and as
+    // an industrial standard, it will be more consistent with other programs.
+    int x_scale, y_scale;
+    hb_font_get_scale(hb_font, &x_scale, &y_scale);
+
     if (face->units_per_EM != 0) {  // If zero then it's a bitmap font.
 
         auto os2 = (TT_OS2*)FT_Get_Sfnt_Table(face, ft_sfnt_os2);
@@ -331,22 +337,12 @@ void FontInstance::find_font_metrics()
             _descent /= em;
         }
 
-        // x-height
-        if (os2 && os2->version >= 0x0002 && os2->version != 0xffffu) {
-            // Only os/2 version 2 and above have sxHeight, 0xffff marks "old Mac fonts" without table
-            _xheight = std::fabs((double)os2->sxHeight / face->units_per_EM);
-        } else {
-            // Measure 'x' height in font. Recommended option by XSL standard if no sxHeight.
-            FT_UInt index = FT_Get_Char_Index(face, 'x');
-            if (index != 0) {
-                FT_Load_Glyph(face, index, FT_LOAD_NO_SCALE);
-                _xheight = std::fabs((double)face->glyph->metrics.height / face->units_per_EM);
-            } else {
-                // No 'x' in font!
-                _xheight = 0.5;
-            }
-        }
+        // x-height: If not set in font, position of top of 'x' relative to alphabetic baseline.
+        hb_position_t xheight_int = -999;
+        hb_ot_metrics_get_position_with_fallback(hb_font, HB_OT_METRICS_TAG_X_HEIGHT, &xheight_int);
+        double _xheight = xheight_int / (double)y_scale;
 
+        // TO DO: Harfbuzz has better code to do this. (hb-ot-layout.cc)
         // Baselines defined relative to  alphabetic.
         _baselines[ SP_CSS_BASELINE_IDEOGRAPHIC      ] = -_descent;      // Recommendation
         _baselines[ SP_CSS_BASELINE_HANGING          ] = 0.8 * _ascent;  // Guess
@@ -394,6 +390,32 @@ void FontInstance::find_font_metrics()
     } else {
         _design_units = hb_face_get_upem(hb_face);
     }
+
+    // Sources and fallbacks are defined in hb-ot-metrics.cc
+    hb_position_t underline_position_int    = -999;
+    hb_position_t underline_thickness_int   = -999;
+    hb_position_t linethrough_position_int  = -999;
+    hb_position_t linethrough_thickness_int = -999;
+    hb_ot_metrics_get_position_with_fallback(hb_font, HB_OT_METRICS_TAG_UNDERLINE_OFFSET, &underline_position_int);
+    hb_ot_metrics_get_position_with_fallback(hb_font, HB_OT_METRICS_TAG_UNDERLINE_SIZE,   &underline_thickness_int);
+    hb_ot_metrics_get_position_with_fallback(hb_font, HB_OT_METRICS_TAG_STRIKEOUT_OFFSET, &linethrough_position_int);
+    hb_ot_metrics_get_position_with_fallback(hb_font, HB_OT_METRICS_TAG_STRIKEOUT_SIZE,   &linethrough_thickness_int);
+    hb_font_extents_t extents;
+    hb_font_get_h_extents(hb_font, &extents);
+
+    _underline_position    = underline_position_int    / (double)y_scale;
+    _underline_thickness   = underline_thickness_int   / (double)y_scale;
+    _linethrough_position  = linethrough_position_int  / (double)y_scale;
+    _linethrough_thickness = linethrough_thickness_int / (double)y_scale;
+    _overline_position     = extents.ascender / (double)y_scale;
+    _overline_thickness    = _underline_thickness;
+
+    // Postscript table gives underline center postion, but Harfbuzz translate it to top of
+    // underline.  This might make sense (the space between the baseline and top of the underline
+    // remains fixed), however, to be consistent with previous behavior (from Freetype) and with
+    // Firefox, move the position back to center.
+    _underline_position -= _underline_thickness/2.0;
+
     // const gchar *family = pango_font_description_get_family(descr);
     // std::cout << "Font: " << (family?family:"null") << std::endl;
     // std::cout << "  ascent:      " << _ascent      << std::endl;
@@ -401,6 +423,13 @@ void FontInstance::find_font_metrics()
     // std::cout << "  x-height:    " << _xheight     << std::endl;
     // std::cout << "  max ascent:  " << _ascent_max  << std::endl;
     // std::cout << "  max descent: " << _descent_max << std::endl;
+    // std::cout << "  underline_position:    " << _underline_position    <<  std::endl;
+    // std::cout << "  underline_thickness:   " << _underline_thickness   <<  std::endl;
+    // std::cout << "  linethrough_position:  " << _linethrough_position  <<  std::endl;
+    // std::cout << "  linethrough_thickness: " << _linethrough_thickness <<  std::endl;
+    // std::cout << "  overline_position:     " << _overline_position     <<  std::endl;
+    // std::cout << "  overline_thickness:    " << _overline_thickness    <<  std::endl;
+
     // std::cout << " Baselines:" << std::endl;
     // std::cout << "  alphabetic:  " << _baselines[ SP_CSS_BASELINE_ALPHABETIC       ] << std::endl;
     // std::cout << "  ideographic: " << _baselines[ SP_CSS_BASELINE_IDEOGRAPHIC      ] << std::endl;
@@ -612,16 +641,17 @@ bool FontInstance::FontMetrics(double &ascent, double &descent, double &xheight)
     return true;
 }
 
-bool FontInstance::FontDecoration(double &underline_position, double &underline_thickness, double &linethrough_position, double &linethrough_thickness) const
+bool FontInstance::FontDecoration(double &underline_position,   double &underline_thickness,
+                                  double &linethrough_position, double &linethrough_thickness,
+                                  double &overline_position,    double &overline_thickness) const
 {
-    if (face->units_per_EM == 0) {
-        return false; // bitmap font
-    }
-    underline_position    = std::fabs((double)face->underline_position  / face->units_per_EM);
-    underline_thickness   = std::fabs((double)face->underline_thickness / face->units_per_EM);
-    // there is no specific linethrough information, mock it up from other font fields
-    linethrough_position  = std::fabs((double)face->ascender / 3.0      / face->units_per_EM);
-    linethrough_thickness = std::fabs((double)face->underline_thickness / face->units_per_EM);
+    underline_position    = _underline_position;
+    underline_thickness   = _underline_thickness;
+    linethrough_position  = _linethrough_position;
+    linethrough_thickness = _linethrough_thickness;
+    overline_position     = _overline_position;
+    overline_thickness    = _overline_thickness;
+
     return true;
 }
 

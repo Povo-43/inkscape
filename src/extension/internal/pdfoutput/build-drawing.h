@@ -49,6 +49,7 @@ public:
     void paint_raster(SPImage const *image);
     void paint_item_to_raster(SPItem const *item, Geom::Affine const &tr, double resolution, bool antialias);
     void paint_text_layout(Text::Layout const &layout, SPStyle const *context_style);
+    void paint_text_decoration(Text::Layout const &layout, SPStyle const *context_style, bool under);
     void clip_text_layout(Text::Layout const &layout);
 
     void start_ocg(CapyPDF_OptionalContentGroupId ocgid);

@@ -395,59 +395,55 @@ void DrawingText::decorateStyle(DrawingContext &dc, double vextent, double xphas
     }
 }
 
-/* returns scaled line thickness */
 void DrawingText::decorateItem(DrawingContext &dc, double phase_length, bool under) const
 {
-    if ( _nrstyle.data.font_size <= 1.0e-32 )return;  // might cause a divide by zero or overflow and nothing would be visible anyway
+    if ( _nrstyle.data.font_size <= 1.0e-32 ) return; // Might cause a divide by zero or overflow
+                                                      // and nothing would be visible anyway.
+
     double tsp_width_adj                = _nrstyle.data.tspan_width                     / _nrstyle.data.font_size;
-    double tsp_asc_adj                  = _nrstyle.data.ascender                        / _nrstyle.data.font_size;
     double tsp_size_adj                 = (_nrstyle.data.ascender + _nrstyle.data.descender) / _nrstyle.data.font_size;
 
-    double final_underline_thickness    = CLAMP(_nrstyle.data.underline_thickness,    tsp_size_adj/30.0, tsp_size_adj/10.0);
-    double final_line_through_thickness = CLAMP(_nrstyle.data.line_through_thickness, tsp_size_adj/30.0, tsp_size_adj/10.0);
+    double final_underline_thickness    = _nrstyle.data.underline_thickness;
+    double final_line_through_thickness = _nrstyle.data.line_through_thickness;
+    double final_overline_thickness     = _nrstyle.data.overline_thickness;
 
     double xphase = phase_length/ _nrstyle.data.font_size; // used to figure out phase of patterns
 
-    Geom::Point p1;
-    Geom::Point p2;
-    // All lines must be the same thickness, in combinations, line_through trumps underline
-    double thickness = final_underline_thickness;
-    if ( thickness <= 1.0e-32 )return;  // might cause a divide by zero or overflow and nothing would be visible anyway
     dc.setTolerance(0.5); // Is this really necessary... could effect dots.
 
-    if( under ) {
+    Geom::Point p1;
+    Geom::Point p2;
+    if (under) {
 
         if(_nrstyle.data.text_decoration_line & NRStyleData::TEXT_DECORATION_LINE_UNDERLINE){
-            p1 = Geom::Point(0.0,          -_nrstyle.data.underline_position);
-            p2 = Geom::Point(tsp_width_adj,-_nrstyle.data.underline_position);
-            decorateStyle(dc, tsp_size_adj, xphase, p1, p2, thickness);
+            p1 = Geom::Point(0.0,           _nrstyle.data.underline_position);
+            p2 = Geom::Point(tsp_width_adj, _nrstyle.data.underline_position);
+            decorateStyle(dc, tsp_size_adj, xphase, p1, p2, final_underline_thickness);
         }
 
         if(_nrstyle.data.text_decoration_line & NRStyleData::TEXT_DECORATION_LINE_OVERLINE){
-            p1 = Geom::Point(0.0,          tsp_asc_adj -_nrstyle.data.underline_position + 1 * final_underline_thickness);
-            p2 = Geom::Point(tsp_width_adj,tsp_asc_adj -_nrstyle.data.underline_position + 1 * final_underline_thickness);
-            decorateStyle(dc, tsp_size_adj, xphase,  p1, p2, thickness);
+            p1 = Geom::Point(0.0,           _nrstyle.data.overline_position);
+            p2 = Geom::Point(tsp_width_adj, _nrstyle.data.overline_position);
+            decorateStyle(dc, tsp_size_adj, xphase,  p1, p2, final_overline_thickness);
         }
 
     } else {
         // Over
 
         if(_nrstyle.data.text_decoration_line & NRStyleData::TEXT_DECORATION_LINE_LINETHROUGH){
-            thickness = final_line_through_thickness;
-            p1 = Geom::Point(0.0,          _nrstyle.data.line_through_position);
-            p2 = Geom::Point(tsp_width_adj,_nrstyle.data.line_through_position);
-            decorateStyle(dc, tsp_size_adj, xphase,  p1, p2, thickness);
+            p1 = Geom::Point(0.0,           _nrstyle.data.line_through_position);
+            p2 = Geom::Point(tsp_width_adj, _nrstyle.data.line_through_position);
+            decorateStyle(dc, tsp_size_adj, xphase,  p1, p2, final_line_through_thickness);
         }
 
         // Obviously this does not blink, but it does indicate which text has been set with that attribute
         if(_nrstyle.data.text_decoration_line & NRStyleData::TEXT_DECORATION_LINE_BLINK){
-            thickness = final_line_through_thickness;
-            p1 = Geom::Point(0.0,          _nrstyle.data.line_through_position - 2*final_line_through_thickness);
-            p2 = Geom::Point(tsp_width_adj,_nrstyle.data.line_through_position - 2*final_line_through_thickness);
-            decorateStyle(dc, tsp_size_adj, xphase,  p1, p2, thickness);
-            p1 = Geom::Point(0.0,          _nrstyle.data.line_through_position + 2*final_line_through_thickness);
-            p2 = Geom::Point(tsp_width_adj,_nrstyle.data.line_through_position + 2*final_line_through_thickness);
-            decorateStyle(dc, tsp_size_adj, xphase,  p1, p2, thickness);
+            p1 = Geom::Point(0.0,           _nrstyle.data.line_through_position - 2*final_line_through_thickness);
+            p2 = Geom::Point(tsp_width_adj, _nrstyle.data.line_through_position - 2*final_line_through_thickness);
+            decorateStyle(dc, tsp_size_adj, xphase,  p1, p2, final_line_through_thickness);
+            p1 = Geom::Point(0.0,           _nrstyle.data.line_through_position + 2*final_line_through_thickness);
+            p2 = Geom::Point(tsp_width_adj, _nrstyle.data.line_through_position + 2*final_line_through_thickness);
+            decorateStyle(dc, tsp_size_adj, xphase,  p1, p2, final_line_through_thickness);
         }
     }
 }

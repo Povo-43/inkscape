@@ -256,6 +256,9 @@ void DrawContext::paint_text_layout(Text::Layout const &layout, SPStyle const *c
         return;
     }
 
+    // Paint underline and overline
+    paint_text_decoration(layout, context_style, true);
+
     auto tx = TextContext(_doc, _ctx, _soft_mask);
 
     // Copy the paint style memory as the entire text block has a continuous style which does
@@ -268,7 +271,7 @@ void DrawContext::paint_text_layout(Text::Layout const &layout, SPStyle const *c
 
         if (text_source->Type() != Layout::InputStreamItemType::TEXT_SOURCE || span.line(&layout).hidden ||
             !span.font) {
-            // Hidden spans correspond to text overlfow.
+            // Hidden spans correspond to text overflow.
             continue;
         }
 
@@ -307,6 +310,136 @@ void DrawContext::paint_text_layout(Text::Layout const &layout, SPStyle const *c
     } catch (std::exception const &err) {
         std::cerr << "Can't output text block:" << err.what() << "\n";
     }
+
+    // Paint strike out.
+    paint_text_decoration(layout, context_style, false);
+}
+
+// At the moment we paint span by span but eventually we will want to paint over multiple spans
+// together, breaking at lines. (To do so, we'll need to track span "level", that is how the span
+// corresponds to tspans which are wrapped by how many other tspans.)
+//
+// Text decoration parameters are found in Layout::show()
+// Canvas: see DrawingText::decorateItem()
+//
+void DrawContext::paint_text_decoration(Text::Layout const &layout, SPStyle const *context_style, bool under)
+{
+    using Inkscape::Text::Layout;
+
+    if (!layout.outputExists()) {
+        return;
+    }
+
+    StyleMemory paint_memory = _doc.paint_memory();
+
+    auto &input_stream = layout.input_stream();
+    for (Layout::Span const &span : layout.spans()) {
+
+        auto text_source = static_cast<Layout::InputStreamTextSource const *>(input_stream[span.in_input_stream_item]);
+
+        if (text_source->Type() != Layout::InputStreamItemType::TEXT_SOURCE || span.line(&layout).hidden ||
+            !span.font) {
+            // Hidden spans correspond to text overflow.
+            continue;
+        }
+
+        auto style = text_source->style;
+        if (under) {
+            if (!style->text_decoration_line.underline &&
+                !style->text_decoration_line.overline) continue;
+        } else {
+            if (!style->text_decoration_line.line_through) continue;
+        }
+
+        // This non-scoped memory means the PDF lacks style scope within the Text Block.
+        auto style_map = paint_memory.get_changes_and_remember(style);
+        set_paint_style(style_map, style, context_style);
+
+        // Find start/end of text decoration
+        double y = 0;
+        double x_min =  99999999;
+        double x_max = -99999999;
+        for (auto &glyph : layout.glyphs()) {
+            if (glyph.hidden) {
+                continue;
+            }
+
+            // If this glyph is in this span (this is bad)
+            if (&glyph.span(&layout) == &span) {
+                auto Tm = glyph.transform(layout);
+                auto chars = glyph.characters(&layout);
+
+                if (x_min > Tm[4]) x_min = Tm[4];
+                if (x_max < Tm[4] + glyph.advance) x_max = Tm[4] + glyph.advance;
+                y = Tm[5];
+
+                // auto text = unicodeToUtf8(chars);
+                // std::cout << text << " x: " << Tm[4]
+                //           << ", x_min: " << x_min
+                //           << ", x_max: " << x_max
+                //           << ", y: " << Tm[5] << std::endl;
+            }
+        }
+
+        // Position is mid-point of line in y.
+        auto font_size = style->font_size.computed;
+        auto underline_position     = font_size * style->text_decoration_data.underline_position;
+        auto underline_thickness    = font_size * style->text_decoration_data.underline_thickness;
+        auto line_through_position  = font_size * style->text_decoration_data.line_through_position;
+        auto line_through_thickness = font_size * style->text_decoration_data.line_through_thickness;
+        auto overline_position      = font_size;
+        auto overline_thickness     = font_size * style->text_decoration_data.underline_thickness;
+
+        for (int i = 0; i < 3; ++i) {
+            auto y_min = y;
+            auto y_max = y;
+            if (i == 0) {
+                if (!under || !style->text_decoration_line.underline) continue;
+                y_min -= underline_position - underline_thickness/2.0;
+                y_max -= underline_position + underline_thickness/2.0;
+            }
+            if (i == 1) {
+                if (!under || !style->text_decoration_line.overline) continue;
+                y_min -= overline_position - overline_thickness/2.0;
+                y_max -= overline_position + overline_thickness/2.0;
+            }
+            if (i == 2) {
+                if (under || !style->text_decoration_line.line_through) continue;
+                y_min -= line_through_position - line_through_thickness/2.0;
+                y_max -= line_through_position + line_through_thickness/2.0;
+            }
+            Geom::Rect rect{x_min, y_min, x_max, y_max};
+            for (auto layer : get_paint_layers(style, context_style)) {
+                switch (layer) {
+                    case PAINT_FILLSTROKE:
+                        // set_shape_rectangle(rect);
+                        //  _ctx.cmd_b();
+                        break;
+                    case PAINT_FILL:
+                        set_shape_rectangle(rect);
+                        _ctx.cmd_f();
+                        break;
+                    case PAINT_STROKE:
+                        set_shape_rectangle(rect);
+                        _ctx.cmd_s();
+                        break;
+                    case PAINT_MARKERS:
+                        break; // NOT ALLOWED
+                }
+            }
+        }
+    }
 }
 
 } // namespace Inkscape::Extension::Internal::PdfBuilder
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :

@@ -94,6 +94,8 @@ NRStyleData::NRStyleData()
     , underline_position(0)
     , line_through_thickness(0)
     , line_through_position(0)
+    , overline_thickness(0)
+    , overline_position(0)
     , font_size(0)
 {
     paint_order_layer[0] = PAINT_ORDER_NORMAL;
@@ -292,6 +294,8 @@ NRStyleData::NRStyleData(SPStyle const *style, SPStyle const *context_style)
         underline_position     = style->text_decoration_data.underline_position;
         line_through_thickness = style->text_decoration_data.line_through_thickness;
         line_through_position  = style->text_decoration_data.line_through_position;
+        overline_thickness     = style->text_decoration_data.overline_thickness;
+        overline_position      = style->text_decoration_data.overline_position;
         font_size              = style->font_size;
     }
 

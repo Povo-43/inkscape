@@ -2162,6 +2162,40 @@ void Layout::_calculateCursorShapeForEmpty()
     }
 }
 
+void Layout::_fillTextDecorationData()
+{
+    for (int i = 0; i < _spans.size(); i++) {
+        if (_input_stream[_spans[i].in_input_stream_item]->Type() != TEXT_SOURCE) {
+            continue;
+        }
+
+        if (_spans[i].line(this).hidden) {
+            continue; // Line corresponds to text overflow. Don't show!
+        }
+
+        auto text_source = static_cast<InputStreamTextSource const *>(_input_stream[_spans[i].in_input_stream_item]);
+        auto style = text_source->style;
+
+        style->text_decoration_data.ascender    = _spans[i].line_height.getTypoAscent();
+        style->text_decoration_data.descender   = _spans[i].line_height.getTypoDescent();
+
+        if (_spans[i].font) {
+            double underline_thickness,    underline_position;
+            double line_through_thickness, line_through_position;
+            double overline_thickness,     overline_position;
+            _spans[i].font->FontDecoration(underline_position,    underline_thickness,
+                                           line_through_position, line_through_thickness,
+                                           overline_position,     overline_thickness);
+            style->text_decoration_data.underline_thickness    = underline_thickness;
+            style->text_decoration_data.underline_position     = underline_position;
+            style->text_decoration_data.line_through_thickness = line_through_thickness;
+            style->text_decoration_data.line_through_position  = line_through_position;
+            style->text_decoration_data.overline_thickness     = overline_thickness;
+            style->text_decoration_data.overline_position      = overline_position;
+        }
+    }
+}
+
 bool Layout::calculateFlow()
 {
     TRACE(("begin calculateFlow()\n"));
@@ -2178,6 +2212,7 @@ bool Layout::calculateFlow()
     }
 
     _calculateBaselines();
+    _fillTextDecorationData();
     return result;
 }
 

@@ -160,27 +160,14 @@ void Layout::show(DrawingGroup *parent, StyleAttachments &style_attachments, Geo
         auto text_source = static_cast<InputStreamTextSource const *>(_input_stream[_spans[i].in_input_stream_item]);
         auto style = text_source->style;
 
+        // These things must be set here as they depend on this Span. They are comsumed
+        // in drawing_text->setStyle() below. This is a poor design!
         style->text_decoration_data.tspan_width = _spans[i].width();
-        style->text_decoration_data.ascender    = _spans[i].line_height.getTypoAscent();
-        style->text_decoration_data.descender   = _spans[i].line_height.getTypoDescent();
 
+        // Is span at start of line, is it at end of line?
         auto line_of_span = [this] (int i) { return _chunks[_spans[i].in_chunk].in_line; };
         style->text_decoration_data.tspan_line_start = i == 0                 || line_of_span(i) != line_of_span(i - 1);
         style->text_decoration_data.tspan_line_end   = i == _spans.size() - 1 || line_of_span(i) != line_of_span(i + 1);
-
-        if (_spans[i].font) {
-            double underline_thickness, underline_position, line_through_thickness, line_through_position;
-            _spans[i].font->FontDecoration(underline_position, underline_thickness, line_through_position, line_through_thickness);
-            style->text_decoration_data.underline_thickness    = underline_thickness;
-            style->text_decoration_data.underline_position     = underline_position;
-            style->text_decoration_data.line_through_thickness = line_through_thickness;
-            style->text_decoration_data.line_through_position  = line_through_position;
-        } else { // can this case ever occur?
-            style->text_decoration_data.underline_thickness    = 0.0;
-            style->text_decoration_data.underline_position     = 0.0;
-            style->text_decoration_data.line_through_thickness = 0.0;
-            style->text_decoration_data.line_through_position  = 0.0;
-        }
 
         auto drawing_text = new DrawingText(parent->drawing());
 

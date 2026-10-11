@@ -112,7 +112,8 @@ public:
     bool FontMetrics(double &ascent, double &descent, double &leading) const;
 
     bool FontDecoration(double &underline_position, double &underline_thickness,
-                        double &linethrough_position, double &linethrough_thickness) const;
+                        double &linethrough_position, double &linethrough_thickness,
+                        double &overline_position, double &overline_thickness) const;
 
     bool FontSlope(double &run, double &rise) const; // for generating slanted cursors for oblique fonts
 
@@ -183,6 +184,13 @@ private:
     bool _fixed_width = false; // monospaced font (if advertised as such)
     bool _oblique = false;  // oblique or italic font
     bool _has_vertical = false; // Has vertical metrics
+    double _underline_position;
+    double _underline_thickness;
+    double _linethrough_position;
+    double _linethrough_thickness;
+    double _overline_position;
+    double _overline_thickness;
+
     unsigned short _family_class = 0; // OS/2 sFamily class field
 
     // Baselines
