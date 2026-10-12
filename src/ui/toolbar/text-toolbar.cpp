@@ -20,7 +20,7 @@
  * Copyright (C) 2004 David Turner
  * Copyright (C) 2003 MenTaLguY
  * Copyright (C) 2001-2002 Ximian, Inc.
- * Copyright (C) 1999-2013 authors
+ * Copyright (C) 1999-2026 authors
  * Copyright (C) 2017 Tavmjong Bah
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
@@ -178,6 +178,18 @@ TextToolbar::TextToolbar(Glib::RefPtr<Gtk::Builder> const &builder)
                            "orientation_mode", &TextToolbar::orientation_changed);
     configure_mode_buttons(_direction_buttons, get_widget<Gtk::Box>(builder, "direction_buttons_box"),
                            "direction_mode", &TextToolbar::direction_changed);
+
+    _mode_menus = {
+        {&get_widget<Gtk::MenuButton>(builder, "horizontal_align_menu"), _alignment_buttons,
+        },
+        {&get_widget<Gtk::MenuButton>(builder, "writing_mode_menu"), _writing_buttons,
+        },
+        {&get_widget<Gtk::MenuButton>(builder, "orientation_menu"), _orientation_buttons,
+        },
+        {&get_widget<Gtk::MenuButton>(builder, "direction_menu"), _direction_buttons,
+        },
+    };
+    update_mode_menu_icons();
 
     auto const fontlister = FontLister::get_instance();
 
@@ -345,6 +357,28 @@ void TextToolbar::configure_mode_buttons(std::vector<Gtk::ToggleButton *> &butto
     auto const path = "/tools/text/" + name;
     int const active_button_index = Preferences::get()->getInt(path, 0);
     buttons[active_button_index < buttons.size() ? active_button_index : 0]->set_active(true);
+}
+
+void TextToolbar::update_mode_menu_icons()
+{
+    for (auto &menu : _mode_menus) {
+        if (!menu.button) continue;
+        for (auto option : menu.options) {
+            if (option && option->get_active()) {
+                menu.button->set_icon_name(option->get_icon_name());
+                menu.button->set_tooltip_text(option->get_tooltip_text());
+                break;
+            }
+        }
+    }
+}
+
+void TextToolbar::close_mode_menus()
+{
+    for (auto &menu : _mode_menus) {
+        if (menu.button) menu.button->popdown();
+    }
+    onDefocus();
 }
 
 void TextToolbar::text_outer_set_style(SPCSSAttr *css)
@@ -765,7 +799,7 @@ void TextToolbar::align_mode_changed(int align_mode)
         DocumentUndo::done(_desktop->getDocument(), RC_("Undo", "Text: Change alignment"), INKSCAPE_ICON("draw-text"));
     }
 
-    onDefocus();
+    close_mode_menus();
 
     _freeze = false;
 }
@@ -800,7 +834,7 @@ void TextToolbar::writing_mode_changed(int mode)
     }
     sp_repr_css_attr_unref(css);
 
-    onDefocus();
+    close_mode_menus();
 
     _freeze = false;
 }
@@ -834,7 +868,7 @@ void TextToolbar::orientation_changed(int mode)
         DocumentUndo::done(_desktop->getDocument(), RC_("Undo", "Text: Change orientation"), INKSCAPE_ICON("draw-text"));
     }
     sp_repr_css_attr_unref (css);
-    onDefocus();
+    close_mode_menus();
 
     _freeze = false;
 }
@@ -885,7 +919,7 @@ void TextToolbar::direction_changed(int mode)
     }
     sp_repr_css_attr_unref(css);
 
-    onDefocus();
+    close_mode_menus();
 
     _freeze = false;
 }
@@ -1718,6 +1752,9 @@ void TextToolbar::_selectionChanged(Selection *selection) // don't bother to upd
     _dx_item.set_sensitive(!isFlow);
     _dy_item.set_sensitive(!isFlow);
     _rotation_item.set_sensitive(!isFlow);
+
+    // For popover menus
+    update_mode_menu_icons();
 
     if constexpr (DEBUG_TEXT) {
         std::cout << "sp_text_toolbox_selection_changed: exit " << count << std::endl;

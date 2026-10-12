@@ -22,7 +22,7 @@
  *
  * Copyright (C) 2004 David Turner
  * Copyright (C) 2003 MenTaLguY
- * Copyright (C) 1999-2011 authors
+ * Copyright (C) 1999-2026 authors
  * Copyright (C) 2001-2002 Ximian, Inc.
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
@@ -32,6 +32,9 @@
 #include "style.h"
 #include "text-editing.h"
 #include "toolbar.h"
+
+#include <gtkmm/menubutton.h>
+#include <gtkmm/togglebutton.h>
 
 namespace Gtk {
 class Builder;
@@ -84,6 +87,15 @@ private:
     std::vector<Gtk::ToggleButton *> _writing_buttons;
     std::vector<Gtk::ToggleButton *> _orientation_buttons;
     std::vector<Gtk::ToggleButton *> _direction_buttons;
+
+    /** Compact option groups: one MenuButton showing the active icon. */
+    struct ModeMenu {
+        Gtk::MenuButton *button = nullptr;
+        std::vector<Gtk::ToggleButton *> options;
+    };
+    std::vector<ModeMenu> _mode_menus;
+    void update_mode_menu_icons();
+    void close_mode_menus();
 
     Gtk::ListBox &_font_collections_list;
     Gtk::Popover &_font_collections_popover;
