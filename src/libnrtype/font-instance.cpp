@@ -551,8 +551,8 @@ FontGlyph const *FontInstance::LoadGlyph(unsigned int glyph_id)
 
     // Any place that might be inked, including any text decoration.
     n_g->bbox_draw.setRight(n_g->h_advance);       // Advance
-    n_g->bbox_draw.setBottom(  _ascent_max * 1.1); // Expand to allow for text decoration
-    n_g->bbox_draw.setTop(   -_descent_max * 1.1);
+    n_g->bbox_draw.setBottom( std::max( _ascent_max,   _overline_position  + 3 * _overline_thickness)); // Expand to allow for text decoration
+    n_g->bbox_draw.setTop(    std::min(-_descent_max, -_underline_position - 3 * _underline_thickness));
     n_g->bbox_draw.unionWith(n_g->bbox_exact);     // Extend if glyph leaks outside of design space.
 
     // Find path vector ------------------------------

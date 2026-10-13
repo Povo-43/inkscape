@@ -236,7 +236,13 @@ Geom::OptRect Layout::bounds(Geom::Affine const &transform, bool with_stroke, in
         Geom::Affine total_transform = glyph_matrix;
         total_transform *= transform;
         if(glyph.span(this).font) {
-            Geom::OptRect glyph_rect = glyph.span(this).font->BBoxExact(glyph.glyph);
+            Geom::OptRect glyph_rect;
+            if (with_stroke) {
+                // Assume that 'with_stroke" means visual. This allows for text decorations.
+                glyph_rect = glyph.span(this).font->BBoxDraw(glyph.glyph);
+            } else {
+                glyph_rect = glyph.span(this).font->BBoxExact(glyph.glyph);
+            }
             if (glyph_rect) {
                 auto glyph_box = *glyph_rect * total_transform;
                 // FIXME: Expand rectangle by half stroke width, this doesn't include meters
