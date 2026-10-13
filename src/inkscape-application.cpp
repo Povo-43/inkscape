@@ -414,7 +414,7 @@ SPDesktop *InkscapeApplication::desktopOpen(SPDocument *document, bool new_windo
         win->present();
     }
 
-    document_fix(desktop); // May need flag to prevent this from being called more than once.
+    document_fix(desktop);
 
     return desktop;
 }
@@ -757,6 +757,7 @@ SPDesktop *InkscapeApplication::createDesktop(SPDocument *document, bool replace
 
     if (replace && old_document && desktop) {
         document_swap(desktop, document);
+        document_fix(desktop);
 
         // Delete old document if no longer attached to any window.
         auto it = _documents.find(old_document);
@@ -795,7 +796,6 @@ void InkscapeApplication::create_window(Glib::RefPtr<Gio::File> const &file)
             bool replace = old_document && old_document->getVirgin();
 
             desktop = createDesktop(document, replace);
-            document_fix(desktop);
         } else if (!cancelled) {
             std::cerr << "InkscapeApplication::create_window: Failed to load: "
                       << file->get_parse_name().raw() << std::endl;
@@ -929,9 +929,6 @@ void InkscapeApplication::process_document(SPDocument *document, std::string out
 
     if (_use_shell) {
         shell();
-    }
-    if (_with_gui && _active_window) {
-        document_fix(_active_desktop);
     }
     // Only if --export-filename, --export-type --export-overwrite, or --export-use-hints are used.
     if (_auto_export) {
