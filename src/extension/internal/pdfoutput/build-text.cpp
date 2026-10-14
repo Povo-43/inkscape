@@ -12,6 +12,8 @@
 
 #include "build-text.h"
 
+#include <2geom/circle.h>
+
 #include "build-drawing.h"
 #include "libnrtype/Layout-TNG.h"
 #include "libnrtype/font-instance.h"
@@ -47,7 +49,7 @@ std::optional<double> TextContext::get_softmask(double opacity) const
 }
 
 /**
- * Set the text/font style, these are comment between clipping and painting.
+ * Set the text/font style, these are common between clipping and painting.
  */
 bool TextContext::set_text_style(std::shared_ptr<FontInstance> const &font, SPStyle *style)
 {
@@ -315,6 +317,29 @@ void DrawContext::paint_text_layout(Text::Layout const &layout, SPStyle const *c
     paint_text_decoration(layout, context_style, false);
 }
 
+#if 0
+static void print_text_decoration(SPStyle* style)
+{
+    std::cout << "print_text_decoration: ";
+    if (style->text_decoration_line.underline)    std::cout << " underline";
+    if (style->text_decoration_line.line_through) std::cout << " line-through";
+    if (style->text_decoration_line.overline)     std::cout << " overline";
+
+    if (style->text_decoration_style.solid)    std::cout << " solid";
+    if (style->text_decoration_style.dotted)   std::cout << " dotted";
+    if (style->text_decoration_style.dashed)   std::cout << " dashed";
+    if (style->text_decoration_style.wavy)     std::cout << " wavy";
+    if (style->text_decoration_style.isdouble) std::cout << " double";
+    std::cout << std::endl;
+}
+#endif
+
+enum TD_POSITION {
+    UNDERLINE,
+    OVERLINE,
+    LINETHROUGH
+};
+
 // At the moment we paint span by span but eventually we will want to paint over multiple spans
 // together, breaking at lines. (To do so, we'll need to track span "level", that is how the span
 // corresponds to tspans which are wrapped by how many other tspans.)
@@ -330,7 +355,7 @@ void DrawContext::paint_text_decoration(Text::Layout const &layout, SPStyle cons
         return;
     }
 
-    StyleMemory paint_memory = _doc.paint_memory();
+    StyleMemory paint_memory = _doc.paint_memory(); // There is only one paint_memory.
 
     auto &input_stream = layout.input_stream();
     for (Layout::Span const &span : layout.spans()) {
@@ -390,45 +415,242 @@ void DrawContext::paint_text_decoration(Text::Layout const &layout, SPStyle cons
         auto overline_position      = font_size;
         auto overline_thickness     = font_size * style->text_decoration_data.underline_thickness;
 
+        // print_text_decoration(style);
+
         for (int i = 0; i < 3; ++i) {
+            auto y_mid = y;
             auto y_min = y;
             auto y_max = y;
-            if (i == 0) {
+            if (i == UNDERLINE) {
                 if (!under || !style->text_decoration_line.underline) continue;
+                y_mid -= underline_position;
                 y_min -= underline_position - underline_thickness/2.0;
                 y_max -= underline_position + underline_thickness/2.0;
+                paint_text_decoration_line(x_min, x_max, y_mid, y_min-y_max, style, context_style, UNDERLINE );
             }
-            if (i == 1) {
+            if (i == OVERLINE) {
                 if (!under || !style->text_decoration_line.overline) continue;
+                y_mid -= overline_position;
                 y_min -= overline_position - overline_thickness/2.0;
                 y_max -= overline_position + overline_thickness/2.0;
+                paint_text_decoration_line(x_min, x_max, y_mid, y_min-y_max, style, context_style, OVERLINE );
             }
-            if (i == 2) {
+            if (i == LINETHROUGH) {
                 if (under || !style->text_decoration_line.line_through) continue;
+                y_mid -= line_through_position;
                 y_min -= line_through_position - line_through_thickness/2.0;
                 y_max -= line_through_position + line_through_thickness/2.0;
-            }
-            Geom::Rect rect{x_min, y_min, x_max, y_max};
-            for (auto layer : get_paint_layers(style, context_style)) {
-                switch (layer) {
-                    case PAINT_FILLSTROKE:
-                        // set_shape_rectangle(rect);
-                        //  _ctx.cmd_b();
-                        break;
-                    case PAINT_FILL:
-                        set_shape_rectangle(rect);
-                        _ctx.cmd_f();
-                        break;
-                    case PAINT_STROKE:
-                        set_shape_rectangle(rect);
-                        _ctx.cmd_s();
-                        break;
-                    case PAINT_MARKERS:
-                        break; // NOT ALLOWED
-                }
+                paint_text_decoration_line(x_min, x_max, y_mid, y_min-y_max, style, context_style, LINETHROUGH );
             }
         }
     }
+}
+
+void DrawContext::paint_text_decoration_set_dashed_line(double const &x_min, double const &x_max,
+                                                        double const &y_mid, double const &y_width)
+{
+    auto unit = y_width * 8.0;
+    auto x_min_rounded = std::round(x_min / unit) * unit;
+    auto x_max_rounded = std::round(x_max / unit) * unit;
+    auto y = y_mid - y_width/2.0;
+
+    for (double x = x_min_rounded; x < x_max_rounded; x += unit) {
+        set_shape_rectangle(Geom::Rect::from_xywh(x, y, unit/2.0, y_width));
+    }
+}
+
+void DrawContext::paint_text_decoration_set_dotted_line(double const &x_min, double const &x_max,
+                                                        double const &y_mid, double const &y_width)
+{
+    auto unit = y_width * 4.0;
+    auto x_min_rounded = std::round(x_min / unit) * unit;
+    auto x_max_rounded = std::round(x_max / unit) * unit;
+
+    for (double x = x_min_rounded; x < x_max_rounded; x += unit) {
+        auto path = Geom::Path(Geom::Circle(x + unit/2.0, y_mid, y_width / 1.5 )); // Circle centered in gap.
+        set_shape_pathvector(path);
+    }
+}
+
+void DrawContext::paint_text_decoration_set_wavy_line(double const &x_min, double const &x_max,
+                                                      double const &y_mid, double const &y_width)
+{
+    // We approximate a sine wave, drawing the outline so we can both fill and stroke.
+    auto unit = y_width * 4.0;
+    int i_min = std::round(x_min / unit);
+    int i_max = std::round(x_max / unit);
+    double x = i_min * unit;
+
+    int i = i_min;
+
+    // Start
+    if (!(i % 2)) {
+        _ctx.cmd_m(x, y_mid - 0.5 * y_width);
+    } else {
+        _ctx.cmd_m(x, y_mid + 1.5 * y_width);
+    }
+
+    // Left to right.
+    for (   ; i < i_max; ++i) {
+        if (!(i % 2)) {
+            _ctx.cmd_c(x + 1.7 * y_width, y_mid - 0.5 * y_width,
+                       x + 1.7 * y_width, y_mid + 1.5 * y_width,
+                       x + 4.0 * y_width, y_mid + 1.5 * y_width);
+        } else {
+            _ctx.cmd_c(x + 2.3 * y_width, y_mid + 1.5 * y_width,
+                       x + 2.3 * y_width, y_mid - 0.5 * y_width,
+                       x + 4.0 * y_width, y_mid - 0.5 * y_width);
+        }
+        x += unit;
+    }
+
+    // Vertical line
+    if (!(i % 2)) {
+        _ctx.cmd_l(x, y_mid - 1.5 * y_width);
+    } else {
+        _ctx.cmd_l(x, y_mid + 0.5 * y_width);
+    }
+
+    // Right to left.
+    for ( ; i > i_min; --i) {
+        if (!(i % 2)) {
+            _ctx.cmd_c(x -2.3 * y_width, y_mid - 1.5 * y_width,
+                       x -2.3 * y_width, y_mid + 0.5 * y_width,
+                       x -4.0 * y_width, y_mid + 0.5 * y_width);
+        } else {
+            _ctx.cmd_c(x -1.7 * y_width, y_mid + 0.5 * y_width,
+                       x -1.7 * y_width, y_mid - 1.5 * y_width,
+                       x -4.0 * y_width, y_mid - 1.5 * y_width);
+        }
+        x -= (unit);
+    }
+
+    // Close
+    _ctx.cmd_h();
+}
+
+void DrawContext::paint_text_decoration_line(double const &x_min, double const &x_max, double const &y_mid, double const &y_width,
+                                             SPStyle const *style, SPStyle const *context_style, int position) {
+    _ctx.cmd_q();
+    if (style->text_decoration_style.solid) {
+        Geom::Rect rect{x_min, y_mid-y_width/2.0, x_max, y_mid+y_width/2.0};
+        for (auto layer : get_paint_layers(style, context_style)) {
+            switch (layer) {
+                case PAINT_FILLSTROKE:
+                    // set_shape_rectangle(rect);
+                    //  _ctx.cmd_b();
+                    break;
+                case PAINT_FILL:
+                    set_shape_rectangle(rect);
+                    _ctx.cmd_f();
+                    break;
+                case PAINT_STROKE:
+                    set_shape_rectangle(rect);
+                    _ctx.cmd_s();
+                    break;
+                case PAINT_MARKERS:
+                    break; // NOT ALLOWED
+            }
+        }
+    }
+
+    if (style->text_decoration_style.isdouble) {
+        Geom::Rect rect1{x_min, y_mid-y_width/2.0, x_max, y_mid-3*y_width/2.0};
+        Geom::Rect rect2{x_min, y_mid+y_width/2.0, x_max, y_mid+3*y_width/2.0};
+        if (position == UNDERLINE) { // under: move down.
+            rect1 += Geom::Point(0, y_width);
+            rect2 += Geom::Point(0, y_width);
+        }
+        if (position == OVERLINE) { // over: move up.
+            rect1 -= Geom::Point(0, y_width);
+            rect2 -= Geom::Point(0, y_width);
+        }
+        for (auto layer : get_paint_layers(style, context_style)) {
+            switch (layer) {
+                case PAINT_FILLSTROKE:
+                    // set_shape_rectangle(rect);
+                    //  _ctx.cmd_b();
+                    break;
+                case PAINT_FILL:
+                    set_shape_rectangle(rect1);
+                    set_shape_rectangle(rect2);
+                    _ctx.cmd_f();
+                    break;
+                case PAINT_STROKE:
+                    set_shape_rectangle(rect1);
+                    set_shape_rectangle(rect2);
+                    _ctx.cmd_s();
+                    break;
+                case PAINT_MARKERS:
+                    break; // NOT ALLOWED
+            }
+        }
+    }
+
+    if (style->text_decoration_style.dashed) {
+        for (auto layer : get_paint_layers(style, context_style)) {
+            switch (layer) {
+                case PAINT_FILLSTROKE:
+                    // set_shape_rectangle(rect);
+                    //  _ctx.cmd_b();
+                    break;
+                case PAINT_FILL:
+                    paint_text_decoration_set_dashed_line(x_min, x_max, y_mid, y_width);
+                    _ctx.cmd_f();
+                    break;
+                case PAINT_STROKE:
+                    paint_text_decoration_set_dashed_line(x_min, x_max, y_mid, y_width);
+                    _ctx.cmd_s();
+                    break;
+                case PAINT_MARKERS:
+                    break; // NOT ALLOWED
+            }
+        }
+    }
+
+    if (style->text_decoration_style.dotted) {
+        for (auto layer : get_paint_layers(style, context_style)) {
+            switch (layer) {
+                case PAINT_FILLSTROKE:
+                    // set_shape_rectangle(rect);
+                    //  _ctx.cmd_b();
+                    break;
+                case PAINT_FILL:
+                    paint_text_decoration_set_dotted_line(x_min, x_max, y_mid, y_width);
+                    _ctx.cmd_f();
+                    break;
+                case PAINT_STROKE:
+                    paint_text_decoration_set_dotted_line(x_min, x_max, y_mid, y_width);
+                    _ctx.cmd_s();
+                    break;
+                case PAINT_MARKERS:
+                    break; // NOT ALLOWED
+            }
+        }
+    }
+
+    if (style->text_decoration_style.wavy) {
+        for (auto layer : get_paint_layers(style, context_style)) {
+            switch (layer) {
+                case PAINT_FILLSTROKE:
+                    // set_shape_rectangle(rect);
+                    //  _ctx.cmd_b();
+                    break;
+                case PAINT_FILL:
+                    paint_text_decoration_set_wavy_line(x_min, x_max, y_mid, y_width);
+                    _ctx.cmd_f();
+                    break;
+                case PAINT_STROKE:
+                    paint_text_decoration_set_wavy_line(x_min, x_max, y_mid, y_width);
+                    _ctx.cmd_s();
+                    break;
+                case PAINT_MARKERS:
+                    break; // NOT ALLOWED
+            }
+        }
+    }
+
+    _ctx.cmd_Q();
 }
 
 } // namespace Inkscape::Extension::Internal::PdfBuilder
