@@ -555,7 +555,6 @@ protected:
         UI::Widget::PrefSpinButton      _grids_axonom_empspacing;
 
     // SVG Output page:
-    UI::Widget::PrefCheckButton   _svgoutput_usenamedcolors;
     UI::Widget::PrefCheckButton   _svgoutput_usesodipodiabsref;
     UI::Widget::PrefSpinButton    _svgoutput_numericprecision;
     UI::Widget::PrefSpinButton    _svgoutput_minimumexponent;

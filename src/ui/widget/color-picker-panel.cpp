@@ -236,6 +236,7 @@ ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type initial_space, PlateType 
 }
 
 void ColorPickerPanelImpl::set_desktop(SPDesktop* dekstop) {
+    _cms_space_changed.disconnect();
     _desktop = dekstop;
 }
 void ColorPickerPanelImpl::set_document(SPDocument* doc) {
