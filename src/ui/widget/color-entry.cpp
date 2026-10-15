@@ -29,14 +29,11 @@ ColorEntry::ColorEntry(std::shared_ptr<Colors::ColorSet> colors)
 
     _color_changed_connection = _colors->signal_changed.connect(sigc::mem_fun(*this, &ColorEntry::_onColorChanged));
     signal_activate().connect(sigc::mem_fun(*this, &ColorEntry::_onColorChanged));
-    set_icon_from_icon_name("visible", IconPosition::SECONDARY);
     set_icon_tooltip_text(_("Show color in RGBA hex format or its real value."));
     signal_icon_press().connect([this](Gtk::Entry::IconPosition) {
         _show_real = !_show_real;
-        set_icon_from_icon_name(_show_real ? "visible" : "hidden", IconPosition::SECONDARY);
         _onColorChanged();
     });
-
     _onColorChanged();
 
     set_tooltip_text(_("Value of the color in the stored color space."));
@@ -69,6 +66,8 @@ void ColorEntry::on_changed()
 
 void ColorEntry::_onColorChanged()
 {
+    static auto rgb = Colors::Manager::get().find(Colors::Space::Type::RGB);
+
     if (_updating_color) {
         return;
     }
@@ -79,8 +78,15 @@ void ColorEntry::_onColorChanged()
     }
 
     auto color = _colors->getAverage();
+
+    // Hide icon if space is already RGB, BEFORE converting to rgb
+    if (color.getSpace() == rgb) {
+        unset_icon(IconPosition::SECONDARY);
+    } else {
+        set_icon_from_icon_name(_show_real ? "object-visible" : "object-hidden", IconPosition::SECONDARY);
+    }
+
     if (!_show_real) {
-        static auto rgb = Colors::Manager::get().find(Colors::Space::Type::RGB);
         color = *color.converted(rgb);
     }
     if (Colors::out_of_gamut(color, color.getSpace())) {

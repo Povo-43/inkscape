@@ -130,8 +130,7 @@ public:
     // frame for RGB edit box
     Gtk::Box _frame;
     ColorPreview _preview;
-    ColorEntry _rgb_edit;
-    Gtk::Image _warning;
+    ColorEntry _color_edit;
     //todo: let user choose display/input format of ColorEntry
     // Gtk::MenuButton _display_choices;
     // color type space selector
@@ -155,7 +154,7 @@ std::unique_ptr<ColorPickerPanel> ColorPickerPanel::create(Space::Type initial_s
 }
 
 ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type initial_space, PlateType type, std::shared_ptr<ColorSet> color, bool with_expander):
-    _rgb_edit(color),
+    _color_edit(color),
     _with_expander(with_expander),
     _space(Colors::Manager::get().find(initial_space)),
     _color_set(color),
@@ -205,19 +204,12 @@ ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type initial_space, PlateType 
     _preview.set_halign(Gtk::Align::START);
     _preview.set_valign(Gtk::Align::CENTER);
     _frame.append(_preview);
-    _rgb_edit.set_hexpand();
-    _rgb_edit.set_has_frame(false);
-    _rgb_edit.set_alignment(Gtk::Align::CENTER);
-    _rgb_edit.add_css_class("small-entry");
-    _rgb_edit.get_out_of_gamut_signal().connect([this](auto& msg) {
-        _warning.set_opacity(msg.empty() ? 0 : 1);
-        _warning.set_tooltip_text(msg);
-    });
-    _warning.set_from_icon_name("warning");
-    _warning.set_margin_end(3);
-    _warning.set_opacity(0);
-    _frame.append(_rgb_edit);
-    _frame.append(_warning);
+    _color_edit.set_hexpand();
+    _color_edit.set_has_frame(false);
+    _color_edit.set_alignment(Gtk::Align::CENTER);
+    _color_edit.add_css_class("small-entry");
+    _color_edit.set_margin_end(4);
+    _frame.append(_color_edit);
 
     // color space type selector
     _spaces.set_halign(Gtk::Align::END);
