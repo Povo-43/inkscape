@@ -166,15 +166,14 @@ Gtk::Widget *ParamFloat::get_widget(sigc::signal<void ()> *changeSignal)
     auto fadjust = ParamFloatAdjustment::create(this, changeSignal);
 
     if (_mode == FULL) {
-
-        Glib::ustring text;
-        if (_text != nullptr)
-            text = _text;
         auto const scale = Gtk::make_managed<UI::Widget::SpinScale>();
         scale->set_adjustment(fadjust);
         scale->set_digits(_precision);
         scale->set_size_request(400, -1);
         scale->set_visible(true);
+        if (_text) {
+            scale->set_label(_text);
+        }
         UI::pack_start(*hbox, *scale, true, true);
 
     }

@@ -11,6 +11,8 @@
 #define SEEN_UI_WIDGET_SPIN_SCALE_H
 
 #include <gtkmm/box.h>
+#include <gtkmm/label.h>
+#include <gtkmm/overlay.h>
 
 #include "svg/css-ostringstream.h"
 
@@ -70,10 +72,16 @@ public:
         return os.str();
     }
 
+    void set_label(std::string const &text)
+    {
+        _label.set_label(text);
+    }
+
     void set_icon(std::string path, std::string tooltip)
     {
         _icon.set_from_icon_name(INKSCAPE_ICON(path));
         _icon.set_tooltip_text(tooltip);
+        _icon.set_visible(true);
     }
 
 private:
@@ -89,19 +97,30 @@ private:
         _spin.set_halign(Gtk::Align::END);
         _spin.set_has_frame(false);
 
-        _scale.set_valign(Gtk::Align::FILL);
-        _scale.set_margin_end(2);
-        _scale.set_margin_start(5);
-        _scale.set_hexpand();
         _scale.set_adjustment(get_adjustment()); 
 
+        _label.set_halign(Gtk::Align::START);
+        _label.set_valign(Gtk::Align::CENTER);
+        _label.set_margin_start(5);
+        _label.set_can_target(false);
+
+        _overlay.set_valign(Gtk::Align::FILL);
+        _overlay.set_hexpand();
+        _overlay.set_margin_end(2);
+        _overlay.set_margin_start(5);
+        _overlay.set_child(_scale);
+        _overlay.add_overlay(_label);
+
         _icon.set_margin_start(12);
+        _icon.set_visible(false);
 
         append(_icon);
-        append(_scale);
+        append(_overlay);
         append(_spin);
     }
 
+    Gtk::Label _label;
+    Gtk::Overlay _overlay;
     ScaleBar _scale;
     InkSpinButton _spin;
     Gtk::Image _icon;
