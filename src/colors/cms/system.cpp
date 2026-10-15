@@ -42,13 +42,29 @@ System::System()
     });
 }
 
+void System::ensureProfiles() const
+{
+    if (_profiles.empty()) {
+        loadProfiles();
+
+        // TODO: Add watchers here to refresh on directory changes
+    }
+}
+
 /**
  * Search for system ICC profile files and add them to list.
  */
-void System::refreshProfiles()
+void System::refreshProfiles() const
 {
     _profiles.clear(); // Allows us to refresh list if necessary.
+    loadProfiles();
+}
 
+/**
+ * Load the profiles cache
+ */
+void System::loadProfiles() const
+{
     // Get list of all possible file directories, with flag if they are "home" directories or not.
     // Look for icc files in specified directories.
     for (auto const &directory_path : getDirectoryPaths()) {
@@ -128,7 +144,7 @@ static DirPaths get_directory_paths()
 /**
  * Create list of all directories where ICC profiles are expected to be found.
  */
-DirPaths const &System::getDirectoryPaths()
+DirPaths const &System::getDirectoryPaths() const
 {
     if (_paths.empty()) {
         _paths = get_directory_paths();
@@ -141,6 +157,7 @@ DirPaths const &System::getDirectoryPaths()
  */
 void System::clearDirectoryPaths()
 {
+    _profiles.clear(); // Reset cache
     _paths.clear();
 }
 
@@ -149,6 +166,7 @@ void System::clearDirectoryPaths()
  */
 void System::addDirectoryPath(std::string path, bool is_user)
 {
+    _profiles.clear(); // Reset cache
     _paths.emplace_back(std::move(path), is_user);
 }
 
@@ -157,6 +175,8 @@ void System::addDirectoryPath(std::string path, bool is_user)
  */
 std::vector<std::shared_ptr<Profile>> System::getProfiles() const
 {
+    ensureProfiles();
+
     auto result = _profiles; // copy
     std::sort(result.begin(), result.end(), Profile::sortByName);
     return result;
@@ -187,6 +207,8 @@ const std::shared_ptr<Profile> &System::getDisplayProfile(bool &updated)
  */
 std::vector<std::shared_ptr<Profile>> System::getDisplayProfiles() const
 {
+    ensureProfiles();
+
     std::vector<std::shared_ptr<Profile>> result;
     result.reserve(_profiles.size());
 
@@ -204,6 +226,8 @@ std::vector<std::shared_ptr<Profile>> System::getDisplayProfiles() const
  */
 std::vector<std::shared_ptr<Profile>> System::getOutputProfiles() const
 {
+    ensureProfiles();
+
     std::vector<std::shared_ptr<Profile>> result;
     result.reserve(_profiles.size());
 
@@ -226,6 +250,8 @@ std::vector<std::shared_ptr<Profile>> System::getOutputProfiles() const
  */
 const std::shared_ptr<Profile> &System::getProfile(std::string const &name) const
 {
+    ensureProfiles();
+
     for (auto const &profile : _profiles) {
         if (name == profile->getName() || name == profile->getId() || name == profile->getPath()) {
             return profile;

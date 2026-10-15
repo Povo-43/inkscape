@@ -1612,25 +1612,35 @@ void SPIColorInterpolation::read(gchar const *str)
         Glib::ustring unquoted_str = str;
         // Required for profile name containing a period (e.g., "CASIO-COMPUTER-CO.-LTD")
         css_unquote(unquoted_str);
-
-        if (canHaveCMS()) {
-            _color_space = getCMS().findSvgColorSpace(unquoted_str.c_str());
-        } else {
-            _color_space = Colors::Manager::get().findSvgColorSpace(unquoted_str.c_str());
-        }
+        _value = unquoted_str;
+        _color_space_cache.reset();
     }
 }
 
-const Glib::ustring SPIColorInterpolation::get_value() const
+std::shared_ptr<Inkscape::Colors::Space::AnySpace> const SPIColorInterpolation::getInterpolationSpace() const
 {
-    return _color_space ? _color_space->getSvgName() : "";
+    if (!_color_space_cache) {
+        if (canHaveCMS()) {
+            _color_space_cache = getCMS().findSvgColorSpace(_value);
+        } else {
+            _color_space_cache = Colors::Manager::get().findSvgColorSpace(_value);
+        }
+    }
+    return _color_space_cache;
+}
+
+void SPIColorInterpolation::setInterpolationSpace(std::shared_ptr<Inkscape::Colors::Space::AnySpace> space)
+{
+    _color_space_cache = space;
+    _value = space ? space->getSvgName() : "";
 }
 
 void SPIColorInterpolation::cascade(const SPIBase* const parent)
 {
     if(auto p = dynamic_cast<const SPIColorInterpolation*>(parent)) {
         if(!set || inherit) {
-            _color_space = p->_color_space;
+            _value = p->_value;
+            _color_space_cache.reset();
         }
     }
 }
@@ -1640,7 +1650,8 @@ void SPIColorInterpolation::merge(const SPIBase* const parent)
     if(auto p = dynamic_cast<const SPIColorInterpolation*>(parent)) {
         set           = p->set;
         inherit       = p->inherit;
-        _color_space  = p->_color_space;
+        _value        = p->_value;
+        _color_space_cache.reset();
     }
 }
 

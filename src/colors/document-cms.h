@@ -82,10 +82,12 @@ public:
 
     std::shared_ptr<Space::AnySpace> findSvgColorSpace(std::string const &input) const;
 
-    std::shared_ptr<Inkscape::Colors::Space::AnySpace> getDocumentColorSpace() const;
-    bool setDocumentColorSpace(std::shared_ptr<Inkscape::Colors::Space::AnySpace> const &space);
+    std::shared_ptr<Space::AnySpace> getDocumentColorSpace() const;
+    bool setDocumentColorSpace(std::shared_ptr<Space::AnySpace> const &space);
+    std::shared_ptr<Space::AnySpace> mapToStorageFormat(std::shared_ptr<Space::AnySpace> const &input) const;
 private:
     void refreshResources();
+    void invalidateCaches();
 
     SPDocument *_document = nullptr;
     std::vector<std::shared_ptr<ColorProfileLink>> _links;
@@ -94,6 +96,11 @@ private:
     sigc::signal<void()> _changed_signal;
 
     mutable std::map<std::string, std::shared_ptr<Space::CMS>> _spaces;
+
+    sigc::scoped_connection _document_space_watcher;
+    mutable std::shared_ptr<Space::AnySpace> _document_space;
+    mutable std::map<int, std::shared_ptr<Space::AnySpace>> _storage_map_cache;
+
 
 protected:
     friend class ColorProfileLink;

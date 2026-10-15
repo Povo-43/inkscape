@@ -807,21 +807,22 @@ public:
     SPIColorInterpolation(const SPIColorInterpolation &rhs) = default;
 
     void read( gchar const *str ) override;
-    const Glib::ustring get_value() const override;
+    const Glib::ustring get_value() const override { return _value; }
     void clear() override {
         SPIBase::clear();
-        _color_space.reset();
+        _color_space_cache.reset();
     }
     void cascade( const SPIBase* const parent ) override;
     void merge(   const SPIBase* const parent ) override;
 
-    std::shared_ptr<Inkscape::Colors::Space::AnySpace> const getInterpolationSpace() const { return _color_space; }
-    void setInterpolationSpace(std::shared_ptr<Inkscape::Colors::Space::AnySpace> space) { _color_space = space; }
+    std::shared_ptr<Inkscape::Colors::Space::AnySpace> const getInterpolationSpace() const;
+    void setInterpolationSpace(std::shared_ptr<Inkscape::Colors::Space::AnySpace> space);
 
     bool canHaveCMS() const;
     Inkscape::Colors::DocumentCMS const &getCMS() const;
 private:
-    std::shared_ptr<Inkscape::Colors::Space::AnySpace> _color_space;
+    std::string _value;
+    mutable std::shared_ptr<Inkscape::Colors::Space::AnySpace> _color_space_cache;
 };
 
 // Normal maybe should be moved out as is done in other classes.

@@ -41,7 +41,6 @@ protected:
         auto &cms = Inkscape::Colors::CMS::System::get();
         cms.clearDirectoryPaths();
         cms.addDirectoryPath(icc_dir, false);
-        cms.refreshProfiles();
 
         // Load the test svg file with a bunch of icc profiles
         doc = SPDocument::createNewDoc(getDocFilename().c_str());
@@ -292,6 +291,14 @@ TEST_F(ColorDocumentCMSObjsTest, findSvgAttribute)
     EXPECT_TRUE(tr.findSvgColorSpace("linearRGB"));
 }
 
+TEST_F(ColorDocumentCMSObjsTest, getDocumentColorSpace)
+{
+    auto &tr = doc->getDocumentCMS();
+
+    auto space = tr.getDocumentColorSpace();
+    EXPECT_EQ(space->getName(), "cmyk-acm");
+}
+
 class ColorDocumentCMSDefsTest : public ColorDocumentCMSObjsTest
 {
     std::string const &getDocFilename() const override
@@ -330,6 +337,14 @@ TEST_F(ColorDocumentCMSDefsTest, loadDocument)
     EXPECT_NEAR(color[1], 0, 0.01);
     EXPECT_NEAR(color[2], 0, 0.01);
     EXPECT_NEAR(color[3], 1, 0.01);
+}
+
+TEST_F(ColorDocumentCMSDefsTest, getDocumentColorSpace)
+{
+    auto &tr = doc->getDocumentCMS();
+
+    auto space = tr.getDocumentColorSpace();
+    EXPECT_EQ(space->getName(), "RGB");
 }
 
 } // namespace

@@ -611,8 +611,7 @@ void DocumentProperties::populate_available_profiles(){
     bool home = true; // initial value doesn't matter, it's just to avoid a compiler warning
     bool first = true;
     auto &cms_system = Inkscape::Colors::CMS::System::get();
-    cms_system.refreshProfiles();
-    for (auto const &profile: cms_system.getProfiles()) {
+    for (auto const &profile: cms_system.getOutputProfiles()) {
         Gtk::TreeModel::Row row;
 
         // add a separator between profiles from the user's home directory and system profiles
