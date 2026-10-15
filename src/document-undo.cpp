@@ -107,6 +107,13 @@ void Inkscape::DocumentUndo::done(SPDocument *doc,
     }
 }
 
+void Inkscape::DocumentUndo::maybeDone(SPDocument *doc, gchar const *keyconst,
+                                       Inkscape::Util::Internal::ContextString event_description,
+                                       Glib::ustring const &icon_name, unsigned int object_modified_tag)
+{
+    maybeDoneInternal(doc, keyconst, event_description, icon_name, object_modified_tag);
+}
+
 void Inkscape::DocumentUndo::resetKey( SPDocument *doc )
 {
     doc->actionkey.clear();
@@ -153,11 +160,9 @@ public:
 
 // 'key' is used to coalesce changes of the same type.
 // 'event_description' and 'icon_name' are used in the Undo History dialog.
-void Inkscape::DocumentUndo::maybeDone(SPDocument *doc,
-                                       const gchar *key,
-                                       ContextString event_description,
-                                       Glib::ustring const &icon_name,
-                                       unsigned int object_modified_tag)
+void Inkscape::DocumentUndo::maybeDoneInternal(SPDocument *doc, gchar const *key, ContextString event_description,
+                                               Glib::ustring const &icon_name, unsigned int object_modified_tag,
+                                               bool temporary)
 {
 	g_assert (doc != nullptr);
     g_assert (doc->sensitive);
@@ -178,7 +183,9 @@ void Inkscape::DocumentUndo::maybeDone(SPDocument *doc,
     doc->collectOrphans();
     doc->ensureUpToDate(object_modified_tag);
 
-    DocumentUndo::clearRedo(doc);
+    if (!temporary) {
+        DocumentUndo::clearRedo(doc);
+    }
 
     Inkscape::XML::Event *log = sp_repr_coalesce_log (doc->partial, sp_repr_commit_undoable (doc->rdoc));
     doc->partial = nullptr;
@@ -194,7 +201,9 @@ void Inkscape::DocumentUndo::maybeDone(SPDocument *doc,
     } else {
         Inkscape::Event *event = new Inkscape::Event(log, event_description.c_str(), icon_name);
         doc->undo.push_back(event);
-        doc->undoStackObservers.notifyUndoCommitEvent(event);
+        if (!temporary) {
+            doc->undoStackObservers.notifyUndoCommitEvent(event);
+        }
     }
 
     if (key) {
@@ -230,11 +239,10 @@ void Inkscape::DocumentUndo::cancel(SPDocument *doc)
 {
     g_assert (doc != nullptr);
     g_assert (doc->sensitive);
-    done(doc, ContextString("undozone"), "");
+    maybeDoneInternal(doc, nullptr, ContextString("undozone"), "", 0, true);
     // ensure there is something to undo (extension crash can do nothing)
     if (!doc->undo.empty() && doc->undo.back()->description == "undozone") {
-        undo(doc);
-        clearRedo(doc);
+        undoInternal(doc, true);
     }
 }
 
@@ -276,7 +284,7 @@ void Inkscape::DocumentUndo::perform_document_update(SPDocument &doc) {
     }
 }
 
-gboolean Inkscape::DocumentUndo::undo(SPDocument *doc)
+gboolean Inkscape::DocumentUndo::undoInternal(SPDocument *doc, bool temporary)
 {
     using Inkscape::Debug::EventTracker;
     using Inkscape::Debug::SimpleEvent;
@@ -298,9 +306,11 @@ gboolean Inkscape::DocumentUndo::undo(SPDocument *doc)
         doc->undo.pop_back();
         sp_repr_undo_log (log->event);
         perform_document_update(*doc);
-        doc->redo.push_back(log);
-        doc->setModifiedSinceSave();
-        doc->undoStackObservers.notifyUndoEvent(log);
+        if (!temporary) {
+            doc->redo.push_back(log);
+            doc->setModifiedSinceSave();
+            doc->undoStackObservers.notifyUndoEvent(log);
+        }
         ret = TRUE;
     } else {
 	    ret = FALSE;
@@ -311,6 +321,11 @@ gboolean Inkscape::DocumentUndo::undo(SPDocument *doc)
     doc->sensitive = TRUE;
     doc->seeking = false;
     return ret;
+}
+
+gboolean Inkscape::DocumentUndo::undo(SPDocument *doc)
+{
+    return DocumentUndo::undoInternal(doc);
 }
 
 gboolean Inkscape::DocumentUndo::redo(SPDocument *doc)

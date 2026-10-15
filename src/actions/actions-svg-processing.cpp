@@ -338,9 +338,9 @@ void remove_marker_context_paint(Inkscape::XML::Node *repr, Inkscape::XML::Node 
 /*
  * Recursively insert SVG 1.1 fallback for SVG 2 text (ignored by SVG 2 renderers including ours).
  * Notes:
- *   Text must have been layed out. Access via old document.
+ *   Text must have been layed out.
  */
-void insert_text_fallback(Inkscape::XML::Node *repr, const SPDocument *original_doc, Inkscape::XML::Node *defs)
+void insert_text_fallback(Inkscape::XML::Node *repr, SPDocument const *doc, Inkscape::XML::Node *defs)
 {
     if (repr) {
 
@@ -349,8 +349,8 @@ void insert_text_fallback(Inkscape::XML::Node *repr, const SPDocument *original_
             auto id = repr->attribute("id");
             // std::cout << "insert_text_fallback: found text!  id: " << (id?id:"null") << std::endl;
 
-            // We need to get original SPText object to access layout.
-            SPText* text = static_cast<SPText *>(original_doc->getObjectById( id ));
+            // We need to get the SPText object to access layout.
+            SPText *text = static_cast<SPText *>(doc->getObjectById(id));
             if (text == nullptr) {
                 std::cerr << "insert_text_fallback: bad cast" << std::endl;
                 return;
@@ -369,7 +369,6 @@ void insert_text_fallback(Inkscape::XML::Node *repr, const SPDocument *original_
             text->rebuildLayout();
 
             // For text in a shape, We need to unset 'text-anchor' or SVG 1.1 fallback won't work.
-            // Note 'text' here refers to original document while 'repr' refers to new document copy.
             if (text->has_shape_inside()) {
                 SPCSSAttr *css = sp_repr_css_attr(repr, "style" );
                 sp_repr_css_unset_property(css, "text-anchor");
@@ -553,12 +552,12 @@ void insert_text_fallback(Inkscape::XML::Node *repr, const SPDocument *original_
                 repr->removeChild (i);
             }
 
-	    text->setHidden(was_hidden);
+            text->setHidden(was_hidden);
             return; // No need to look at children of <text>
         }
 
         for (auto child = repr->firstChild(); child; child = child->next() ) {
-            insert_text_fallback (child, original_doc, defs);
+            insert_text_fallback(child, doc, defs);
         }
     }
 }
@@ -752,7 +751,7 @@ void add_actions_processing(SPDocument* doc)
     });
 
     group->add_action("remove-marker-context-paint",  [doc]() { remove_marker_context_paint(doc->getReprRoot(), doc->getDefs()->getRepr()); });
-    group->add_action("insert-text-fallback",         [doc]() { insert_text_fallback(doc->getReprRoot(), doc->getOriginalDocument()); });
+    group->add_action("insert-text-fallback",         [doc]() { insert_text_fallback(doc->getReprRoot(), doc); });
     group->add_action("insert-mesh-polyfill",         [doc]() { insert_mesh_polyfill(doc->getReprRoot()); });
     group->add_action("insert-hatch-polyfill",        [doc]() { insert_hatch_polyfill(doc->getReprRoot()); });
     group->add_action("all-clones-to-objects",        [doc]() {

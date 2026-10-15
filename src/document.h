@@ -150,7 +150,6 @@ public:
     // Document status --------------------
     void setVirgin(bool Virgin) { virgin = Virgin; }
     bool getVirgin() { return virgin; }
-    const SPDocument *getOriginalDocument() const { return _original_document; }
 
     bool isModifiedSinceSave() const { return modified_since_save; }
     bool isModifiedSinceAutoSave() const { return modified_since_autosave; }
@@ -416,8 +415,6 @@ private:
     std::vector<std::unique_ptr<SPDocument>> _child_documents;
     // Conversely this is a parent document because this is a child.
     SPDocument *_parent_document = nullptr;
-    // When copying documents, this can refer to its original
-    SPDocument const *_original_document = nullptr;
     // Reference document to fall back to when getObjectById cannot find element in '*this' document
     SPDocument *_ref_document = nullptr;
 
