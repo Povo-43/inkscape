@@ -24,7 +24,6 @@ public:
     Pref<int>    numthreads               = { "/options/threading/numthreads", 0, 1, 256 };
 
     // Colour management
-    Pref<bool>   use_user_profile         = { "/options/displayprofile/use_user_profile" };
     Pref<void>   displayprofile           = { "/options/displayprofile" };
     Pref<void>   softproof                = { "/options/softproof" };
 

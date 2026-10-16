@@ -70,7 +70,6 @@
 #include "io/resource.h"
 #include "object/box3d-side.h"
 #include "object/box3d.h"
-#include "libnrtype/font-instance.h"
 #include "path-prefix.h"
 #include "selcue.h"
 #include "selection-chemistry.h"
@@ -2495,101 +2494,8 @@ void InkscapePreferences::initPageIO()
 
     this->AddPage(_page_svgexport, _("SVG export"), iter_io, PREFS_PAGE_IO_SVGEXPORT);
 
-
-    // CMS options
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    /* TRANSLATORS: see http://www.newsandtech.com/issues/2004/03-04/pt/03-04_rendering.htm */
-    Glib::ustring const intentLabels[] = {_("Perceptual"), _("Relative Colorimetric"),
-                                          _("Saturation"), _("Absolute Colorimetric")};
-    int const intentValues[] = {0, 1, 2, 3};
-
-    _page_cms.add_group_header( _("Display adjustment"));
-
-    Glib::ustring tmpStr;
-    for (auto const &path : Inkscape::Colors::CMS::System::get().getDirectoryPaths()) {
-        tmpStr += "\n";
-        tmpStr += path.first;
-    }
-
-    gchar* profileTip = g_strdup_printf(_("The ICC profile to use to calibrate display output.\nSearched directories:%s"), tmpStr.c_str());
-    _page_cms.add_line( true, _("User monitor profile:"), _cms_display_profile, "",
-                        profileTip, false);
-    g_free(profileTip);
-    profileTip = nullptr;
-
-    _cms_from_user.init( _("Use profile from user"), "/options/displayprofile/use_user_profile", false);
-    _page_cms.add_line( true, "", _cms_from_user, "",
-                        _("Use a user-specified ICC profile for monitor color correction. Warning: System wide color correction should be disabled."), false);
-
-    _cms_intent.init("/options/displayprofile/intent", intentLabels, intentValues, 0);
-    _page_cms.add_line( true, _("Display rendering intent:"), _cms_intent, "",
-                        _("The rendering intent to use to calibrate display output"), false);
-
-    _page_cms.add_group_header( _("Proofing"));
-
-    _cms_softproof.init( _("Simulate output on screen"), "/options/softproof/enable", false);
-    _page_cms.add_line( true, "", _cms_softproof, "",
-                        _("Simulates output of target device"), false);
-
-    _cms_gamutwarn.init( _("Mark out of gamut colors"), "/options/softproof/gamutwarn", false);
-    _page_cms.add_line( true, "", _cms_gamutwarn, "",
-                        _("Highlights colors that are out of gamut for the target device"), false);
-
-    Glib::ustring colorStr = prefs->getString("/options/softproof/gamutcolor");
-
-    Gdk::RGBA tmpColor( colorStr.empty() ? "#00ff00" : colorStr);
-    _cms_gamutcolor.set_rgba( tmpColor );
-
-    _page_cms.add_line( true, _("Out of gamut warning color:"), _cms_gamutcolor, "",
-                        _("Selects the color used for out of gamut warning"), false);
-
-    _page_cms.add_line( true, _("Device profile:"), _cms_proof_profile, "",
-                        _("The ICC profile to use to simulate device output"), false);
-
-    _cms_proof_intent.init("/options/softproof/intent", intentLabels, intentValues, 0);
-    _page_cms.add_line( true, _("Device rendering intent:"), _cms_proof_intent, "",
-                        _("The rendering intent to use to calibrate device output"), false);
-
-    _cms_proof_blackpoint.init( _("Black point compensation"), "/options/softproof/bpc", false);
-    _page_cms.add_line( true, "", _cms_proof_blackpoint, "",
-                        _("Enables black point compensation"), false);
-
-    {
-        auto &cms_system = Inkscape::Colors::CMS::System::get();
-        std::string current = prefs->getString( "/options/displayprofile/uri" );
-        gint index = 0;
-        _cms_display_profile.append(_("<none>"));
-        index++;
-        for (auto profile : cms_system.getDisplayProfiles()) {
-            _cms_display_profile.append(profile->getName());
-            if (profile->getPath() == current) {
-                _cms_display_profile.set_active(index);
-            }
-            index++;
-        }
-        if ( current.empty() ) {
-            _cms_display_profile.set_active(0);
-        }
-
-        current = prefs->getString("/options/softproof/uri");
-        index = 0;
-        for (auto profile : cms_system.getOutputProfiles()) {
-            _cms_proof_profile.append(profile->getName());
-            if (profile->getPath() == current) {
-                _cms_proof_profile.set_active(index);
-            }
-            index++;
-        }
-    }
-
-    _cms_gamutcolor.signal_color_set().connect(sigc::bind(&gamutColorChanged, &_cms_gamutcolor));
-
-    _cms_display_profile.signal_changed().connect(sigc::bind(&profileComboChanged, &_cms_display_profile));
-    _cms_proof_profile.signal_changed().connect(sigc::bind(&proofComboChanged, &_cms_proof_profile));
-
-    this->AddPage(_page_cms, _("Color management"), iter_io, PREFS_PAGE_IO_CMS);
-
     // Autosave options
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     _save_autosave_enable.init( _("Enable autosave"), "/options/autosave/enable", true);
     _page_autosave.add_line(false, "", _save_autosave_enable, "", _("Automatically save the current document(s) at a given interval, thus minimizing loss in case of a crash"), false);
     if (prefs->getString("/options/autosave/path").empty()) {
@@ -3164,7 +3070,96 @@ void InkscapePreferences::initPageRendering()
     add_devmode_line(_("Debug Cairo fonts"), _canvas_debug_cairo_fonts, "", _("Enable rendering for Cairo fonts even for 1.18.4 and earlier with deadlock issues."));
     _canvas_debug_cairo_fonts.init("", "/options/rendering/debug_cairo_fonts", false);
 
-    AddPage(_page_rendering, _("Rendering"), PREFS_PAGE_RENDERING);
+    Gtk::TreeModel::iterator iter_rendering = AddPage(_page_rendering, _("Rendering"), PREFS_PAGE_RENDERING);
+
+    // CMS options
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    /* TRANSLATORS: see http://www.newsandtech.com/issues/2004/03-04/pt/03-04_rendering.htm */
+    Glib::ustring const intentLabels[] = {_("Perceptual"), _("Relative Colorimetric"),
+                                          _("Saturation"), _("Absolute Colorimetric")};
+    int const intentValues[] = {0, 1, 2, 3};
+
+    _page_cms.add_group_header( _("Display adjustment"));
+
+    Glib::ustring tmpStr;
+    for (auto const &path : Inkscape::Colors::CMS::System::get().getDirectoryPaths()) {
+        tmpStr += "\n";
+        tmpStr += path.first;
+    }
+
+    gchar* profileTip = g_strdup_printf(_("The ICC profile to use to calibrate display output.\nSearched directories:%s"), tmpStr.c_str());
+    _page_cms.add_line( true, _("User monitor profile:"), _cms_display_profile, "",
+                        profileTip, false);
+    g_free(profileTip);
+    profileTip = nullptr;
+
+    _cms_intent.init("/options/displayprofile/intent", intentLabels, intentValues, 0);
+    _page_cms.add_line( true, _("Display rendering intent:"), _cms_intent, "",
+                        _("The rendering intent to use to calibrate display output"), false);
+
+    _page_cms.add_group_header( _("Proofing"));
+
+    _cms_softproof.init( _("Simulate output on screen"), "/options/softproof/enable", false);
+    _page_cms.add_line( true, "", _cms_softproof, "",
+                        _("Simulates output of target device"), false);
+
+    _cms_gamutwarn.init( _("Mark out of gamut colors"), "/options/softproof/gamutwarn", false);
+    _page_cms.add_line( true, "", _cms_gamutwarn, "",
+                        _("Highlights colors that are out of gamut for the target device"), false);
+
+    Glib::ustring colorStr = prefs->getString("/options/softproof/gamutcolor");
+
+    Gdk::RGBA tmpColor( colorStr.empty() ? "#00ff00" : colorStr);
+    _cms_gamutcolor.set_rgba( tmpColor );
+
+    _page_cms.add_line( true, _("Out of gamut warning color:"), _cms_gamutcolor, "",
+                        _("Selects the color used for out of gamut warning"), false);
+
+    _page_cms.add_line( true, _("Device profile:"), _cms_proof_profile, "",
+                        _("The ICC profile to use to simulate device output"), false);
+
+    _cms_proof_intent.init("/options/softproof/intent", intentLabels, intentValues, 0);
+    _page_cms.add_line( true, _("Device rendering intent:"), _cms_proof_intent, "",
+                        _("The rendering intent to use to calibrate device output"), false);
+
+    _cms_proof_blackpoint.init( _("Black point compensation"), "/options/softproof/bpc", false);
+    _page_cms.add_line( true, "", _cms_proof_blackpoint, "",
+                        _("Enables black point compensation"), false);
+
+    {
+        auto &cms_system = Inkscape::Colors::CMS::System::get();
+        std::string current = prefs->getString( "/options/displayprofile/uri" );
+        gint index = 0;
+        _cms_display_profile.append(_("Off (Managed by Operating System)"));
+        index++;
+        for (auto profile : cms_system.getDisplayProfiles()) {
+            _cms_display_profile.append(profile->getName());
+            if (profile->getPath() == current) {
+                _cms_display_profile.set_active(index);
+            }
+            index++;
+        }
+        if ( current.empty() ) {
+            _cms_display_profile.set_active(0);
+        }
+
+        current = prefs->getString("/options/softproof/uri");
+        index = 0;
+        for (auto profile : cms_system.getOutputProfiles()) {
+            _cms_proof_profile.append(profile->getName());
+            if (profile->getPath() == current) {
+                _cms_proof_profile.set_active(index);
+            }
+            index++;
+        }
+    }
+
+    _cms_gamutcolor.signal_color_set().connect(sigc::bind(&gamutColorChanged, &_cms_gamutcolor));
+
+    _cms_display_profile.signal_changed().connect(sigc::bind(&profileComboChanged, &_cms_display_profile));
+    _cms_proof_profile.signal_changed().connect(sigc::bind(&proofComboChanged, &_cms_proof_profile));
+
+    this->AddPage(_page_cms, _("Color management"), iter_rendering, PREFS_PAGE_RENDERING_CMS);
 }
 
 void InkscapePreferences::initPageBitmaps()
