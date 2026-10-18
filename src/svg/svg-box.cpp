@@ -124,10 +124,11 @@ bool SVGBox::fromString(BoxSide side, const std::string &value, const std::strin
  */
 bool SVGBox::isZero() const
 {
-    return _value[0] == 0.0
-        && _value[1] == 0.0
-        && _value[2] == 0.0
-        && _value[3] == 0.0;
+    return _is_set
+        && _value[0].isZero()
+        && _value[1].isZero()
+        && _value[2].isZero()
+        && _value[3].isZero();
 }
 
 /**

@@ -27,10 +27,12 @@
 #include "enums.h"                // Clones
 #include "filter-chemistry.h"     // LPE bool
 #include "inkscape-application.h"
+#include "page-manager.h"
 #include "preferences.h"
 #include "selection.h"
 #include "text-editing.h"
 
+#include "object/sp-page.h"
 #include "object/sp-text.h"
 #include "object/sp-flowtext.h"
 
@@ -52,6 +54,8 @@ enum class ObjectAlignTarget {
     BIGGEST,
     SMALLEST,
     PAGE,
+    PAGE_MARGIN,
+    PAGE_BLEED,
     DRAWING,
     SELECTION
 };
@@ -117,13 +121,15 @@ object_align(const Glib::VariantBase& value, InkscapeApplication *app)
     for (auto const &token : tokens) {
 
         // Target
-        if      (token == "last"     ) target = ObjectAlignTarget::LAST;
-        else if (token == "first"    ) target = ObjectAlignTarget::FIRST;
-        else if (token == "biggest"  ) target = ObjectAlignTarget::BIGGEST;
-        else if (token == "smallest" ) target = ObjectAlignTarget::SMALLEST;
-        else if (token == "page"     ) target = ObjectAlignTarget::PAGE;
-        else if (token == "drawing"  ) target = ObjectAlignTarget::DRAWING;
-        else if (token == "selection") target = ObjectAlignTarget::SELECTION;
+        if      (token == "last"       ) target = ObjectAlignTarget::LAST;
+        else if (token == "first"      ) target = ObjectAlignTarget::FIRST;
+        else if (token == "biggest"    ) target = ObjectAlignTarget::BIGGEST;
+        else if (token == "smallest"   ) target = ObjectAlignTarget::SMALLEST;
+        else if (token == "page"       ) target = ObjectAlignTarget::PAGE;
+        else if (token == "page-margin") target = ObjectAlignTarget::PAGE_MARGIN;
+        else if (token == "page-bleed" ) target = ObjectAlignTarget::PAGE_BLEED;
+        else if (token == "drawing"    ) target = ObjectAlignTarget::DRAWING;
+        else if (token == "selection"  ) target = ObjectAlignTarget::SELECTION;
 
         // Group
         else if (token == "group")     group = true;
@@ -187,6 +193,7 @@ object_align(const Glib::VariantBase& value, InkscapeApplication *app)
     SPItem *focus = nullptr;
     Geom::OptRect b = Geom::OptRect();
     Inkscape::Selection::CompareSize direction = (mx0 != 0.0 || mx1 != 0.0) ? Inkscape::Selection::VERTICAL : Inkscape::Selection::HORIZONTAL;
+    auto &pm = document->getPageManager();
 
     switch (target) {
         case ObjectAlignTarget::LAST:
@@ -203,6 +210,20 @@ object_align(const Glib::VariantBase& value, InkscapeApplication *app)
             break;
         case ObjectAlignTarget::PAGE:
             b = document->pageBounds();
+            break;
+        case ObjectAlignTarget::PAGE_MARGIN:
+            if (auto page = pm.getSelected()) {
+                b = page->getDesktopMargin();
+            } else {
+                b = document->preferredBounds();
+            }
+            break;
+        case ObjectAlignTarget::PAGE_BLEED:
+            if (auto page = pm.getSelected()) {
+                b = page->getDesktopBleed();
+            } else {
+                b = document->preferredBounds();
+            }
             break;
         case ObjectAlignTarget::DRAWING:
             b = document->getRoot()->desktopPreferredBounds();

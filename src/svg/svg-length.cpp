@@ -147,6 +147,11 @@ SVGLength::SVGLength()
 {
 }
 
+bool SVGLength::isZero(double epsilon) const
+{
+    return _set && value > -epsilon && value < epsilon;
+}
+
 /* Length */
 
 bool SVGLength::read(gchar const *str)
