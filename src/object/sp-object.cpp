@@ -219,6 +219,14 @@ void SPObject::getIds(std::set<std::string> &ret) const {
     }
 }
 
+Glib::ustring SPObject::getID() const {
+    if (id) {
+        return Glib::ustring(id);
+    } else {
+        return "No ID";
+    }
+}
+
 /**
  * Returns the id as a url param, in the form 'url(#{id})'
  */

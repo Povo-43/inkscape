@@ -369,6 +369,14 @@ void DrawContext::paint_text_decoration(Text::Layout const &layout, SPStyle cons
         }
 
         auto style = text_source->style;
+
+        // Style comes from ancestor if set (only set for 'text-decoration', not 'text-decoration-line', CHECK)
+        // This is temporary. We need to be able to draw across all spans that belong to a text or tspan
+        // element where the decoration was set including all child elements. We can't do that at the moment.
+        if (style->text_decoration.style_td) {
+            style = style->text_decoration.style_td;
+        }
+
         if (under) {
             if (!style->text_decoration_line.underline &&
                 !style->text_decoration_line.overline) continue;
@@ -376,9 +384,51 @@ void DrawContext::paint_text_decoration(Text::Layout const &layout, SPStyle cons
             if (!style->text_decoration_line.line_through) continue;
         }
 
-        // This non-scoped memory means the PDF lacks style scope within the Text Block.
-        auto style_map = paint_memory.get_changes_and_remember(style);
-        set_paint_style(style_map, style, context_style);
+        // Find source of fill and stroke... this is complicated and cannot be done in SPStyle due to how
+        // and when things are read or not read. This follows the code in nr-style.cpp.
+        SPStyle style_td; // Temporary style for text decoration.
+        style_td.fill_opacity   = style->fill_opacity.as_double();
+        style_td.stroke_opacity = style->stroke_opacity.as_double();
+        style_td.stroke_width   = style->stroke_width.as_double();
+
+        // Fill
+        if (style->text_decoration_fill.set) {
+            style_td.text_decoration_fill.read(style->text_decoration_fill.get_value().c_str());
+        } else if (style->text_decoration_color.set) {
+            style_td.text_decoration_fill.setColor(style->text_decoration_color.getColor());
+        } else {
+            style_td.text_decoration_fill.read(style->fill.get_value().c_str());
+        }
+
+        // Stroke
+        if (style->text_decoration_stroke.set) {
+            style_td.text_decoration_stroke.read(style->text_decoration_stroke.get_value().c_str());
+        } else if (style->text_decoration_color.set) {
+            style_td.text_decoration_stroke.setColor(style->text_decoration_color.getColor());
+        } else {
+            style_td.text_decoration_stroke.read(style->stroke.get_value().c_str());
+        }
+
+        _ctx.cmd_q();
+
+        // Set style
+        auto style_map = paint_memory.get_changes(&style_td);
+
+        if (style_map.contains(SPAttr::FILL)) {
+            if (auto color = _doc.get_paint(style_td.text_decoration_fill, context_style, get_softmask(style_td.fill_opacity.as_double()))) {
+                _ctx.set_nonstroke(*color);
+            }
+        }
+
+        if (style_map.contains(SPAttr::STROKE)) {
+            if (auto color = _doc.get_paint(style_td.text_decoration_stroke, context_style, get_softmask(style_td.stroke_opacity.as_double()))) {
+                _ctx.set_stroke(*color);
+            }
+        }
+
+        if (style_map.contains(SPAttr::STROKE_WIDTH)) {
+            _ctx.cmd_w(style_td.stroke_width.computed);
+        }
 
         // Find start/end of text decoration
         double y = 0;
@@ -443,6 +493,7 @@ void DrawContext::paint_text_decoration(Text::Layout const &layout, SPStyle cons
                 paint_text_decoration_line(x_min, x_max, y_mid, y_min-y_max, style, context_style, LINETHROUGH );
             }
         }
+        _ctx.cmd_Q();
     }
 }
 
@@ -531,14 +582,16 @@ void DrawContext::paint_text_decoration_set_wavy_line(double const &x_min, doubl
 
 void DrawContext::paint_text_decoration_line(double const &x_min, double const &x_max, double const &y_mid, double const &y_width,
                                              SPStyle const *style, SPStyle const *context_style, int position) {
+
+
     _ctx.cmd_q();
     if (style->text_decoration_style.solid) {
         Geom::Rect rect{x_min, y_mid-y_width/2.0, x_max, y_mid+y_width/2.0};
         for (auto layer : get_paint_layers(style, context_style)) {
             switch (layer) {
                 case PAINT_FILLSTROKE:
-                    // set_shape_rectangle(rect);
-                    //  _ctx.cmd_b();
+                    set_shape_rectangle(rect);
+                    _ctx.cmd_b();
                     break;
                 case PAINT_FILL:
                     set_shape_rectangle(rect);
@@ -568,8 +621,9 @@ void DrawContext::paint_text_decoration_line(double const &x_min, double const &
         for (auto layer : get_paint_layers(style, context_style)) {
             switch (layer) {
                 case PAINT_FILLSTROKE:
-                    // set_shape_rectangle(rect);
-                    //  _ctx.cmd_b();
+                    set_shape_rectangle(rect1);
+                    set_shape_rectangle(rect2);
+                    _ctx.cmd_b();
                     break;
                 case PAINT_FILL:
                     set_shape_rectangle(rect1);
@@ -591,8 +645,8 @@ void DrawContext::paint_text_decoration_line(double const &x_min, double const &
         for (auto layer : get_paint_layers(style, context_style)) {
             switch (layer) {
                 case PAINT_FILLSTROKE:
-                    // set_shape_rectangle(rect);
-                    //  _ctx.cmd_b();
+                    paint_text_decoration_set_dashed_line(x_min, x_max, y_mid, y_width);
+                    _ctx.cmd_b();
                     break;
                 case PAINT_FILL:
                     paint_text_decoration_set_dashed_line(x_min, x_max, y_mid, y_width);
@@ -612,8 +666,8 @@ void DrawContext::paint_text_decoration_line(double const &x_min, double const &
         for (auto layer : get_paint_layers(style, context_style)) {
             switch (layer) {
                 case PAINT_FILLSTROKE:
-                    // set_shape_rectangle(rect);
-                    //  _ctx.cmd_b();
+                    paint_text_decoration_set_dotted_line(x_min, x_max, y_mid, y_width);
+                    _ctx.cmd_b();
                     break;
                 case PAINT_FILL:
                     paint_text_decoration_set_dotted_line(x_min, x_max, y_mid, y_width);
@@ -633,8 +687,8 @@ void DrawContext::paint_text_decoration_line(double const &x_min, double const &
         for (auto layer : get_paint_layers(style, context_style)) {
             switch (layer) {
                 case PAINT_FILLSTROKE:
-                    // set_shape_rectangle(rect);
-                    //  _ctx.cmd_b();
+                    paint_text_decoration_set_wavy_line(x_min, x_max, y_mid, y_width);
+                    _ctx.cmd_b();
                     break;
                 case PAINT_FILL:
                     paint_text_decoration_set_wavy_line(x_min, x_max, y_mid, y_width);
