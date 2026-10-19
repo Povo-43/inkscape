@@ -59,6 +59,7 @@ public:
     SPPage *getViewportPage() const;
     std::vector<SPPage *> getPagesFor(SPItem *item, bool contains) const;
     SPPage *getPageFor(SPItem *item, bool contains) const;
+    SPPage *getPageFor(std::vector<SPItem *> const &item, bool contains) const;
     Geom::OptRect getDesktopRect() const;
     bool hasPages() const { return !_pages.empty(); }
     int getPageCount() const { return _pages.size(); }
@@ -74,8 +75,9 @@ public:
     void disablePages();
     void pagesChanged(SPPage *new_page);
     bool selectPage(SPPage *page);
-    bool selectPage(SPItem *item, bool contains);
     bool selectPage(int index) { return selectPage(getPage(index)); }
+    bool selectBestPage(SPItem *item, bool contains);
+    bool selectBestPage(std::vector<SPItem *> const &items, bool contains);
     bool selectNextPage() { return selectPage(getSelectedPageIndex() + 1); }
     bool selectPrevPage() { return selectPage(getSelectedPageIndex() - 1); }
     bool hasNextPage() const { return getSelectedPageIndex() + 1 < _pages.size(); }
