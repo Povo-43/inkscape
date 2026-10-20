@@ -5,7 +5,7 @@
  * The routines here create and manage a font selector widget with three parts,
  * one each for font-family, font-style, and font-size.
  *
- * It is used by the TextEdit  and Glyphs panel dialogs. The FontLister class is used
+ * It is used by the FontCollections and LegacyText dialogs. The FontLister class is used
  * to access the list of font-families and their associated styles for fonts either
  * on the system or in the document. The FontLister class is also used by the Text
  * toolbar. Fonts are kept track of by their "fontspecs"  which are the same as the
@@ -52,7 +52,7 @@ namespace Inkscape::UI::Widget {
 /**
  * A container of widgets for selecting font faces.
  *
- * It is used by the TextEdit and Glyphs panel dialogs. The FontSelector class utilizes the
+ * It is used by the FontCollections and LegacyText dialogs. The FontSelector class utilizes the
  * FontLister class to obtain a list of font-families and their associated styles for fonts either
  * on the system or in the document. The FontLister class is also used by the Text toolbar. Fonts
  * are kept track of by their "fontspecs" which are the same as the strings that Pango generates.

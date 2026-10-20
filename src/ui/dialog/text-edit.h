@@ -58,7 +58,7 @@ namespace Inkscape::UI::Dialog {
 class TextEdit final : public DialogBase
 {
 public:
-    TextEdit(bool use_browser); // use_browser turns on the new "unified font dialog" mode
+    TextEdit(bool use_legacy); // use_legacy turns on the old version of this dialog, for dev testing
     ~TextEdit() final;
 
     void documentReplaced() final;
@@ -183,7 +183,7 @@ private:
     Gtk::Button &setasdefault_button;
     Gtk::Button &apply_button;
     Gtk::Box& _apply_box;
-    bool _use_browser = false;
+    bool _use_legacy = false;
 
     // Signals
     sigc::scoped_connection selectChangedConn;

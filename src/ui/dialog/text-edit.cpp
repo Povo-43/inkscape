@@ -72,11 +72,11 @@ Glib::ustring const &getSamplePhrase()
 
 } // namespace
 
-TextEdit::TextEdit(bool use_browser)
-    // This class is two dialogs in one, based off the "use_browser" flag
+TextEdit::TextEdit(bool use_legacy)
+    // This class is two dialogs in one, based off the "use_legacy" flag
     : DialogBase(
-        use_browser ? "/dialogs/fontbrowser" : "/dialogs/textandfont",
-        use_browser ? "FontBrowser" : "Text"
+        use_legacy ? "/dialogs/legacytextandfont" : "/dialogs/textandfont",
+        use_legacy ? "LegacyText" : "Text"
       )
 
     , builder(create_builder("dialog-text-edit.glade"))
@@ -99,13 +99,13 @@ TextEdit::TextEdit(bool use_browser)
     , setasdefault_button      (get_widget<Gtk::Button>     (builder, "setasdefault_button"))
     , apply_button             (get_widget<Gtk::Button>     (builder, "apply_button"))
     , _apply_box               (get_widget<Gtk::Box>        (builder, "apply-box"))
-    , _use_browser{use_browser}
+    , _use_legacy{use_legacy}
     , _undo{"doc.undo"}
     , _redo{"doc.redo"}
 {
-    font_list = _use_browser ?
-        Inkscape::UI::Widget::FontList::create_font_list("/font-selector") :
-        Inkscape::UI::Widget::FontSelector::create_font_selector();
+    font_list = _use_legacy ?
+        Inkscape::UI::Widget::FontSelector::create_font_selector() :
+        Inkscape::UI::Widget::FontList::create_font_list("/font-selector");
 
     auto font_collections = Inkscape::FontCollections::get();
 
@@ -126,7 +126,7 @@ TextEdit::TextEdit(bool use_browser)
     auto &text_view_container = get_widget<Gtk::ScrolledWindow>(builder, "text_view_container");
     text_view_container.set_child(*text_view);
 
-    if (_use_browser) {
+    if (!_use_legacy) {
         // hide settings and filter box
         settings_and_filters_box.set_visible(false);
         font_count_label.set_visible(false);
@@ -584,7 +584,7 @@ void TextEdit::display_font_collections()
 
 void TextEdit::on_page_changed(Gtk::Widget*, int pos)
 {
-    _apply_box.set_visible(pos != 0 || !_use_browser); // font browser doesn't use "Apply" button
+    _apply_box.set_visible(pos != 0 || _use_legacy);
 
     if (pos == 1) {
         Glib::ustring fontspec = font_list->get_fontspec();
