@@ -739,6 +739,9 @@ ObjectsPanel::ObjectsPanel()
     , _opacity_slider(get_widget<Gtk::Scale>(_builder, "opacity-slider"))
     , _setting_layers(get_derived_widget<PrefCheckButton, Glib::ustring, bool>(_builder, "setting-layers", "/dialogs/objects/layers_only", false))
     , _setting_track(get_derived_widget<PrefCheckButton, Glib::ustring, bool>(_builder, "setting-track", "/dialogs/objects/expand_to_layer", true))
+    , _setting_fade_never(get_derived_widget<PrefRadioButton, Glib::ustring, int, bool>(_builder, "setting-fade-never", "/options/translucency_groups/value", 0, false))
+    , _setting_fade_group(get_derived_widget<PrefRadioButton, Glib::ustring, int, bool>(_builder, "setting-fade-group", "/options/translucency_groups/value", 1, true))
+    , _setting_fade_layer(get_derived_widget<PrefRadioButton, Glib::ustring, int, bool>(_builder, "setting-fade-layer", "/options/translucency_groups/value", 2, false))
     , _tree{*Gtk::make_managed<TreeViewWithCssChanged>()}
 {
     _store = Gtk::TreeStore::create(*_model);

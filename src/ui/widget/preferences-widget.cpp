@@ -170,7 +170,8 @@ void PrefRadioButton::init(Glib::ustring const &label, Glib::ustring const &pref
     _value_type = VAL_STRING;
     _string_value = string_value;
     (void)default_value;
-    this->set_label(label);
+    if (!label.empty())
+        this->set_label(label);
 
     if (group_member)
     {
@@ -183,6 +184,8 @@ void PrefRadioButton::init(Glib::ustring const &label, Glib::ustring const &pref
         this->set_active(val == _string_value);
     else
         this->set_active( false );
+
+    watch_pref();
 }
 
 void PrefRadioButton::init(Glib::ustring const &label, Glib::ustring const &prefs_path,
@@ -191,7 +194,8 @@ void PrefRadioButton::init(Glib::ustring const &label, Glib::ustring const &pref
     _prefs_path = prefs_path;
     _value_type = VAL_INT;
     _int_value = int_value;
-    this->set_label(label);
+    if (!label.empty())
+        this->set_label(label);
 
     if (group_member)
     {
@@ -203,6 +207,16 @@ void PrefRadioButton::init(Glib::ustring const &label, Glib::ustring const &pref
         this->set_active( prefs->getInt(_prefs_path, int_value) == _int_value );
     else
         this->set_active( prefs->getInt(_prefs_path, int_value + 1) == _int_value );
+
+    watch_pref();
+}
+
+void PrefRadioButton::watch_pref() {
+    _watch = Inkscape::Preferences::get()->createObserver(_prefs_path, [this](Preferences::Entry const &entry) {
+        bool match = (_value_type == VAL_STRING) ? entry.getString() == _string_value : entry.getInt() == _int_value;
+        if (match && !get_active())
+            set_active(true);
+    });
 }
 
 void PrefRadioButton::on_toggled()

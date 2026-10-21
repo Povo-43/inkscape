@@ -996,7 +996,7 @@ void InkscapePreferences::initPageTools()
     _page_selector.add_line( true, "", _t_sel_cue_box, "",
                             _("Each selected object displays its bounding box"));
 
-    _page_selector.add_group_header( _("Fade Other Objects..."));
+    _page_selector.add_group_header( _("Fade Other Objects on Canvas"));
     _t_too_off.init ( C_("Translucency Group", "Never (Off)"), "/options/translucency_groups/value", 0, false, nullptr);
     _page_selector.add_line( true, "", _t_too_off, "", _("Turn off fade."));
 
