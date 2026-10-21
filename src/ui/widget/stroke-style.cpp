@@ -48,6 +48,8 @@
 
 using Inkscape::DocumentUndo;
 
+int const LABEL_MARGIN = 4;
+
 /**
  * Extract the actual name of the link
  * e.g. get mTriangle from url(#mTriangle).
@@ -130,8 +132,8 @@ static Gtk::Label *spw_label(Gtk::Grid *table, const gchar *label_text, int col,
 
   label_widget->set_halign(Gtk::Align::START);
   label_widget->set_valign(Gtk::Align::CENTER);
-  label_widget->set_margin_start(4);
-  label_widget->set_margin_end(4);
+  label_widget->set_margin_start(LABEL_MARGIN);
+  label_widget->set_margin_end(LABEL_MARGIN);
 
   table->attach(*label_widget, col, row, 1, 1);
 
@@ -440,7 +442,11 @@ StrokeStyle::StrokeStyle() :
     vbox.set_homogeneous();
     /* Paint order */
     // TRANSLATORS: Paint order determines the order the 'fill', 'stroke', and 'markers are painted.
-    vbox.append(*Gtk::make_managed<Gtk::Label>(_("Order")));
+    auto order_label = Gtk::make_managed<Gtk::Label>(_("Order"));
+    vbox.append(*order_label);
+    order_label->set_halign(Gtk::Align::START);
+    order_label->set_margin_start(LABEL_MARGIN);
+    order_label->set_margin_end(LABEL_MARGIN);
     vbox.append(*Gtk::make_managed<Gtk::Box>());
     _align_label = Gtk::make_managed<Gtk::Box>();
     vbox.append(*_align_label);
