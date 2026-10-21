@@ -138,6 +138,7 @@ enum class Type {
     NODE_PRESERVE_LENGTH, // Preserve handle length {DRAG+ALT}
     NODE_REMOVE_FROM,     // Remove selected nodes from selection {DRAG+SHIFT+CTRL}
     NODE_RETRACT_HANDLE,  // Remove handle {CLICK+ALT}
+    NODE_SCULPT,          // Sculpt selected nodes {DRAG+ALT}
     NODE_STRAIGHTEN_SEGMENT, // Straighten segment {DOUBLECLICK+ALT}
 
     PEN_CUSP_NODE,        // Makes cusp node {CLICK+SHIFT}

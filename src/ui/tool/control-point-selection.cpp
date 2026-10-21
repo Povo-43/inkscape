@@ -392,7 +392,15 @@ void ControlPointSelection::_pointDragged(Geom::Point &new_pos, MotionEvent cons
 
     Geom::Point abs_delta = new_pos - _original_positions[_grabbed_point];
     double fdist = Geom::distance(_original_positions[_grabbed_point], _original_positions[_farthest_point]);
-    if (mod_alt_only(event) && fdist > 0) {
+    auto mod_sculpt_active = Modifiers::Modifier::get(Modifiers::Type::NODE_SCULPT)->active(event.modifiers);
+
+    // Sculpting and "confine to path" modifiers both default to ALT. To avoid conflicts between them, we sculpt when
+    // there's more than one selection and confine when there's only one. Long term, we should maybe make sculpting its
+    // own tool mode rather than a modifier and fix confine-to-path to work with more than one node. But for now,
+    // this works.
+    auto can_sculpt = mod_sculpt_active && _points.size() > 1;
+
+    if (can_sculpt && fdist > 0) {
         // Sculpting
         for (auto cur : _points) {
             Geom::Affine trans;

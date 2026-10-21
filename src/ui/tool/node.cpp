@@ -1381,7 +1381,8 @@ bool Node::grabbed(MotionEvent const &event)
         return true;
     }
 
-    if (Modifiers::Modifier::get(Modifiers::Type::NODE_CONFINE_TO_PATH)->active(event.modifiers)) {
+    auto confine_to_path = Modifiers::Modifier::get(Modifiers::Type::NODE_CONFINE_TO_PATH)->active(event.modifiers);
+    if (confine_to_path && _selection.size() == 1) {
         Geom::PathBuilder builder;
 
         if (auto prev = _prev()) {
@@ -1513,7 +1514,11 @@ void Node::dragged(Geom::Point &new_pos, MotionEvent const &event)
         scp_free.addVector(*back_direction);
     }
 
-    if (confine_to_path && _short_segment_path && !confine_handles && !confine) {
+    // Only confine-to-path with size 1 because (a) it doesn't work well with more right now and (b) by default its
+    // modifier conflicts with the "sculpt nodes" modifier which we use for larger selections. Eventually, we maybe
+    // fix (a) and move node sculpting to its own tool mode rather than a modifier to avoid the conflict. But for now,
+    // this works.
+    if (confine_to_path && _short_segment_path && _selection.size() == 1) {
         double line_distance;
         // We can't use multipleConstrainedSnaps here because the short_segment_path can be curved
 
@@ -1665,49 +1670,63 @@ Glib::ustring Node::_getTip(unsigned state) const
 {
     bool isBSpline = _pm()._isBSpline();
     Handle *h = const_cast<Handle *>(&_front);
-    Glib::ustring s = C_("Path node tip",
-                         "node handle"); // not expected
+    std::map<Glib::ustring, std::set<Glib::ustring>> active;
+    Glib::ustring s = C_("Path node tip", "node handle"); // not expected
+    bool can_drag_out = (_next() && _front.isDegenerate()) || (_prev() && _back.isDegenerate());
 
     auto const mod_add_to = Modifiers::Modifier::get(Modifiers::Type::SELECT_ADD_TO);
+    auto const mod_confine_handles = Modifiers::Modifier::get(Modifiers::Type::NODE_CONFINE_HANDLES);
+    auto const mod_confine_to_path = Modifiers::Modifier::get(Modifiers::Type::NODE_CONFINE_TO_PATH);
     auto const mod_cycle_type = Modifiers::Modifier::get(Modifiers::Type::NODE_CYCLE_TYPE);
     auto const mod_delete = Modifiers::Modifier::get(Modifiers::Type::NODE_DELETE);
     auto const mod_drag_handle = Modifiers::Modifier::get(Modifiers::Type::NODE_DRAG_HANDLE);
     auto const mod_grow_linear = Modifiers::Modifier::get(Modifiers::Type::NODE_GROW_LINEAR);
     auto const mod_grow_spatial = Modifiers::Modifier::get(Modifiers::Type::NODE_GROW_SPATIAL);
+    auto const mod_sculpt = Modifiers::Modifier::get(Modifiers::Type::NODE_SCULPT);
 
+    // TODO: the below handling of potentially overlapping active modifiers should be generalized and used in other
+    //       tooltip generating code.
+
+    // Linear grow takes precedent over spatial
     if (mod_grow_linear->active(state)) {
-        s = Glib::ustring::compose(C_("Path node tip",
-            "<b>%1</b>: scroll to select nodes along the path"), mod_grow_linear->get_label());
+        active[mod_grow_linear->get_label()].insert(C_("Path node tip", "scroll to select nodes along the path"));
     }
     else if (mod_grow_spatial->active(state)) {
-        s = Glib::ustring::compose(C_("Path node tip",
-            "<b>%1</b>: scroll to select nearby nodes"), mod_grow_spatial->get_label());
+        active[mod_grow_spatial->get_label()].insert(C_("Path node tip", "scroll to select nearby nodes"));
     }
-    else if (mod_drag_handle->active(state)) {
-        bool can_drag_out = (_next() && _front.isDegenerate()) || (_prev() && _back.isDegenerate());
 
-        if (can_drag_out) {
-            /*if (state_held_control(state)) {
-                s = format_tip(C_("Path node tip",
-                    "<b>Shift+Ctrl:</b> drag out a handle and snap its angle "
-                    "to %f° increments"), snap_increment_degrees());
-            }*/
-            s = Glib::ustring::compose(C_("Path node tip",
-                "<b>%1</b>: drag out a handle, click to toggle selection"),
-                mod_drag_handle->get_label());
-        } else {
-            s = Glib::ustring::compose(C_("Path node tip", "<b>%1</b>: click to toggle selection"),
-                mod_add_to->get_label());
-        }
+    // Confine to path takes precedent over confine handles and then over drag handle and sculpting
+    if (mod_confine_to_path->active(state) && _selection.size() == 1) {
+        active[mod_confine_to_path->get_label()].insert(C_("Path node tip", "drag to move along path lines"));
     }
-    else if (mod_delete->active(state)) {
-        s = Glib::ustring::compose(C_("Path node tip",
-            "<b>%1</b>: move along handle lines or line segment, click to delete node"),
-            mod_delete->get_label());
+    else if (mod_confine_handles->active(state)) {
+        active[mod_confine_handles->get_label()].insert(C_("Path node tip", "drag to move along handle lines"));
+    }
+    else if (mod_drag_handle->active(state) && can_drag_out) {
+        active[mod_drag_handle->get_label()].insert(C_("Path node tip", "drag out a handle"));
+    }
+    else if (mod_sculpt->active(state) && _selection.size() > 1) {
+        active[mod_sculpt->get_label()].insert(C_("Path node tip", "drag to sculpt multiple nodes"));
+    }
+
+    // Delete takes precedence over cycle and then over selection toggle
+    if (mod_delete->active(state)) {
+        active[mod_delete->get_label()].insert(C_("Path node tip", "click to delete node"));
     }
     else if (mod_cycle_type->active(state)) {
-        s = Glib::ustring::compose(C_("Path node tip",
-            "<b>%1</b>: move along axes, click to change node type"), mod_cycle_type->get_label());
+        active[mod_cycle_type->get_label()].insert(C_("Path node tip", "click to change node type"));
+    }
+    else if (mod_add_to->active(state)) {
+        active[mod_add_to->get_label()].insert(C_("Path node tip", "click to toggle selection"));
+    }
+
+    if (!active.empty()) {
+        std::set<Glib::ustring> mod_labels;
+        for (auto const& [modifier, descs] : active) {
+            auto label = Inkscape::Util::join_with_separator(descs);
+            mod_labels.insert(Glib::ustring::compose(C_("Path node tip", "<b>%1</b>: %2"), modifier, label));
+        }
+        s = Inkscape::Util::join_with_separator(mod_labels);
     }
     else { // No modifiers: assemble tip from node type
         char const *nodetype = node_type_to_localized_string(_type);
@@ -1715,11 +1734,14 @@ Glib::ustring Node::_getTip(unsigned state) const
 
         std::set<Glib::ustring> labels;
         labels.insert(mod_add_to->get_label());
+        labels.insert(mod_confine_handles->get_label());
+        labels.insert(mod_confine_to_path->get_label());
         labels.insert(mod_cycle_type->get_label());
         labels.insert(mod_delete->get_label());
         labels.insert(mod_drag_handle->get_label());
         labels.insert(mod_grow_linear->get_label());
         labels.insert(mod_grow_spatial->get_label());
+        labels.insert(mod_sculpt->get_label());
         auto const more_labels = Inkscape::Util::join_with_separator(labels);
 
         if (_selection.transformHandlesEnabled() && selected()) {

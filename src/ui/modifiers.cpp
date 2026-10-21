@@ -92,6 +92,7 @@ ModifierIdToTypeMap const &modifier_type_from_id()
         {"node-preserve-length", Type::NODE_PRESERVE_LENGTH},
         {"node-remove-from", Type::NODE_REMOVE_FROM},
         {"node-retract-handle", Type::NODE_RETRACT_HANDLE},
+        {"node-sculpt", Type::NODE_SCULPT},
         {"node-straighten-segment", Type::NODE_STRAIGHTEN_SEGMENT},
         {"pen-cusp-node", Type::PEN_CUSP_NODE},
         {"pen-move-prev", Type::PEN_MOVE_PREV},
@@ -218,6 +219,7 @@ Modifier::Container &Modifier::_modifiers()
         make_modifier("node-preserve-length", _("Preserve handle length"), _("Keep the node handle length constant during a drag"), ALT, NODE_TOOL, DRAG),
         make_modifier("node-remove-from", _("Remove nodes from selection"), _("Remove selected nodes from the selection"), SHIFT | CTRL, NODE_TOOL, DRAG),
         make_modifier("node-retract-handle", _("Retract handle into node"), _("Remove handle when clicked"), ALT, NODE_TOOL, CLICK),
+        make_modifier("node-sculpt", _("Sculpt nodes"), _("Move a node and adjust other selected nodes along with it"), ALT, NODE_TOOL, DRAG),
         make_modifier("node-straighten-segment", _("Straighten segment"), _("Straighten segment when double-clicked"), ALT, NODE_TOOL, CLICK),
 
         make_modifier("pen-cusp-node", _("Create cusp node"), _("Create a cusp node when making a B-Spline curve"), SHIFT, PEN_TOOL, CLICK),
