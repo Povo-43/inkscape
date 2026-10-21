@@ -1955,11 +1955,11 @@ void SPItem::skew_rel(double skewX, double skewY)
     }
 }
 
-void SPItem::move_rel( Geom::Translate const &tr)
+void SPItem::move_rel(Geom::Translate const &tr, bool compensate)
 {
     set_i2d_affine(i2dt_affine() * tr);
 
-    doWriteTransform(transform);
+    doWriteTransform(transform, nullptr, compensate);
 }
 
 /*

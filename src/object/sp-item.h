@@ -432,7 +432,7 @@ public:
     void rotate_rel(Geom::Rotate const &rotation);
     void scale_rel(Geom::Scale const &scale);
     void skew_rel(double skewX, double skewY);
-    void move_rel( Geom::Translate const &tr);
+    void move_rel(Geom::Translate const &tr, bool compensate = true);
 	void build(SPDocument *document, Inkscape::XML::Node *repr) override;
 	void release() override;
 	void set(SPAttr key, char const* value) override;
