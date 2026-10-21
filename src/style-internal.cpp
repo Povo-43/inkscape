@@ -2654,6 +2654,7 @@ SPIFont::read( gchar const *str ) {
 
         // Break string into white space separated tokens
         std::stringstream os( str );
+        os.imbue(std::locale::classic());
         Glib::ustring param;
 
         while (os >> param) {

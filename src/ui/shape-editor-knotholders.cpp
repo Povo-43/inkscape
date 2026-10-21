@@ -2283,7 +2283,7 @@ private:
     sigc::scoped_connection _path_modified_connection;
 
     TextPathSide get_desired_textpath_side(Geom::Point p, Geom::Point origin, double t0) const;
-    void change_textpath_side(TextPathSide desired_side, gint precision);
+    void change_textpath_side(TextPathSide desired_side);
     double compute_knot_placement_offset() const;
     void adjust_offset_for_curve_bounds(double &offset) const;
     void get_initial_offset_value();
@@ -2319,11 +2319,10 @@ void TextPathKnotHolderEntityOffset::knot_set(Geom::Point const &p, Geom::Point 
 
     // Find the projection of this point on the path.
     auto const t0 = Geom::nearest_time(p, _pwd2);
-    gint const precision = Inkscape::Preferences::get()->getInt("/options/svgoutput/numericprecision");
 
     if (_placement == Placement::MIDDLE) {
         if (auto const desired_side = get_desired_textpath_side(p, origin, t0); _textpath->side != desired_side) {
-            change_textpath_side(desired_side, precision);
+            change_textpath_side(desired_side);
         }
 
         return;
@@ -2349,10 +2348,7 @@ void TextPathKnotHolderEntityOffset::knot_set(Geom::Point const &p, Geom::Point 
     _offset_val = std::clamp(_offset_val, -100.0, 100.0);
 
     // Set 'startOffset'.
-    std::stringstream offset_stream;
-    offset_stream << std::fixed << std::setprecision(precision) << _offset_val << "%";
-    auto const offset_str = offset_stream.str();
-    _textpath->setStartOffset(offset_str.c_str());
+    _textpath->setStartOffset(_offset_val);
     Inkscape::DocumentUndo::maybeDone(_desktop->getDocument(), "textpath:startOffset", RC_("Undo", "Modify textpath startOffset"), "");
     _text->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
     _text->updateRepr();
@@ -2436,7 +2432,7 @@ TextPathSide TextPathKnotHolderEntityOffset::get_desired_textpath_side(Geom::Poi
         (switch_sides ? SP_TEXT_PATH_SIDE_RIGHT : SP_TEXT_PATH_SIDE_LEFT);
 }
 
-void TextPathKnotHolderEntityOffset::change_textpath_side(TextPathSide const desired_side, gint const precision)
+void TextPathKnotHolderEntityOffset::change_textpath_side(TextPathSide const desired_side)
 {
     _textpath->setSide(desired_side);
 
@@ -2446,10 +2442,7 @@ void TextPathKnotHolderEntityOffset::change_textpath_side(TextPathSide const des
     _offset_val += (_text->resolve_flip_offset_multiplier() * text_len_offset);
     _offset_val = 100 - _offset_val;
 
-    std::stringstream offset_stream;
-    offset_stream << std::fixed << std::setprecision(precision) << _offset_val << '%';
-    auto const offset_str = offset_stream.str();
-    _textpath->setStartOffset(offset_str.c_str());
+    _textpath->setStartOffset(_offset_val);
 
     // Move the middle handle at a certain distance normal to the direction of the path.
     auto const style = _text->style;

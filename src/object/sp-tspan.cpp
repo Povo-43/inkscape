@@ -26,6 +26,8 @@
 
 #include "sp-tspan.h"
 
+#include <iomanip>
+
 #include <glibmm/i18n.h>
 #include <glibmm/regex.h>
 
@@ -37,6 +39,8 @@
 #include "sp-use-reference.h"
 #include "style.h"
 #include "text-editing.h"
+#include "util-string/ustring-format.h"
+#include "util/numeric/precision.h"
 #include "xml/href-attribute-helper.h"
 
 /*#####################################################
@@ -306,8 +310,10 @@ void SPTextPath::set(SPAttr key, const gchar* value) {
     }
 }
 
-void SPTextPath::setStartOffset(const char *offset) {
-    setAttribute("startOffset", offset);
+void SPTextPath::setStartOffset(double offset) {
+    auto const precision = Inkscape::Util::get_default_numeric_precision();
+    auto val = Inkscape::ustring::format_classic(std::fixed, std::setprecision(precision), offset, "%");
+    setAttribute("startOffset", val);
 }
 
 void SPTextPath::setSide(TextPathSide new_side) {

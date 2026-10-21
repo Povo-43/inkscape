@@ -187,7 +187,6 @@ LPEMeasureSegments::LPEMeasureSegments(LivePathEffectObject *lpeobject) :
     angle_projection.param_set_range(0.0, 360.0);
     angle_projection.param_set_increments(90.0, 90.0);
     angle_projection.param_set_digits(2);
-    locale_base = strdup(setlocale(LC_NUMERIC, nullptr));
     previous_size = 0;
     pagenumber = 0;
     anotation_width = 0;
@@ -419,13 +418,10 @@ LPEMeasureSegments::createTextLabel(Geom::Point &pos, size_t counter, double len
     Inkscape::FontLister *fontlister = Inkscape::FontLister::get_instance();
     auto fontbutton_str = fontbutton.param_getSVGValue();
     fontlister->fill_css(css, fontbutton_str);
-    std::stringstream font_size;
-    setlocale (LC_NUMERIC, "C");
-    font_size <<  fontsize << "px";
-    setlocale (LC_NUMERIC, locale_base);           
+    auto font_size = Inkscape::ustring::format_classic(fontsize, "px");
     sp_repr_css_set_property_string(css, "fill", color.toString(false));
     sp_repr_css_set_property_double(css, "fill-opacity", color.getOpacity());
-    sp_repr_css_set_property (css, "font-size",font_size.str().c_str());
+    sp_repr_css_set_property (css, "font-size", font_size.c_str());
     sp_repr_css_unset_property (css, "-inkscape-font-specification");
     if (remove) {
         sp_repr_css_set_property (css, "display","none");
@@ -439,26 +435,23 @@ LPEMeasureSegments::createTextLabel(Geom::Point &pos, size_t counter, double len
     } else {
         length = Inkscape::Util::Quantity::convert(length, "px", unit.get_abbreviation()) * getSPDoc()->getDocumentScale()[Geom::X];
     }
-    if (local_locale) {
-        setlocale (LC_NUMERIC, "");
-    } else {
-        setlocale (LC_NUMERIC, "C");
+    std::stringstream length_str;
+    if (!local_locale) {
+        length_str.imbue(std::locale::classic());
     }
-    gchar length_str[64];
     bool x100 = false;
     // active for 1.1
     if (smallx100 && length < 1 ) {
         length *=100;
         x100 = true;
-        g_snprintf(length_str, 64, "%.*f", (int)precision - 2, length);
+        length_str << std::fixed << std::setprecision(precision - 2) << length;
     } else { 
-        g_snprintf(length_str, 64, "%.*f", (int)precision, length);
+        length_str << std::fixed << std::setprecision(precision) << length;
     }
-    setlocale (LC_NUMERIC, locale_base);
     auto label_value = format.param_getSVGValue();
     size_t s = label_value.find(Glib::ustring("{measure}"),0);
     if(s < label_value.length()) {
-        label_value.replace(s, 9, length_str);
+        label_value.replace(s, 9, length_str.str());
     }
     
     s = label_value.find(Glib::ustring("{unit}"),0);
@@ -592,18 +585,14 @@ LPEMeasureSegments::createLine(Geom::Point start,Geom::Point end, Glib::ustring 
     } else {
         line->setAttribute("inkscape:label", "dinhelpline");
     }
-    std::stringstream stroke_w;
-    setlocale (LC_NUMERIC, "C");
     double stroke_width;
     if (legacy) {
         stroke_width = Inkscape::Util::Quantity::convert(line_width, unit.get_abbreviation(), document->getDisplayUnit()->abbr.c_str());
     } else {
         stroke_width = Inkscape::Util::Quantity::convert(line_width, "mm", "px") / getSPDoc()->getDocumentScale()[Geom::X];
     }
-    stroke_w <<  stroke_width;
-    setlocale (LC_NUMERIC, locale_base);
     style  += "stroke-width:";
-    style  += stroke_w.str();
+    style  += Inkscape::ustring::format_classic(stroke_width);
 
     SPCSSAttr *css = sp_repr_css_attr_new();
     sp_repr_css_attr_add_from_string(css, style.c_str());
