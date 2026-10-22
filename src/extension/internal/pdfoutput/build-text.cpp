@@ -580,31 +580,12 @@ void DrawContext::paint_text_decoration_set_wavy_line(double const &x_min, doubl
     _ctx.cmd_h();
 }
 
-void DrawContext::paint_text_decoration_line(double const &x_min, double const &x_max, double const &y_mid, double const &y_width,
-                                             SPStyle const *style, SPStyle const *context_style, int position) {
+void DrawContext::paint_text_decoration_prepare_path(double const &x_min, double const &x_max, double const &y_mid, double const &y_width,
+                                                     SPStyle const *style, int position) {
 
-
-    _ctx.cmd_q();
     if (style->text_decoration_style.solid) {
         Geom::Rect rect{x_min, y_mid-y_width/2.0, x_max, y_mid+y_width/2.0};
-        for (auto layer : get_paint_layers(style, context_style)) {
-            switch (layer) {
-                case PAINT_FILLSTROKE:
-                    set_shape_rectangle(rect);
-                    _ctx.cmd_b();
-                    break;
-                case PAINT_FILL:
-                    set_shape_rectangle(rect);
-                    _ctx.cmd_f();
-                    break;
-                case PAINT_STROKE:
-                    set_shape_rectangle(rect);
-                    _ctx.cmd_s();
-                    break;
-                case PAINT_MARKERS:
-                    break; // NOT ALLOWED
-            }
-        }
+        set_shape_rectangle(rect);
     }
 
     if (style->text_decoration_style.isdouble) {
@@ -618,92 +599,46 @@ void DrawContext::paint_text_decoration_line(double const &x_min, double const &
             rect1 -= Geom::Point(0, y_width);
             rect2 -= Geom::Point(0, y_width);
         }
-        for (auto layer : get_paint_layers(style, context_style)) {
-            switch (layer) {
-                case PAINT_FILLSTROKE:
-                    set_shape_rectangle(rect1);
-                    set_shape_rectangle(rect2);
-                    _ctx.cmd_b();
-                    break;
-                case PAINT_FILL:
-                    set_shape_rectangle(rect1);
-                    set_shape_rectangle(rect2);
-                    _ctx.cmd_f();
-                    break;
-                case PAINT_STROKE:
-                    set_shape_rectangle(rect1);
-                    set_shape_rectangle(rect2);
-                    _ctx.cmd_s();
-                    break;
-                case PAINT_MARKERS:
-                    break; // NOT ALLOWED
-            }
-        }
+        set_shape_rectangle(rect1);
+        set_shape_rectangle(rect2);
     }
 
     if (style->text_decoration_style.dashed) {
-        for (auto layer : get_paint_layers(style, context_style)) {
-            switch (layer) {
-                case PAINT_FILLSTROKE:
-                    paint_text_decoration_set_dashed_line(x_min, x_max, y_mid, y_width);
-                    _ctx.cmd_b();
-                    break;
-                case PAINT_FILL:
-                    paint_text_decoration_set_dashed_line(x_min, x_max, y_mid, y_width);
-                    _ctx.cmd_f();
-                    break;
-                case PAINT_STROKE:
-                    paint_text_decoration_set_dashed_line(x_min, x_max, y_mid, y_width);
-                    _ctx.cmd_s();
-                    break;
-                case PAINT_MARKERS:
-                    break; // NOT ALLOWED
-            }
-        }
+        paint_text_decoration_set_dashed_line(x_min, x_max, y_mid, y_width);
     }
 
     if (style->text_decoration_style.dotted) {
-        for (auto layer : get_paint_layers(style, context_style)) {
-            switch (layer) {
-                case PAINT_FILLSTROKE:
-                    paint_text_decoration_set_dotted_line(x_min, x_max, y_mid, y_width);
-                    _ctx.cmd_b();
-                    break;
-                case PAINT_FILL:
-                    paint_text_decoration_set_dotted_line(x_min, x_max, y_mid, y_width);
-                    _ctx.cmd_f();
-                    break;
-                case PAINT_STROKE:
-                    paint_text_decoration_set_dotted_line(x_min, x_max, y_mid, y_width);
-                    _ctx.cmd_s();
-                    break;
-                case PAINT_MARKERS:
-                    break; // NOT ALLOWED
-            }
-        }
+        paint_text_decoration_set_dotted_line(x_min, x_max, y_mid, y_width);
     }
 
     if (style->text_decoration_style.wavy) {
-        for (auto layer : get_paint_layers(style, context_style)) {
-            switch (layer) {
-                case PAINT_FILLSTROKE:
-                    paint_text_decoration_set_wavy_line(x_min, x_max, y_mid, y_width);
-                    _ctx.cmd_b();
-                    break;
-                case PAINT_FILL:
-                    paint_text_decoration_set_wavy_line(x_min, x_max, y_mid, y_width);
-                    _ctx.cmd_f();
-                    break;
-                case PAINT_STROKE:
-                    paint_text_decoration_set_wavy_line(x_min, x_max, y_mid, y_width);
-                    _ctx.cmd_s();
-                    break;
-                case PAINT_MARKERS:
-                    break; // NOT ALLOWED
-            }
-        }
+        paint_text_decoration_set_wavy_line(x_min, x_max, y_mid, y_width);
     }
+}
 
+void DrawContext::paint_text_decoration_line(double const &x_min, double const &x_max, double const &y_mid, double const &y_width,
+                                             SPStyle const *style, SPStyle const *context_style, int position) {
+
+
+    _ctx.cmd_q();
+    for (auto layer : get_paint_layers(style, context_style)) {
+        switch (layer) {
+            case PAINT_FILLSTROKE:
+                paint_text_decoration_prepare_path(x_min, x_max, y_mid, y_width, style, position);
+                _ctx.cmd_b();
+                break;
+            case PAINT_FILL:
+                paint_text_decoration_prepare_path(x_min, x_max, y_mid, y_width, style, position);
+                _ctx.cmd_f();
+                break;
+            case PAINT_STROKE:
+                paint_text_decoration_prepare_path(x_min, x_max, y_mid, y_width, style, position);
+                _ctx.cmd_s();
+                break;
+            case PAINT_MARKERS:
+                break; // NOT ALLOWED
+            }
+    }
     _ctx.cmd_Q();
 }
 

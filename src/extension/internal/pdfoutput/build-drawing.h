@@ -52,6 +52,8 @@ public:
     void paint_text_decoration(Text::Layout const &layout, SPStyle const *context_style, bool under);
     void paint_text_decoration_line(double const &x_min, double const &x_max, double const &y_mid, double const &y_width,
                                     SPStyle const *style, SPStyle const *context_style, int position);
+    void paint_text_decoration_prepare_path(double const &x_min, double const &x_max, double const &y_mid, double const &y_width,
+                                            SPStyle const *style, int position);
     void paint_text_decoration_set_dashed_line(double const &x_min, double const &x_max,
                                                double const &y_mid, double const &y_width);
     void paint_text_decoration_set_dotted_line(double const &x_min, double const &x_max,
