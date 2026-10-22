@@ -198,6 +198,11 @@ Shortcuts::clear_user_shortcuts()
     sp_repr_save_file(document, file->get_path().c_str(), nullptr);
     GC::release(document);
 
+    // Reset all current modifiers
+    for(auto modifier: Inkscape::Modifiers::Modifier::getList()) {
+        const_cast<Inkscape::Modifiers::Modifier *>(modifier)->unset_user();
+    }
+
     // Re-read everything! And emit changed signal.
     init();
     return true;
