@@ -197,7 +197,7 @@ public:
             Glib::Markup::escape_text(is_present() ? Inkscape::get_font_description(_font.ff, _font.face).to_string()
                                                    : (alt.empty() ? "sans-serif" : alt));
         auto alpha = _missing_font ? "60%" : "100%";
-        return Glib::ustring::format("<span allow_breaks='false' alpha='", alpha, "' size='", font_size_percent,
+        return Glib::ustring::format("<span allow_breaks='false' fallback='false' alpha='", alpha, "' size='", font_size_percent,
                                      "%' font='", font_desc, "'>", text, "</span>");
     }
 
