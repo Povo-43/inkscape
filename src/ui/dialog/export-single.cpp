@@ -1043,7 +1043,7 @@ unsigned int SingleExport::onProgressCallback(float value, void *data)
 
 void SingleExport::refreshPreview()
 {
-    if (!_desktop) {
+    if (!_desktop || !_document) {
         preview.resetPixels();
         return;
     }
@@ -1087,6 +1087,7 @@ void SingleExport::setDesktop(SPDesktop *desktop)
     if (desktop != _desktop) {
         _page_selected_connection.disconnect();
         _desktop = desktop;
+        refreshPreview();
     }
 }
 

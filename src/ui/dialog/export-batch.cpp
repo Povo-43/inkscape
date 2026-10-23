@@ -515,7 +515,7 @@ void BatchExport::refreshItems()
 
 void BatchExport::refreshPreview()
 {
-    if (!_desktop) return;
+    if (!_desktop || !_document) return;
 
     // For Batch Export we are now hiding all object except current object
     bool hide = hide_all.get_active();
@@ -944,6 +944,7 @@ void BatchExport::setDesktop(SPDesktop *desktop)
     if (desktop != _desktop) {
         _pages_changed_connection.disconnect();
         _desktop = desktop;
+        refreshPreview();
     }
 }
 
