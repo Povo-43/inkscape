@@ -114,6 +114,7 @@ Svg::init()
             "<action pref='/options/svgexport/text_insertfallback'>insert-text-fallback</action>\n"
             "<action>prune-proprietary-namespaces</action>\n"
             "<action>prune-inkscape-namespaces</action>\n"
+            "<action>correct-clippath-use</action>\n"
         "</inkscape-extension>", std::make_unique<Svg>());
     // clang-format on
 
