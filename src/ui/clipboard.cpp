@@ -774,7 +774,7 @@ bool ClipboardManagerImpl::pasteStyle(ObjectSet *set)
 
     // check whether something is selected
     if (set->isEmpty()) {
-        _userWarn(set->desktop(), _("Select <b>object(s)</b> to paste style to."));
+        _userWarn(set->desktop(), _("Select object(s) to paste style to."));
         return false;
     }
 
@@ -838,7 +838,7 @@ bool ClipboardManagerImpl::pasteSize(ObjectSet *set, bool separately, bool apply
 
     if (set->isEmpty()) {
         if(set->desktop())
-            _userWarn(set->desktop(), _("Select <b>object(s)</b> to paste size to."));
+            _userWarn(set->desktop(), _("Select object(s) to paste size to."));
         return false;
     }
 
@@ -900,7 +900,7 @@ bool ClipboardManagerImpl::pastePathEffect(ObjectSet *set)
     }
 
     if (!set || set->isEmpty()) {
-        _userWarn(set->desktop(), _("Select <b>object(s)</b> to paste live path effect to."));
+        _userWarn(set->desktop(), _("Select object(s) to paste live path effect to."));
         return false;
     }
 
@@ -2022,12 +2022,12 @@ void ClipboardManagerImpl::_setClipboardColor(Colors::Color const &color)
 }
 
 /**
- * Put a notification on the message stack.
+ * Show a canvas notice.
  */
 void ClipboardManagerImpl::_userWarn(SPDesktop *desktop, char const *msg)
 {
     if (desktop) {
-        desktop->messageStack()->flash(Inkscape::WARNING_MESSAGE, msg);
+        desktop->showNotice(msg, 5000);
     }
 }
 
