@@ -28,6 +28,12 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING
 
 project(inkscape)
 
+if(APPLE)
+    enable_language(OBJCXX)
+    set(CMAKE_OBJCXX_STANDARD 20)
+    set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)
+endif()
+
 include(CMakeScripts/HelperFunctions.cmake)
 include(CMakeScripts/ConfigEnv.cmake)
 

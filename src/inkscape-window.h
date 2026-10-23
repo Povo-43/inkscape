@@ -64,6 +64,7 @@ private:
     Gdk::Toplevel::State _old_toplevel_state{};
 
     void on_realize() override;
+    void on_unrealize() override;
     Glib::RefPtr<Gdk::Toplevel const> get_toplevel() const;
     void on_toplevel_state_changed();
     void on_is_active_changed();
