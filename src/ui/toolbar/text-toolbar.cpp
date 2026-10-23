@@ -180,14 +180,10 @@ TextToolbar::TextToolbar(Glib::RefPtr<Gtk::Builder> const &builder)
                            "direction_mode", &TextToolbar::direction_changed);
 
     _mode_menus = {
-        {&get_widget<Gtk::MenuButton>(builder, "horizontal_align_menu"), _alignment_buttons,
-        },
-        {&get_widget<Gtk::MenuButton>(builder, "writing_mode_menu"), _writing_buttons,
-        },
-        {&get_widget<Gtk::MenuButton>(builder, "orientation_menu"), _orientation_buttons,
-        },
-        {&get_widget<Gtk::MenuButton>(builder, "direction_menu"), _direction_buttons,
-        },
+        {&get_widget<Gtk::MenuButton>(builder, "horizontal_align_menu"), _alignment_buttons},
+        {&get_widget<Gtk::MenuButton>(builder, "writing_mode_menu"), _writing_buttons},
+        {&get_widget<Gtk::MenuButton>(builder, "orientation_menu"), _orientation_buttons},
+        {&get_widget<Gtk::MenuButton>(builder, "direction_menu"), _direction_buttons},
     };
     update_mode_menu_icons();
 
