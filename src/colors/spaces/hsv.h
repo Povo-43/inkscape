@@ -47,9 +47,9 @@ public:
             v = i[2];
         }
         double f = d - std::floor(d);
-        double w = v * (1.0 - i[1]);
-        double q = v * (1.0 - (i[1] * f));
-        double t = v * (1.0 - (i[1] * (1.0 - f)));
+        double w = v * (1.0 - e);
+        double q = v * (1.0 - (e * f));
+        double t = v * (1.0 - (e * (1.0 - f)));
 
         if (d < 1.0) {
             o[0] = v;

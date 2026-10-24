@@ -441,9 +441,13 @@ std::string SvgBuilder::convertGfxColor(const GfxColor &color, GfxColorSpace *sp
         switch (space->getMode()) {
             case csDeviceGray:
             case csCalGray:
-                GfxGray gray;
-                space->_POPPLER_GET_GRAY(color, &gray);
-                return Colors::Color(get_space(cmsSigGrayData, Type::Gray), {colToDbl(gray)}).toString();
+                {
+                    GfxGray gray;
+                    space->_POPPLER_GET_GRAY(color, &gray);
+                    auto v = colToDbl(gray);
+                    // There is no Gray CSS format, it's just sRGB.
+                    return Colors::Color(get_space(cmsSigGrayData, Type::RGB), {v, v, v}).toString();
+                }
             case csDeviceRGB:
             case csCalRGB:
                 GfxRGB rgb;

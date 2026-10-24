@@ -44,7 +44,8 @@ public:
 
         if constexpr (PremultipliedAlpha) {
             black = i[3] / i[4];
-            white = (1.0 - i[3]) / i[4];
+            white = (1.0 - (i[3] / i[4])) / i[4];
+            o[3] = i[4];
         } else {
             black = i[3];
             white = 1.0 - black;

@@ -34,7 +34,6 @@ class ColorXmlColor : public ::testing::Test
         auto cms = &CMS::System::get();
         cms->clearDirectoryPaths();
         cms->addDirectoryPath(icc_dir, false);
-        cms->refreshProfiles();
 
         auto prefs = Inkscape::Preferences::get();
         prefs->setBool("/options/svgoutput/inlineattrs", false);

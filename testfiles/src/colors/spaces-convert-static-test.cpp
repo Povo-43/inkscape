@@ -67,7 +67,7 @@ TEST(ColorSpaceStaticConvertTest, premultipliedAlpha)
             EXPECT_EQ(out_b[alpha_out], 0.5) << space->getName();
             out_a[alpha_out] = out_b[alpha_out]; // Harmonise for testing
             // They should be the same output as the premultiplication was undone
-            EXPECT_TRUE(VectorIsNear(out_a, out_b, 0.01)) << space->getName();
+            EXPECT_TRUE(VectorIsNear(out_a, out_b, 0.01)) << space->getName() << ", " << alpha_in << ", " << alpha_out;
         }
     }
 }

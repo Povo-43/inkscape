@@ -96,7 +96,6 @@ protected:
         cms.clearDirectoryPaths();
         std::string icc_dir = INKSCAPE_TESTS_DIR "/data/colors/";
         cms.addDirectoryPath(icc_dir, false);
-        cms.refreshProfiles();
 
         std::string svg_objs_file = INKSCAPE_TESTS_DIR "/data/colors/cms-in-objs.svg";
         doc = SPDocument::createNewDoc(svg_objs_file.c_str());

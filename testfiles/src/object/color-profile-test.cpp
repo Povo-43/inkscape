@@ -60,7 +60,6 @@ protected:
         auto &cms = Inkscape::Colors::CMS::System::get();
         cms.clearDirectoryPaths();
         cms.addDirectoryPath(icc_dir, false);
-        cms.refreshProfiles();
 
         // Load the test svg file with a bunch of icc profiles
         doc = SPDocument::createNewDoc(getDocFilename().c_str());
