@@ -189,6 +189,8 @@ void SPText::update(SPCtx *ctx, guint flags) {
             }
         }
 
+        style->font_size.set_opsz(ictx->i2doc.expansionX());
+
         /* fixme: It is not nice to have it here, but otherwise children content changes does not work */
         /* fixme: Even now it may not work, as we are delayed */
         /* fixme: So check modification flag everywhere immediate state is used */

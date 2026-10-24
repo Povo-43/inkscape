@@ -138,6 +138,7 @@ std::vector<AttributeInfo> getKnownAttrs()
         AttributeInfo("flood-opacity", true),
         AttributeInfo("font-family", true),
         AttributeInfo("font-feature-settings", true),
+        AttributeInfo("font-optical-sizing", true),
         AttributeInfo("font-size", true),
         AttributeInfo("font-size-adjust", true),
         AttributeInfo("font-stretch", true),

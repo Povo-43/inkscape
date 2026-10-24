@@ -167,6 +167,11 @@ enum SPCSSFontVariantEastAsian : std::uint_least16_t {
     SP_CSS_FONT_VARIANT_EAST_ASIAN_RUBY                    = 256
 };
 
+enum SPCSSFontOpticalSizing : std::uint_least8_t {
+    SP_CSS_FONT_OPTICAL_SIZING_AUTO                        = 0,
+    SP_CSS_FONT_OPTICAL_SIZING_NONE                        = 1
+};
+
 enum SPCSSTextAlign : std::uint_least8_t {
     SP_CSS_TEXT_ALIGN_START,
     SP_CSS_TEXT_ALIGN_END,
@@ -511,6 +516,11 @@ static SPStyleEnum const enum_font_variant_east_asian[] = {
     {"proportional-width", SP_CSS_FONT_VARIANT_EAST_ASIAN_PROPORTIONAL_WIDTH},
     {"ruby", SP_CSS_FONT_VARIANT_EAST_ASIAN_RUBY},
     {nullptr, -1}
+};
+
+static SPStyleEnum const enum_font_optical_sizing[] = {
+    {"auto", SP_CSS_FONT_OPTICAL_SIZING_AUTO},
+    {"none", SP_CSS_FONT_OPTICAL_SIZING_NONE}
 };
 
 static SPStyleEnum const enum_text_align[] = {

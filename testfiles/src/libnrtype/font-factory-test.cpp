@@ -27,12 +27,6 @@ protected:
     Inkscape::Util::Statics statics;
 };
 
-TEST_F(FontFactoryTest, getSingleton)
-{
-    auto &factory = FontFactory::get();
-    ASSERT_EQ(factory.fontSize, 512);
-}
-
 TEST_F(FontFactoryTest, GetUIFamilies)
 {
     std::vector<std::string> families;
@@ -66,9 +60,9 @@ TEST_F(FontFactoryTest, GetUIStyles)
     }
 }
 
-TEST_F(FontFactoryTest, FaceFromDesc)
+TEST_F(FontFactoryTest, FaceFromFontSpecification)
 {
-    auto face = FontFactory::get().FaceFromDescr("Serif", "Bold");
+    auto face = FontFactory::get().FaceFromFontSpecification("Serif Bold");
     ASSERT_TRUE(face);
 }
 

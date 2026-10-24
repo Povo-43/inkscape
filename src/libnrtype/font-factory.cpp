@@ -24,8 +24,6 @@
 #define PANGO_ENABLE_ENGINE
 #endif
 
-#include <unordered_map>
-
 #include <glibmm/i18n.h>
 #include <glibmm/miscutils.h>
 
@@ -409,33 +407,24 @@ std::vector<StyleNames> FontFactory::GetUIStyles(const Glib::RefPtr<Pango::FontF
     return result;
 }
 
-std::shared_ptr<FontInstance> FontFactory::FaceFromDescr(char const *family, char const *style)
-{
-    PangoFontDescription *temp_descr = pango_font_description_from_string(style);
-    pango_font_description_set_family(temp_descr,family);
-    auto res = Face(temp_descr);
-    pango_font_description_free(temp_descr);
-    return res;
-}
-
+// Only used by font-list.cpp and in the function following this one. (Why was this added?)
 std::shared_ptr<FontInstance> FontFactory::FaceFromPangoString(char const *pangoString)
 {
     std::shared_ptr<FontInstance> fontInstance;
 
     g_assert(pangoString);
 
-    if (pangoString) {
+    // Create a font description from the string - this may fail or
+    // produce unexpected results if the string does not have a good format
+    PangoFontDescription *descr = pango_font_description_from_string(pangoString);
 
-        // Create a font description from the string - this may fail or
-        // produce unexpected results if the string does not have a good format
-        PangoFontDescription *descr = pango_font_description_from_string(pangoString);
-
-        if (descr) {
-            if (sp_font_description_get_family(descr)) {
-                fontInstance = Face(descr);
-            }
-            pango_font_description_free(descr);
+    if (descr) {
+        if (sp_font_description_get_family(descr)) {
+            fontInstance = Face(descr);
         }
+        pango_font_description_free(descr);
+    } else {
+        std::cerr << "FontFactory::FaceFromPangoString: no font family! " << pangoString << std::endl;
     }
 
     return fontInstance;
@@ -443,23 +432,15 @@ std::shared_ptr<FontInstance> FontFactory::FaceFromPangoString(char const *pango
 
 std::shared_ptr<FontInstance> FontFactory::FaceFromFontSpecification(char const *fontSpecification)
 {
-    std::shared_ptr<FontInstance> font;
-
     g_assert(fontSpecification);
 
-    if (fontSpecification) {
-        // How the string is used to reconstruct a font depends on how it
-        // was constructed in ConstructFontSpecification.  As it stands,
-        // the font specification is a pango-created string
-        font = FaceFromPangoString(fontSpecification);
-    }
-
-    return font;
+    return FaceFromPangoString(fontSpecification);
 }
 
+// Called by only by font-discovery. WHY?
 std::unique_ptr<FontInstance> FontFactory::create_face(PangoFontDescription* descr) {
-    // Mandatory huge size (hinting workaround).
-    pango_font_description_set_size(descr, fontSize * PANGO_SCALE);
+
+    pango_font_description_set_size(descr, PANGO_SCALE);
 
     if (!sp_font_description_get_family(descr)) {
         return {};
@@ -469,15 +450,21 @@ std::unique_ptr<FontInstance> FontFactory::create_face(PangoFontDescription* des
     return std::make_unique<FontInstance>(pango_font_map_load_font(fontServer, fontContext, descr), descr_copy);
 }
 
+// Called by Layout::InputStreamTextSource::styleGetFontInstance() which is called by:
+//   Layout::_buildSpansForPara() to get font line-height metrics.
+//   Layout::_calculateCursorShapeForEmpty() to get line-height metrics and slope.
+// Called by Layout-TNG-Compute to find face after itemizing (which can change description).
+// Called by ink_font_from_style() to get line-height metrics in several places.
+// Called by getSubstituteFontName()
 std::shared_ptr<FontInstance> FontFactory::Face(PangoFontDescription *descr, bool canFail)
 {
-    // Mandatory huge size (hinting workaround).
-    pango_font_description_set_size(descr, fontSize * PANGO_SCALE);
-
+    // std::cout << "FontFactory::Face: " << pango_font_description_to_string(descr) << std::endl;
     // Check if already loaded.
     if (auto res = loaded.lookup(descr)) {
+        // std::cout << "  --- already loaded" << std::endl;
         return res;
     }
+    // std::cout << "  --- loading" << std::endl;
 
     // Handle failures by falling back to sans-serif. If even that fails, throw.
     auto fallback = [&] {
@@ -513,21 +500,6 @@ std::shared_ptr<FontInstance> FontFactory::Face(PangoFontDescription *descr, boo
         return fallback();
     }
 }
-
-// Not used, need to add variations if ever used.
-// std::shared_ptr<FontInstance> FontFactory::Face(char const *family, int variant, int style, int weight, int stretch, int /*size*/, int /*spacing*/)
-// {
-//     // std::cout << "FontFactory::Face(family, variant, style, weight, stretch)" << std::endl;
-//     PangoFontDescription *temp_descr = pango_font_description_new();
-//     pango_font_description_set_family(temp_descr,family);
-//     pango_font_description_set_weight(temp_descr,(PangoWeight)weight);
-//     pango_font_description_set_stretch(temp_descr,(PangoStretch)stretch);
-//     pango_font_description_set_style(temp_descr,(PangoStyle)style);
-//     pango_font_description_set_variant(temp_descr,(PangoVariant)variant);
-//     auto res = Face(temp_descr);
-//     pango_font_description_free(temp_descr);
-//     return res;
-// }
 
 # ifdef _WIN32
 void FontFactory::AddFontFilesWin32(char const *directory_path)
@@ -651,22 +623,7 @@ bool FontFactory::Compare::operator()(PangoFontDescription const *a, PangoFontDe
 
 size_t FontFactory::Hash::operator()(PangoFontDescription const *x) const
 {
-    // Need to avoid using the size field.
-    size_t hash = 0;
-    auto const family = sp_font_description_get_family(x);
-    hash += family ? g_str_hash(family) : 0;
-    hash *= 1128467;
-    hash += (size_t)pango_font_description_get_style(x);
-    hash *= 1128467;
-    hash += (size_t)pango_font_description_get_variant(x);
-    hash *= 1128467;
-    hash += (size_t)pango_font_description_get_weight(x);
-    hash *= 1128467;
-    hash += (size_t)pango_font_description_get_stretch(x);
-    hash *= 1128467;
-    auto const variations = pango_font_description_get_variations(x);
-    hash += variations ? g_str_hash(variations) : 0;
-    return hash;
+    return pango_font_description_hash(x);
 }
 
 /**

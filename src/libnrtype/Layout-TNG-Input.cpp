@@ -23,7 +23,6 @@
 #include "svg/svg-length.h"
 #include "font-factory.h"
 
-
 namespace Inkscape {
 namespace Text {
 
@@ -199,23 +198,11 @@ Layout::Alignment Layout::InputStreamTextSource::styleGetAlignment(Layout::Direc
 
 std::shared_ptr<FontInstance> Layout::InputStreamTextSource::styleGetFontInstance() const
 {
-    PangoFontDescription *descr = styleGetFontDescription();
+    PangoFontDescription *descr = ink_font_description_from_style( style );
     if (descr == nullptr) return nullptr;
     auto res = FontFactory::get().Face(descr);
     pango_font_description_free(descr);
     return res;
-}
-
-PangoFontDescription *Layout::InputStreamTextSource::styleGetFontDescription() const
-{
-    // This use to be done by code here but it duplicated more complete code in FontFactory.cpp.
-    PangoFontDescription *descr = ink_font_description_from_style( style );
-
-    // Font size not yet set
-    // mandatory huge size (hinting workaround)
-    pango_font_description_set_size(descr, FontFactory::get().fontSize * PANGO_SCALE);
-
-    return descr;
 }
 
 Layout::InputStreamTextSource::~InputStreamTextSource() = default;

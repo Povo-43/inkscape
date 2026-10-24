@@ -999,6 +999,8 @@ public:
 
     bool equals(const SPIBase& rhs) const override;
 
+    void set_opsz(double scale) { opsz = computed * scale; }
+
 public:
     static double const font_size_default;
 
@@ -1009,6 +1011,9 @@ public:
     unsigned literal : 4;
     double value;
     double computed;
+
+    // Used to store font-size after all transformations applied. Needed for variable fonts with an "opsz" axis.
+    double opsz = 0.0;
 
 private:
     double relative_fraction() const;

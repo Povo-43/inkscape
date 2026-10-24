@@ -718,8 +718,6 @@ public:
         Glib::ustring lang;
 
         // a few functions for some of the more complicated style accesses
-        /// The return value must be freed with pango_font_description_free()
-        PangoFontDescription *styleGetFontDescription() const;
         std::shared_ptr<FontInstance> styleGetFontInstance() const;
         Direction styleGetBlockProgression() const;
         SPCSSTextOrientation styleGetTextOrientation() const;

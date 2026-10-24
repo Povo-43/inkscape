@@ -7,8 +7,13 @@
  */
 
 #include "style-text.h"
+#include "libnrtype/font-instance.h"
+#include "libnrtype/font-utils.h"
 
 // User must free return value.
+// Used below to find font for finding font metrics.
+// Used in Layout-TNG-Input to find font.
+// Used in FontLister.
 PangoFontDescription *ink_font_description_from_style(SPStyle const *style)
 {
     PangoFontDescription *descr = pango_font_description_new();
@@ -101,34 +106,43 @@ PangoFontDescription *ink_font_description_from_style(SPStyle const *style)
         pango_font_description_set_variations(descr, style->font_variation_settings.toString().c_str());
     }
 
-    return descr;
-}
-
-std::shared_ptr<FontInstance> ink_font_from_style(SPStyle const *style)
-{
-    std::shared_ptr<FontInstance> font;
-
-    g_assert(style);
-
-    if (style) {
-
-        //  First try to use the font specification if it is set
-        char const *val;
-        if (style->font_specification.set
-            && (val = style->font_specification.value())
-            && val[0]) {
-
-            font = FontFactory::get().FaceFromFontSpecification(val);
-        }
-
-        // If that failed, try using the CSS information in the style
-        if (!font) {
-            auto temp_descr = ink_font_description_from_style(style);
-            font = FontFactory::get().Face(temp_descr);
-            pango_font_description_free(temp_descr);
+    // Set "opsz" variable font axis, if present in font.
+    // Pango commit ca7ff79717305f5667759810c1e6f6d429617c52 sets "opsz" to point size,
+    // in the function pango_fc_font_create_hb_font().
+    auto font = FontFactory::get().Face(descr);
+    auto axes = font->get_opentype_varaxes();
+    for (auto axis : axes) {
+        if (axis.tag == "opsz") {
+            // The font face has the "opsz" axis.
+            auto variations = pango_font_description_get_variations(descr);
+            auto variations_map = Inkscape::parse_variations(variations);
+            if (style->font_optical_sizing.computed == SP_CSS_FONT_OPTICAL_SIZING_NONE) {
+                // Always use default value from font.
+                variations_map["opsz"] = std::to_string(axis.def);
+            } else {
+                // Auto: use "opsz" from font-variation-settings if present or from transformed font-size.
+                if (!variations_map.count("opsz")) {
+                    // Not already set, set to scaled font size.
+                    variations_map["opsz"] = std::to_string(style->font_size.opsz);
+                }
+            }
+            auto variations_out = Inkscape::variations_to_string(variations_map);
+            pango_font_description_set_variations(descr, variations_out.c_str());
+            break;
         }
     }
 
+    pango_font_description_set_size(descr, style->font_size * PANGO_SCALE);
+
+    return descr;
+}
+
+// Only used by SPText, SPFlowText, and Layout::Calculator to find the "strut" using FontMetrics.
+std::shared_ptr<FontInstance> ink_font_from_style(SPStyle const *style)
+{
+    auto temp_descr = ink_font_description_from_style(style);
+    auto font = FontFactory::get().Face(temp_descr);
+    pango_font_description_free(temp_descr);
     return font;
 }
 

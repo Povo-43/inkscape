@@ -105,7 +105,6 @@ bool Layout::Calculator::_measureUnbrokenSpan(ParagraphInfo const &para,
     }
 
     // a normal span going with a normal block-progression
-    double font_size_multiplier = span->start.iter_span->font_size / (PANGO_SCALE * _font_factory_size_multiplier);
     double soft_hyphen_glyph_width = 0.0;
     bool soft_hyphen_in_word = false;
     bool is_soft_hyphen = false;
@@ -159,7 +158,7 @@ bool Layout::Calculator::_measureUnbrokenSpan(ParagraphInfo const &para,
                && span->end.iter_span->glyph_string->log_clusters[span->end_glyph_index] <= (int)span->end.char_byte) {
 
             PangoGlyphInfo *info = &(span->end.iter_span->glyph_string->glyphs[span->end_glyph_index]);
-            double glyph_width    = font_size_multiplier * info->geometry.width;
+            double glyph_width = info->geometry.width / (double)PANGO_SCALE;
 
             // Advance does not include kerning but Pango gives wrong advances for vertical text
             // with upright orientation (pre 1.44.0).
@@ -504,7 +503,6 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
                 InputStreamTextSource const *text_source = static_cast<InputStreamTextSource const *>(_flow._input_stream[unbroken_span.input_index]);
                 Glib::ustring::const_iterator iter_source_text = Glib::ustring::const_iterator(unbroken_span.input_stream_first_character.base() + it_span->start.char_byte) ;
                 unsigned char_index_in_unbroken_span = it_span->start.char_index;
-                double   font_size_multiplier        = new_span.font_size / (PANGO_SCALE * _font_factory_size_multiplier);
                 int      log_cluster_size_glyphs     = 0;   // Number of glyphs in this log_cluster
                 int      log_cluster_size_chars      = 0;   // Number of characters in this log_cluster 
                 unsigned end_byte                    = 0;
@@ -521,9 +519,9 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
 #ifdef DEBUG_GLYPH
                 std::cerr << "\nGlyphs in span: x_start: " << new_span.x_start << " y_offset: " << new_span.y_offset
                           << "  PangoItem flags: " << (int)pango_item->analysis.flags << " Gravity: " << (int)pango_item->analysis.gravity << std::endl;
-                std::cerr << "  Unicode  Glyph  h_advance  v_advance  width  cluster    orientation   new_glyph         delta"     << std::endl;
-                std::cerr << "   (hex)     No.                                start                   x       y       x       y"   << std::endl;
-                std::cerr << "  -------------------------------------------------------------------------------------------------" << std::endl;
+                std::cerr << "    Unicode    Glyph  h_advance  v_advance  width  cluster    orientation   new_glyph         delta"   << std::endl;
+                std::cerr << "     (hex)       No.                                start                   x       y       x       y" << std::endl;
+                std::cerr << "  ---------------------------------------------------------------------------------------------------" << std::endl;
 #endif
 
                 for (unsigned glyph_index = it_span->start_glyph_index ; glyph_index < it_span->end_glyph_index ; glyph_index++) {
@@ -557,7 +555,7 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
 
                     // create the Layout::Glyph
                     PangoGlyphInfo *unbroken_span_glyph_info = &unbroken_span.glyph_string->glyphs[glyph_index];
-                    double glyph_width = font_size_multiplier * unbroken_span_glyph_info->geometry.width;
+                    double glyph_width = unbroken_span_glyph_info->geometry.width / (double)PANGO_SCALE;
 
                     Layout::Glyph new_glyph;
                     new_glyph.glyph = unbroken_span_glyph_info->glyph;
@@ -571,9 +569,9 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
                     double glyph_v_advance = new_span.font_size * font->Advance(new_glyph.glyph, true );
 
 #ifdef DEBUG_GLYPH
-
                     bool is_cluster_start = unbroken_span_glyph_info->attr.is_cluster_start;
                     std::cerr << "  " << std::hex << std::setw(6) << *iter_source_text << std::dec
+                              << "  " << std::setw(2) << (char)*iter_source_text
                               << "  " << std::setw(6) << new_glyph.glyph
                               << std::fixed << std::showpoint << std::setprecision(2)
                               << "   " << std::setw(6) << glyph_h_advance
@@ -602,8 +600,8 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
 
                     // y-coordinate is flipped between vertical and horizontal text...
                     // delta_y is common offset but applied with opposite sign
-                    double delta_x = unbroken_span_glyph_info->geometry.x_offset * font_size_multiplier;
-                    double delta_y = unbroken_span_glyph_info->geometry.y_offset * font_size_multiplier - unbroken_span.baseline_shift;
+                    double delta_x = unbroken_span_glyph_info->geometry.x_offset / (double)PANGO_SCALE;
+                    double delta_y = unbroken_span_glyph_info->geometry.y_offset / (double)PANGO_SCALE - unbroken_span.baseline_shift;
                     SPCSSBaseline dominant_baseline = _flow._blockBaseline();
 
                     if (_block_progression == LEFT_TO_RIGHT || _block_progression == RIGHT_TO_LEFT) {
@@ -664,7 +662,6 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
                                 new_glyph.y -= delta_y;
 
                                 double shift = 0;
-                                double scale_factor = PANGO_SCALE * _font_factory_size_multiplier;
                                 if (!font->has_vertical()) {
 
                                     // If there are no vertical metrics, glyphs are vertically
@@ -681,8 +678,8 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
                                     // relative to baseline.
                                     shift =
                                         font->GetTypoAscent() +
-                                        ink_rect.y / scale_factor + // negative
-                                        (ink_rect.height / scale_factor / 2.0) -
+                                        ink_rect.y / PANGO_SCALE + // negative
+                                        (ink_rect.height / PANGO_SCALE / 2.0) -
                                         0.5;
                                 }
 
@@ -730,8 +727,8 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
                                 hb_position_t x_origin = 0.0;
                                 hb_position_t y_origin = 0.0;
                                 hb_font_get_glyph_v_origin(hb_font, new_glyph.glyph, &x_origin, &y_origin);
-                                new_glyph.x += y_origin * font_size_multiplier;
-                                new_glyph.y -= x_origin * font_size_multiplier;
+                                new_glyph.x += y_origin / (double)PANGO_SCALE;
+                                new_glyph.y -= x_origin / (double)PANGO_SCALE;
                             } else {
                                 // 1.48.4 <= Pango (good mark positioning)
                                 new_glyph.x += delta_x;
@@ -800,26 +797,7 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
 
                     // Correct for right to left text
                     if (new_span.direction == RIGHT_TO_LEFT) {
-
-                        // The following commented out code is from 2005. Subtracting cluster width gives wrong placement if more
-                        // than one glyph has a horizontal advance. See GitHub issue 469. I leave the old code here in case switching to
-                        // subtracting only the glyph width causes unforseen bugs.
-
-                        // // pango wanted to give us glyphs in visual order but we refused, so we need to work
-                        // // out where the cluster start is ourselves
-
-                        // // Add up widths of remaining glyphs in span.
-                        // double cluster_width = 0.0;
-                        // std::cout << "  glyph_index: " << glyph_index << " end_glyph_index: " << it_span->end_glyph_index << std::endl;
-                        // for (unsigned rtl_index = glyph_index; rtl_index < it_span->end_glyph_index ; rtl_index++) {
-                        //     if (unbroken_span.glyph_string->glyphs[rtl_index].attr.is_cluster_start && rtl_index != glyph_index) {
-                        //         break;
-                        //     }
-                        //     cluster_width += font_size_multiplier * unbroken_span.glyph_string->glyphs[rtl_index].geometry.width;
-                        // }
-                        // new_glyph.x -= cluster_width;
-
-                        new_glyph.x -= font_size_multiplier * unbroken_span.glyph_string->glyphs[glyph_index].geometry.width;
+                        new_glyph.x -= unbroken_span.glyph_string->glyphs[glyph_index].geometry.width / (double)PANGO_SCALE;
                     }
 
                     // Store glyph data
@@ -1109,6 +1087,7 @@ void  Layout::Calculator::_buildPangoItemizationForPara(ParagraphInfo *para) con
             // end_index
 
             PangoAttribute *attribute_font_description = pango_attr_font_desc_new(font->get_descr());
+            // std::cout << "Layout::Calculator::_buildPangoItemizationForPara: A: " << pango_font_description_to_string(font->get_descr()) << std::endl;
             attribute_font_description->start_index = start_index;
             attribute_font_description->end_index = end_index;
             pango_attr_list_insert(attributes_list, attribute_font_description);
@@ -1160,6 +1139,10 @@ void  Layout::Calculator::_buildPangoItemizationForPara(ParagraphInfo *para) con
         PangoItemInfo new_item;
         new_item.item = (PangoItem*)current_pango_item->data;
         PangoFontDescription *font_description = pango_font_describe(new_item.item->analysis.font);
+        // A variable font will have 'wght', 'wdth', and 'opsz' added to the font description. They
+        // are added before any set values, so that set values will override default values (or in
+        // the cae of "opsz", the font size).
+        // std::cout << "Layout::Calculator::_buildPangoItemizationForPara: B: " << pango_font_description_to_string(font_description) << std::endl;
         new_item.font = FontFactory::get().Face(font_description);
         pango_font_description_free(font_description);   // Face() makes a copy
         para->pango_items.push_back(new_item);
@@ -1375,6 +1358,11 @@ unsigned Layout::Calculator::_buildSpansForPara(ParagraphInfo *para) const
                                      -1,
                                      &para->pango_items[pango_item_index].item->analysis,
                                      new_span.glyph_string);
+
+                    // auto analysis = &para->pango_items[pango_item_index].item->analysis;
+                    // auto font = analysis->font;
+                    // auto description = pango_font_describe(font);
+                    // std::cout << pango_font_description_to_string(description) << std::endl;
 
                     if (para->pango_items[pango_item_index].item->analysis.level & 1) {
                         // Right to left text (Arabic, Hebrew, etc.)
@@ -1905,8 +1893,6 @@ bool Layout::Calculator::calculate()
     _flow._clearOutputObjects();
 
     _pango_context = FontFactory::get().get_font_context();
-
-    _font_factory_size_multiplier = FontFactory::get().fontSize;
 
     _block_progression = _flow._blockProgression();
     if( _block_progression == RIGHT_TO_LEFT || _block_progression == LEFT_TO_RIGHT ) {

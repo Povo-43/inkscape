@@ -757,6 +757,7 @@ template <> SPStyleEnum const *get_enums<SPCSSFontWeight>() { return enum_font_w
 template <> SPStyleEnum const *get_enums<SPCSSFontStretch>() { return enum_font_stretch; }
 template <> SPStyleEnum const *get_enums<SPCSSFontVariantPosition>() { return enum_font_variant_position; }
 template <> SPStyleEnum const *get_enums<SPCSSFontVariantCaps>() { return enum_font_variant_caps; }
+template <> SPStyleEnum const *get_enums<SPCSSFontOpticalSizing>() { return enum_font_optical_sizing; }
 
 // SPIEnum --------------------------------------------------------------
 
@@ -3489,6 +3490,7 @@ template class SPIEnum<SPCSSFontStyle>;
 template class SPIEnum<SPCSSFontVariant>;
 template class SPIEnum<SPCSSFontVariantPosition>;
 template class SPIEnum<SPCSSFontVariantCaps>;
+template class SPIEnum<SPCSSFontOpticalSizing>;
 template class SPIEnum<SPCSSFontWeight>;
 template class SPIEnum<uint_least16_t>;
 template class SPIEnum<uint_least8_t>;

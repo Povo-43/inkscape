@@ -132,6 +132,8 @@ void SPTSpan::update(SPCtx *ctx, guint flags) {
         double const ex = 0.5 * em;  // fixme: get x height from pango or libnrtype.
 
         attributes.update( em, ex, w, h );
+
+        style->font_size.set_opsz(ictx->i2doc.expansionX());
     }
 }
 

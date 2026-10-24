@@ -106,6 +106,7 @@ class SPStylePropHelper {
 
         // Variable Fonts
         REGISTER_PROPERTY(SPAttr::FONT_VARIATION_SETTINGS, font_variation_settings, "font-variation-settings");
+        REGISTER_PROPERTY(SPAttr::FONT_OPTICAL_SIZING, font_optical_sizing, "font-optical-sizing");
 
         REGISTER_PROPERTY(SPAttr::TEXT_INDENT, text_indent, "text-indent");
         REGISTER_PROPERTY(SPAttr::TEXT_ALIGN, text_align, "text-align");
@@ -292,6 +293,7 @@ SPStyle::SPStyle(SPDocument *document_in, SPObject *object_in) :
 
     // Variable Fonts
     font_variation_settings(),  // SPIFontVariationSettings
+    font_optical_sizing(    SP_CSS_FONT_OPTICAL_SIZING_AUTO),
 
     // Text related properties
     text_indent(            ),  // SPILength

@@ -494,6 +494,7 @@ static SPStyleProp const props[] = {
     {SPAttr::FONT, "font"},
     {SPAttr::FONT_FAMILY, "font-family"},
     {SPAttr::INKSCAPE_FONT_SPEC, "-inkscape-font-specification"},
+    {SPAttr::FONT_OPTICAL_SIZING, "font-optical-sizing"},
     {SPAttr::FONT_SIZE, "font-size"},
     {SPAttr::FONT_SIZE_ADJUST, "font-size-adjust"},
     {SPAttr::FONT_STRETCH, "font-stretch"},

@@ -141,6 +141,8 @@ public:
 
     /** Font variation settings (Low level access to OpenType variable font design-coordinate values) */
     T<SPAttr::FONT_VARIATION_SETTINGS, SPIFontVariationSettings> font_variation_settings;
+    /** Font variation "opsz" behavior */
+    T<SPAttr::FONT_OPTICAL_SIZING, SPIEnum<SPCSSFontOpticalSizing>> font_optical_sizing;
 
     /* Text ----------------------------- */
 

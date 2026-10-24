@@ -82,17 +82,31 @@ std::map<std::string, std::string> parse_variations(const char* variations)
     auto regex = Glib::Regex::create("(\\w{4})=([-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?)");
     Glib::MatchInfo matchInfo;
 
-    std::vector<Glib::ustring> tokens = Glib::Regex::split_simple(",", variations);
-    for (auto const &token : tokens) {
-        regex->match(token, matchInfo);
-        if (matchInfo.matches()) {
-            auto tag   = matchInfo.fetch(1).raw();
-            auto value = matchInfo.fetch(2).raw();
-            variations_map[tag] = value; // This will alphabetize axes based on tag.
+    if (variations) {
+        std::vector<Glib::ustring> tokens = Glib::Regex::split_simple(",", variations);
+        for (auto const &token : tokens) {
+            regex->match(token, matchInfo);
+            if (matchInfo.matches()) {
+                auto tag   = matchInfo.fetch(1).raw();
+                auto value = matchInfo.fetch(2).raw();
+                variations_map[tag] = value; // This will alphabetize axes based on tag.
+            }
         }
     }
 
     return variations_map;
+}
+
+std::string variations_to_string(std::map<std::string, std::string> const &map)
+{
+    std::string out;
+    for (auto [key, value] : map) {
+        out += key + "=" + value + ",";
+    }
+    if (out.size() > 0) {
+        out.pop_back(); // Remove last ','.
+    }
+    return out;
 }
 
 } // namespace Inkscape

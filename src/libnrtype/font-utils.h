@@ -25,6 +25,8 @@ Glib::ustring canonize_fontspec(Glib::ustring const &fontspec);
 // Returns a map of 'tag' => 'value' from a variations string. TEST
 std::map<std::string, std::string> parse_variations(const char* variations);
 
+std::string variations_to_string(std::map<std::string, std::string> const &map);
+
 } // namespace Inkscape
 
 /*

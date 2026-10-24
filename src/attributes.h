@@ -496,6 +496,7 @@ enum class SPAttr {
     FONT,
     FONT_FAMILY,
     INKSCAPE_FONT_SPEC,  // Remove me
+    FONT_OPTICAL_SIZING, // Before font-size
     FONT_SIZE,
     FONT_SIZE_ADJUST,
     FONT_STRETCH,

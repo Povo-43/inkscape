@@ -25,7 +25,7 @@ protected:
     }
 
     void SetUp() override {
-        font = FontFactory::get().FaceFromDescr("FreeSans", "Normal");
+        font = FontFactory::get().FaceFromFontSpecification("FreeSans Regular");
     }   
     void TearDown() override {
         font = {};
