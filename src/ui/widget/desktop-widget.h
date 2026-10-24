@@ -159,7 +159,9 @@ public:
     void setCoordinateStatus(Geom::Point p);
     void onFocus(bool has_focus);
     Inkscape::UI::Dialog::DialogContainer *getDialogContainer();
-    void showNotice(Glib::ustring const &msg, int timeout = 0);
+
+    void showNotice(Glib::ustring const &msg);
+    void showNotice(Glib::ustring const &msg, int timeout);
 
     void desktopChangedDocument(SPDesktop *desktop);
     void desktopChangedTitle(SPDesktop *desktop);

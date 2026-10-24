@@ -418,7 +418,7 @@ void SwatchEditor::import_swatches() {
         DocumentUndo::done(_document, RC_("Undo", "Import swatches"), "");
     }
     else if (_desktop) {
-        _desktop->showNotice(res.error_message);
+        _desktop->showNotice(res.error_message, 0);
     }
 }
 

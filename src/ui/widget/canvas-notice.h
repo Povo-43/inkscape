@@ -20,7 +20,8 @@ public:
 
     CanvasNotice(BaseObjectType *cobject, Glib::RefPtr<Gtk::Builder> const &builder);
 
-    void show(Glib::ustring const &msg, int timeout = 0);
+    // Pass 0 to timeout to have the notice remain open until closed by user
+    void show(Glib::ustring const &msg, int timeout = 5000);
     void hide();
 
 private:

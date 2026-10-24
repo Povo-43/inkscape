@@ -422,6 +422,11 @@ void CanvasGrid::ToggleCommandPalette()
     _command_palette->toggle();
 }
 
+void CanvasGrid::showNotice(Glib::ustring const &msg)
+{
+    _notice->show(msg);
+}
+
 void CanvasGrid::showNotice(Glib::ustring const &msg, int timeout)
 {
     _notice->show(msg, timeout);

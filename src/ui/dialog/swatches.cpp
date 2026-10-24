@@ -623,7 +623,7 @@ bool SwatchesPanel::load_swatches(std::string const &path)
         _loaded_palette = std::move(*res.palette);
         return true;
     } else if (auto desktop = getDesktop()) {
-        desktop->showNotice(res.error_message);
+        desktop->showNotice(res.error_message, 0);
     }
 
     return false;

@@ -2027,7 +2027,7 @@ void ClipboardManagerImpl::_setClipboardColor(Colors::Color const &color)
 void ClipboardManagerImpl::_userWarn(SPDesktop *desktop, char const *msg)
 {
     if (desktop) {
-        desktop->showNotice(msg, 5000);
+        desktop->showNotice(msg);
     }
 }
 

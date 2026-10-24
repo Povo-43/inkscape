@@ -290,7 +290,7 @@ void PolarArrangeTab::arrange()
 
         if (!referenceEllipse) {
             if (auto desktop = parent->getDesktop()) {
-                desktop->showNotice(_("Couldn't find an ellipse in selection"), 5000);
+                desktop->showNotice(_("Couldn't find an ellipse in selection"));
             }
             return;
         } else {
@@ -333,7 +333,7 @@ void PolarArrangeTab::arrange()
 
     if (count < 1) {
         if (auto desktop = parent->getDesktop()) {
-            desktop->showNotice(_("No objects to arrange"), 5000);
+            desktop->showNotice(_("No objects to arrange"));
         }
         return;
     }

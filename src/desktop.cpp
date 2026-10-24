@@ -1509,6 +1509,11 @@ void SPDesktop::_detachDocument()
     _schedule_zoom_from_document_connection.disconnect();
 }
 
+void SPDesktop::showNotice(Glib::ustring const &msg)
+{
+    _widget->showNotice(msg);
+}
+
 void SPDesktop::showNotice(Glib::ustring const &msg, int timeout)
 {
     _widget->showNotice(msg, timeout);

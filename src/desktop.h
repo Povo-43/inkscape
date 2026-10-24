@@ -408,7 +408,9 @@ public:
     void setToolboxAdjustmentValue(char const *id, double val);
     bool isToolboxButtonActive(char const *id) const;
     void updateDialogs();
-    void showNotice(Glib::ustring const &msg, int timeout = 0);
+
+    void showNotice(Glib::ustring const &msg);
+    void showNotice(Glib::ustring const &msg, int timeout);
 
     void setWaitingCursor();
     void clearWaitingCursor();

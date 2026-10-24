@@ -472,6 +472,11 @@ DialogContainer *SPDesktopWidget::getDialogContainer()
     return _container.get();
 }
 
+void SPDesktopWidget::showNotice(Glib::ustring const &msg)
+{
+    _canvas_grid->showNotice(msg);
+}
+
 void SPDesktopWidget::showNotice(Glib::ustring const &msg, int timeout)
 {
     _canvas_grid->showNotice(msg, timeout);
