@@ -22,6 +22,18 @@ namespace Space {
 class AnySpace;
 } // namespace Space
 
+class ColorError : public std::exception
+{
+public:
+    ColorError(std::string &&msg)
+        : _msg(msg)
+    {}
+    char const *what() const noexcept override { return _msg.c_str(); }
+
+private:
+    std::string _msg;
+};
+
 class Color final
 {
 public:
@@ -112,18 +124,6 @@ private:
     void _color_mutate_inplace(Color const &other, unsigned int pin, Func avgFunc);
 
     bool _isnear(std::vector<double> const &other, double epsilon = 0.001) const;
-};
-
-class ColorError : public std::exception
-{
-public:
-    ColorError(std::string &&msg)
-        : _msg(msg)
-    {}
-    char const *what() const noexcept override { return _msg.c_str(); }
-
-private:
-    std::string _msg;
 };
 
 } // namespace Inkscape::Colors

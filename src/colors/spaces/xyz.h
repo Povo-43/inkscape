@@ -48,7 +48,8 @@ public:
 
     std::shared_ptr<Inkscape::Colors::CMS::Profile> const getProfile() const override { return getXYZ65Profile(); }
 
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 class XYZ50 : public ProfileSpace<true>
@@ -61,7 +62,8 @@ public:
 
     std::shared_ptr<Inkscape::Colors::CMS::Profile> const getProfile() const override;
 
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 } // namespace Inkscape::Colors::Space

@@ -54,13 +54,7 @@ public:
     ~RGB() override = default;
 
     std::shared_ptr<Colors::CMS::Profile> const getProfile() const override { return getRGBProfile(); }
-protected:
 
-    friend class Inkscape::Colors::Color;
-
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
-
-public:
     class Parser : public LegacyParser
     {
     public:
@@ -69,6 +63,9 @@ public:
         {}
         bool parse(std::istringstream &input, std::vector<double> &output) const override;
     };
+
+protected:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 } // namespace Inkscape::Colors::Space

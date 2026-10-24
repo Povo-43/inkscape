@@ -29,12 +29,6 @@ public:
 
     static std::string getNameFor(unsigned int rgba);
 
-protected:
-    friend class Inkscape::Colors::Color;
-
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
-
-public:
     class NameParser : public Colors::Parser
     {
     public:
@@ -43,6 +37,8 @@ public:
         {}
         bool parse(std::istringstream &input, std::vector<double> &output) const override;
     };
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 } // namespace Inkscape::Colors::Space

@@ -134,7 +134,7 @@ std::string CMS::CmsParser::parseColor(std::istringstream &ss, std::vector<doubl
  *
  * @returns the string suitable for css and style use.
  */
-std::string CMS::toString(std::vector<double> const &values, bool /*opacity*/) const
+std::string CMS::_to_string(std::vector<double> const &values, bool /*opacity*/) const
 {
     if (values.size() < _profile_size)
         return "";

@@ -84,7 +84,7 @@ public:
 
     std::shared_ptr<Space::AnySpace> getDocumentColorSpace() const;
     bool setDocumentColorSpace(std::shared_ptr<Space::AnySpace> const &space);
-    std::shared_ptr<Space::AnySpace> mapToStorageFormat(std::shared_ptr<Space::AnySpace> const &input) const;
+
 private:
     void refreshResources();
     void invalidateCaches();

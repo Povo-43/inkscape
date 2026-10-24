@@ -16,6 +16,7 @@
 #include <gtkmm/grid.h>         // for Grid
 
 #include "colors/color-set.h"
+#include "colors/manager.h"
 #include "preferences.h"        // for PrefObserver
 
 class SPDocument;
@@ -43,7 +44,7 @@ public:
 
 protected:
     void _initUI();
-    void _addPageForSpace(std::shared_ptr<Colors::Space::AnySpace> space);
+    void _addPageForPicker(std::shared_ptr<Colors::Picker> picker);
     void setDocument(SPDocument *document);
 
     static void _onPickerClicked(GtkWidget *widget, ColorNotebook *colorbook);
@@ -71,7 +72,7 @@ protected:
 
 private:
     PrefObserver _observer;
-    std::vector<PrefObserver> _visibility_observers;
+    std::vector<sigc::scoped_connection> _visibility_connections;
 
     SPDocument *_document = nullptr;
     sigc::connection _doc_replaced_connection;

@@ -131,8 +131,6 @@ public:
         }
     }
 
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
-
     class Parser : public HueParser
     {
     public:
@@ -140,6 +138,9 @@ public:
 	     : HueParser("hsl", Type::HSL, alpha, 100.0)
         {}
     };
+
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 } // namespace Inkscape::Colors::Space

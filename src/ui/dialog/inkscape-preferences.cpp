@@ -2176,15 +2176,15 @@ void InkscapePreferences::initPageUI()
     {
         auto const container = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
         auto prefs = Inkscape::Preferences::get();
-        for (auto& space : Colors::Manager::get().spaces(Colors::Space::Traits::Picker)) {
+        for (auto &picker : Colors::Manager::get().pickers()) {
             auto const btn = Gtk::make_managed<Gtk::ToggleButton>();
             auto const box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
-            auto const label = Gtk::make_managed<Gtk::Label>(space->getShortName());
+            auto const label = Gtk::make_managed<Gtk::Label>(picker->getName());
             label->set_valign(Gtk::Align::CENTER);
             UI::pack_start(*box, *label);
-            UI::pack_start(*box, *sp_get_icon_image(space->getIcon(), 16));
+            UI::pack_start(*box, *sp_get_icon_image(picker->getIconName(), 16));
             box->set_spacing(3);
-            auto path = space->getPrefsPath() + "visible";
+            auto path = "/colorselector/" + picker->getName() + "/visible";
             btn->set_active(prefs->getBool(path));
             btn->set_child(*box);
             btn->set_has_frame(false);

@@ -45,6 +45,18 @@ namespace Space {
 
 class Components;
 
+class ColorSpaceError : public std::exception
+{
+public:
+    ColorSpaceError(std::string &&msg)
+        : _msg(msg)
+    {}  
+    char const *what() const noexcept override { return _msg.c_str(); }
+
+private:
+    std::string _msg;
+};
+
 class AnySpace : public std::enable_shared_from_this<AnySpace>
 {
 public:
@@ -84,15 +96,11 @@ public:
     Color toGamut(const Colors::Color& color);
 
     Components const &getComponents(bool alpha = false) const;
-    std::string const getPrefsPath() const { return "/colorselector/" + getName() + "/"; }
 
     /**
      * Returns true almost always. Only CMS could have a different return value.
      */
     virtual bool hasValidCmsProfile() const { return true; }
-
-    // If this space can be printed in the SVG or CSS Color Module output, mostly true
-    virtual bool canToString() const { return true; }
 
     virtual bool spaceToProfile(std::vector<double> &io) const = 0;
     virtual bool profileToProfile(std::vector<double> &io, std::shared_ptr<Colors::CMS::Profile> const &profile, RenderingIntent intent) const = 0;
@@ -112,14 +120,16 @@ public:
             && to_space->profileToSpace(io);
     }
 
+    void overrideOutputFormat(std::shared_ptr<AnySpace> space);
 protected:
     friend class Colors::Color;
 
     AnySpace(Type type, int components, std::string name, std::string shortName, std::string icon, bool spaceIsUnbounded = false);
 
     bool isValidData(std::vector<double> const &values) const;
-    virtual std::string toString(std::vector<double> const &values, bool opacity = true) const = 0;
     uint32_t toRGBA(std::vector<double> const &values, double opacity = 1.0) const;
+    std::string toString(std::vector<double> const &values, bool opacity = true) const;
+    virtual bool canToString() const { return true; }
 
     virtual bool overInk(std::vector<double> const &input) const { return false; }
     bool outOfGamut(std::vector<double> const &input, std::shared_ptr<AnySpace> to_space) const;
@@ -127,7 +137,13 @@ protected:
     RenderingIntent _intent = RenderingIntent::UNKNOWN;
     int _intent_priority = 0;
     std::vector<std::string> _svgNames;
+    std::shared_ptr<AnySpace> _output_space;
 private:
+    virtual std::string _to_string(std::vector<double> const &values, bool opacity = true) const
+    {
+        throw ColorSpaceError("Can not print color to string, no format available or fallback color space format set.");
+    }
+
     mutable std::map<std::string, std::shared_ptr<Colors::CMS::GamutChecker>> _gamut_checkers;
     Type _type;
     int _components;

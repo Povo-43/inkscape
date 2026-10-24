@@ -299,6 +299,17 @@ TEST_F(ColorDocumentCMSObjsTest, getDocumentColorSpace)
     EXPECT_EQ(space->getName(), "cmyk-acm");
 }
 
+TEST_F(ColorDocumentCMSObjsTest, mapToStorageFormat)
+{
+    auto &tr = doc->getDocumentCMS();
+
+    EXPECT_EQ(tr.mapToStorageFormat(Manager::get().find("rgb"))->getName(), "cmyk-acm");
+    EXPECT_EQ(tr.mapToStorageFormat(Manager::get().find("hsl"))->getName(), "cmyk-acm");
+    EXPECT_EQ(tr.mapToStorageFormat(Manager::get().find("cmyk-acm"))->getName(), "cmyk-acm");
+
+
+}
+
 class ColorDocumentCMSDefsTest : public ColorDocumentCMSObjsTest
 {
     std::string const &getDocFilename() const override

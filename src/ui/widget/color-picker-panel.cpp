@@ -261,8 +261,10 @@ void ColorPickerPanelImpl::rebuild_color_space_list()
     _spaces.clear();
 
     // list available color space types
-    for (auto&& space : Manager::get().spaces(Space::Traits::Picker)) {
-        _spaces.add_row(space->getIcon(), _(space->getShortName().c_str()), space->getId());
+    for (auto&& picker : Manager::get().pickers()) {
+        if (auto space = Manager::get().find(picker->getType())) {
+            _spaces.add_row(picker->getIconName(), _(picker->getName().c_str()), space->getId());
+        }
     }
     // list of document color management profiles
     if (_document) {

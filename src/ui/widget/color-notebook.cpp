@@ -98,8 +98,8 @@ void ColorNotebook::_initUI()
     _combo->set_tooltip_text(_("Choose style of color selection"));
 
     // Add all universal (non-document icc profile) color spaces
-    for (auto &space : Colors::Manager::get().spaces(Space::Traits::Picker)) {
-        _addPageForSpace(space);
+    for (auto &picker : Colors::Manager::get().pickers()) {
+        _addPageForPicker(picker);
     }
 
     _label = Gtk::make_managed<Gtk::Label>();
@@ -293,23 +293,24 @@ void ColorNotebook::_setCurrentPage(int i, bool sync_combo)
     }
 }
 
-void ColorNotebook::_addPageForSpace(std::shared_ptr<Colors::Space::AnySpace> space)
+void ColorNotebook::_addPageForPicker(std::shared_ptr<Colors::Picker> picker)
 {
+    auto space = Colors::Manager::get().find(picker->getType());
     auto selector_widget = Gtk::make_managed<ColorPage>(space, _colors);
     auto mode_name = space->getName();
     _book->add(*selector_widget, mode_name, mode_name);
 
     auto const n_pages = UI::get_n_children(*_book);
     auto const page_num = n_pages - 1;
-    _combo->add_row(space->getIcon(), mode_name, page_num);
+    _combo->add_row(picker->getIconName(), mode_name, page_num);
 
-    auto prefs = Inkscape::Preferences::get();
-    auto obs = prefs->createObserver(space->getPrefsPath() + "visible", [this,selector_widget,page_num](const Preferences::Entry& value) {
-        _combo->set_row_visible(page_num, value.getBool());
-        selector_widget->set_visible(value.getBool());
-    });
-    obs->call();
-    _visibility_observers.emplace_back(std::move(obs));
+    _visibility_connections.emplace_back(picker->connectChanged([this,selector_widget,page_num,picker]() {
+        _combo->set_row_visible(page_num, picker->isVisible());
+        selector_widget->set_visible(picker->isVisible());
+    }));
+
+    _combo->set_row_visible(page_num, picker->isVisible());
+    selector_widget->set_visible(picker->isVisible());
 }
 
 void ColorNotebook::setCurrentColor(std::shared_ptr<Colors::ColorSet> colors)

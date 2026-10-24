@@ -28,6 +28,8 @@ public:
     OkHsl(): RGBBase(Type::OKHSL, "OkHsl", "OkHsl", "color-selector-okhsl", true) {}
     ~OkHsl() override = default;
 
+    bool canToString() const override { return false; }
+
     template<typename T, bool PremultipliedAlpha = false>
     inline static void spaceToProfile(T const *i, T *o)
     {
@@ -91,9 +93,6 @@ public:
             o[3] = i[3];
         }
     }
-
-    bool canToString() const override { return false; }
-    std::string toString(std::vector<double> const &values, bool opacity) const override { return ""; }
 };
 
 } // namespace Inkscape::Colors::Space

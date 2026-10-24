@@ -460,20 +460,6 @@ bool DocumentCMS::setDocumentColorSpace(std::shared_ptr<Space::AnySpace> const &
     return _document->getRoot()->setColorSpace(space);
 }
 
-std::shared_ptr<Space::AnySpace> DocumentCMS::mapToStorageFormat(std::shared_ptr<Space::AnySpace> const &input) const
-{
-    static auto prefs = Preferences::get();
-
-    // Create a cache for this DocumentCMS which can be invalidated 
-    auto &found_iter = _storage_map_cache[input->getId()];
-    if (not found_iter) {
-        auto mapped = prefs->getString(input->getPrefsPath() + "storageMap", "");
-        auto output = Manager::get().find(mapped);
-        found_iter = output ? output : getDocumentColorSpace();
-    }
-    return found_iter;
-}
-
 void DocumentCMS::invalidateCaches()
 {
     _storage_map_cache.clear();

@@ -30,8 +30,6 @@ public:
 
     std::shared_ptr<Colors::CMS::Profile> const getProfile() const override;
 
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
-
     // NOTE: the following conversions are used by OkLab to avoid being based in the linearRGB icc profile
     /**
      * Convert a color from the a linear RGB colorspace to the sRGB colorspace.
@@ -67,6 +65,8 @@ public:
         o[2] = to_linear(i[2]);
     }
 
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 } // namespace Inkscape::Colors::Space

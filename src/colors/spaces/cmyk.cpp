@@ -22,7 +22,7 @@ namespace Inkscape::Colors::Space {
  * @arg values - A vector of doubles for each channel in the DeviceCMYK space
  * @arg opacity - True if the opacity should be included in the output.
  */
-std::string DeviceCMYK::toString(std::vector<double> const &values, bool opacity) const
+std::string DeviceCMYK::_to_string(std::vector<double> const &values, bool opacity) const
 {
     auto os = CssFuncPrinter(4, "device-cmyk");
     os << values;

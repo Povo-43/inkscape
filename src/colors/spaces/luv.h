@@ -42,6 +42,8 @@ public:
     Luv(): XYZBase(Type::LUV, "Luv", "Luv", "color-selector-luv") {}
     ~Luv() override = default;
 
+    bool canToString() const override { return false; }
+
     /**
      * Convert a color from the the Luv colorspace to the XYZ colorspace.
      */
@@ -137,9 +139,6 @@ public:
 
     static std::vector<double> fromCoordinates(std::vector<double> const &in);
     static std::vector<double> toCoordinates(std::vector<double> const &in);
-
-    bool canToString() const override { return false; }
-    std::string toString(std::vector<double> const &values, bool opacity) const override { return ""; }
 };
 
 } // namespace Inkscape::Colors::Space

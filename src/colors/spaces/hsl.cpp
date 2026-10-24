@@ -22,7 +22,7 @@ namespace Inkscape::Colors::Space {
  * @arg values - A vector of doubles for each channel in the HSL space
  * @arg opacity - True if the opacity should be included in the output.
  */
-std::string HSL::toString(std::vector<double> const &values, bool opacity) const
+std::string HSL::_to_string(std::vector<double> const &values, bool opacity) const
 {
     static constexpr double CSS_SL_SCALE = 100.0;
     auto oo = CssLegacyPrinter(3, "hsl", opacity && values.size() == 4);

@@ -31,7 +31,7 @@ std::shared_ptr<Inkscape::Colors::CMS::Profile> const LinearRGB::getProfile() co
  * @arg values - A vector of doubles for each channel in the RGB space
  * @arg opacity - True if the opacity should be included in the output.
  */
-std::string LinearRGB::toString(std::vector<double> const &values, bool opacity) const
+std::string LinearRGB::_to_string(std::vector<double> const &values, bool opacity) const
 {
     auto os = CssColorPrinter(3, "srgb-linear");
     os << values;

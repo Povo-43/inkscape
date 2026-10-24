@@ -27,7 +27,6 @@ public:
     ~OkHsv() override = default;
 
     bool canToString() const override { return false; }
-    std::string toString(std::vector<double> const &values, bool opacity) const override { return ""; }
 
     template <typename T, bool PremultipliedAlpha = false>
     inline static void spaceToProfile(T const *i, T *o)

@@ -40,7 +40,7 @@ bool HSV::fromHwbParser::parse(std::istringstream &ss, std::vector<double> &outp
  * @arg values - A vector of doubles for each channel in the HSV space
  * @arg opacity - True if the opacity should be included in the output.
  */
-std::string HSV::toString(std::vector<double> const &values, bool opacity) const
+std::string HSV::_to_string(std::vector<double> const &values, bool opacity) const
 {
     static constexpr double CSS_WB_SCALE = 100.0;
     auto oo = CssFuncPrinter(3, "hwb");

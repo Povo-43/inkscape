@@ -103,9 +103,6 @@ public:
         }
     }
 
-    std::string toString(std::vector<double> const &values, bool opacity) const override;
-
-public:
     class Parser : public Colors::Parser
     {
     public:
@@ -145,6 +142,9 @@ public:
             o[c] = dot3(M2[c], cones);
         }
     }
+
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity) const override;
 };
 
 } // namespace Inkscape::Colors::Space

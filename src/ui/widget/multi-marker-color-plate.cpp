@@ -58,7 +58,8 @@ MultiMarkerColorPlate::MultiMarkerColorPlate(Colors::ColorSet const &colors)
     });
 
     int index = 0;
-    for (auto &space : Colors::Manager::get().spaces(Space::Traits::Picker)) {
+    for (auto &picker : Colors::Manager::get().pickers()) {
+        auto space = manager->find(picker->getType());
         _createSlidersForSpace(space, _specific_colors, index);
         _addPageForSpace(space, index++);
     }

@@ -102,7 +102,36 @@ uint32_t AnySpace::toRGBA(std::vector<double> const &values, double opacity) con
     return to_int32(values);
 }
 
+/**
+ * Output this color in the best format possible. This is set by choosing an alternative space
+ * where the output is not possible or not desirable for the given process.
+ *
+ * @arg values - The numerical values from the Color object to process.
+ * @arg opacity - If the opacity portion should be ignored in the output.
+ *
+ * @returns A CSS string value for this color in this or the alternative color space format.
+ */
+std::string AnySpace::toString(std::vector<double> const &values, bool opacity) const
+{
+    if (!_output_space || *_output_space == *this) {
+        return _to_string(values, opacity);
+    }
 
+    auto nv = values;
+    convert(nv, _output_space);
+    // We could call toSpace to allow multiple hops, but this introduces
+    // problematic ring conditions of self-referencing.
+    return _output_space->_to_string(nv, opacity);
+}
+
+/**
+ * Called from the main program to set an override, if needed, for this type
+ * of color space and how it should be converted to a string in the above toString function.
+ */
+void AnySpace::overrideOutputFormat(std::shared_ptr<AnySpace> space)
+{
+    _output_space = std::move(space);
+}
 
 /**
  * Return true if the color would be out of gamut in the target color space.

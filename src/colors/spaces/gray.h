@@ -23,6 +23,8 @@ public:
 
     Gray(): RGBBase(Type::Gray, "Gray", "Gray", "color-selector-gray") {}
 
+    bool canToString() const override { return false; }
+
     /**
      * Convert a single gray channel into an RGB
      */
@@ -55,9 +57,6 @@ public:
             o[1] = i[3];
         }
     }
-
-    bool canToString() const override { return false; }
-    std::string toString(std::vector<double> const &values, bool opacity) const override { return ""; }
 };
 
 } // namespace Inkscape::Colors::Space

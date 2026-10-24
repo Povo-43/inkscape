@@ -23,7 +23,9 @@
 
 #include "colors/color.h"
 #include "colors/color-set.h"
+#include "colors/document-cms.h"
 #include "desktop.h"
+#include "document.h"
 #include "filter-chemistry.h"
 #include "inkscape.h"
 #include "selection.h"
@@ -79,13 +81,10 @@ sp_desktop_set_color(SPDesktop *desktop, Color const &color, bool is_relative, b
         return;
     }
 
-    // TODO: Add DocumentCMS::mapToStorageFormat here to map to known good formats.
-
     SPCSSAttr *css = sp_repr_css_attr_new();
     sp_repr_css_set_property_string(css, fill ? "fill" : "stroke", color.toString(false));
     sp_repr_css_set_property_double(css, fill ? "fill-opacity" : "stroke-opacity", color.getOpacity());
     sp_desktop_set_style(desktop, css);
-
     sp_repr_css_attr_unref(css);
 }
 
@@ -213,8 +212,7 @@ sp_desktop_set_style(Inkscape::ObjectSet *set, SPDesktop *desktop, SPCSSAttr *cs
         // Update item type's current style for all seleted item types
         // Remap some item type names (for tools that can create more than one item type)
         static const std::unordered_map<std::string, const char*> item_type_map = {
-            {"circle", "arc"},
-            {"polygon", "star"},
+
             {"text-flow", "text"},
             {"group", nullptr}
         };

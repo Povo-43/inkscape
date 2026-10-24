@@ -40,12 +40,11 @@ protected:
     friend class Colors::DocumentCMS;
 
     bool spaceToProfile(std::vector<double> &io) const override;
-
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
-
     bool overInk(std::vector<double> const &input) const override;
 
 private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
+
     unsigned _profile_size;
     Type _profile_type;
     std::shared_ptr<Colors::CMS::Profile> _profile;

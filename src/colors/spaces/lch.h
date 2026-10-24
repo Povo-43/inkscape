@@ -104,8 +104,6 @@ public:
         }
     }
 
-    std::string toString(std::vector<double> const &values, bool opacity) const override;
-
     class Parser : public Colors::Parser
     {
     public:
@@ -114,6 +112,8 @@ public:
         {}
         bool parse(std::istringstream &input, std::vector<double> &output) const override;
     };
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity) const override;
 };
 
 } // namespace Inkscape::Colors::Space

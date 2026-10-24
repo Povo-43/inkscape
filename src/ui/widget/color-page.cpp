@@ -13,6 +13,8 @@
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 
+#include "colors/manager.h"
+#include "colors/spaces/base.h"
 #include "color-wheel-factory.h"
 #include "colors/color-set.h"
 #include "ink-color-wheel.h"
@@ -92,26 +94,27 @@ ColorPage::ColorPage(std::shared_ptr<Space::AnySpace> space, std::shared_ptr<Col
     }
 
     // Color wheel
-    auto wheel_type = _specific_colors->getComponents().get_wheel_type();
-    // there are only a few types of color wheel supported:
-    if (can_create_color_wheel(wheel_type)) {
-        _expander.property_expanded().signal_changed().connect([this, wheel_type]() {
-            auto on = _expander.property_expanded().get_value();
-            if (on && !_color_wheel) {
-                // create color wheel now
-                create_color_wheel(wheel_type, true);
-                _expander.set_child(_color_wheel->get_widget());
-            }
-            if (_color_wheel) {
-                if (on) {
-                    // update, wheel may be stale if it was hidden
+    _expander.set_visible(false);
+    if (auto picker = Colors::Manager::get().findPicker(_space->getType())) {
+        auto wheel_type = picker->getWheelType();
+        // there are only a few types of color wheel supported:
+        if (can_create_color_wheel(wheel_type)) {
+            _expander.set_visible(true);
+            _expander.property_expanded().signal_changed().connect([this, wheel_type]() {
+                auto on = _expander.property_expanded().get_value();
+                if (on && !_color_wheel) {
+                    // create color wheel now
+                    create_color_wheel(wheel_type, true);
+                    _expander.set_child(_color_wheel->get_widget());
+                }
+                if (_color_wheel) {
+                    if (on) {
+                        // update, wheel may be stale if it was hidden
                     _color_wheel->set_color(_specific_colors->getAverage());
                 }
-            }
-        });
-    }
-    else {
-        _expander.set_visible(false);
+                }
+            });
+        }
     }
 }
 
