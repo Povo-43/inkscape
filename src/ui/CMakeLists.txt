@@ -657,7 +657,7 @@ target_sources(inkscape_base PRIVATE
 
 if(APPLE)
     target_sources(inkscape_base PRIVATE macos/window-animation.mm macos/window-animation.h)
-    set_source_files_properties(macos/window-animation.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+    target_compile_options(inkscape_base PRIVATE $<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc>)
     target_link_libraries(inkscape_base PRIVATE "-framework AppKit")
 endif()
 
