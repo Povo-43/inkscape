@@ -1613,8 +1613,10 @@ void SPIColorInterpolation::read(gchar const *str)
         // Required for profile name containing a period (e.g., "CASIO-COMPUTER-CO.-LTD")
         css_unquote(unquoted_str);
         _value = unquoted_str;
-        _color_space_cache.reset();
+    } else {
+        _value = "";
     }
+    _color_space_cache.reset();
 }
 
 std::shared_ptr<Inkscape::Colors::Space::AnySpace> const SPIColorInterpolation::getInterpolationSpace() const

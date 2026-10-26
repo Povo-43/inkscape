@@ -81,8 +81,12 @@ sp_desktop_set_color(SPDesktop *desktop, Color const &color, bool is_relative, b
         return;
     }
 
+    // This converts a color picker color space like HSL, to a document color space like
+    // sRGB or icc-profile color depending on the document configuration and the global settings.
+    auto color_str = desktop->getDocument()->getDocumentCMS().toDocumentColorString(color);
+
     SPCSSAttr *css = sp_repr_css_attr_new();
-    sp_repr_css_set_property_string(css, fill ? "fill" : "stroke", color.toString(false));
+    sp_repr_css_set_property_string(css, fill ? "fill" : "stroke", color_str);
     sp_repr_css_set_property_double(css, fill ? "fill-opacity" : "stroke-opacity", color.getOpacity());
     sp_desktop_set_style(desktop, css);
     sp_repr_css_attr_unref(css);

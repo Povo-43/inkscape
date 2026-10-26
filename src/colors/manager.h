@@ -47,6 +47,15 @@ public:
     bool isVisible() const { return _is_visible; }
     void setVisible(bool visible) { _is_visible = visible; _changed_signal.emit(); }
 
+    Space::Type formatOutputType() const {
+        return _format_output_type != Space::Type::NONE
+            ? _format_output_type
+            : (_type == Space::Type::CMS
+                ? Space::Type::NONE
+                : Space::Type::DOCUMENT);
+    }
+    void setFormatOutputType(Space::Type type) { _format_output_type = type; _changed_signal.emit(); }
+
     sigc::connection connectChanged(const sigc::slot<void()> &slot) { return _changed_signal.connect(slot); }
 private:
     Space::Type _type;
@@ -55,6 +64,7 @@ private:
     std::string _iconname;
 
     bool _is_visible = true;
+    Space::Type _format_output_type = Space::Type::NONE;
     sigc::signal<void()> _changed_signal;
 };
 

@@ -46,6 +46,7 @@
 
 #include "display/control/ctrl-handle-manager.h"
 #include "display/translucency-group.h"
+#include "libnrtype/font-instance.h"
 #include "ui/icon-loader.h"
 #include "ui/widget/generic/icon-combobox.h"
 #include "ui/widget/handle-preview.h"

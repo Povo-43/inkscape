@@ -1972,12 +1972,16 @@ std::shared_ptr<Inkscape::Colors::Space::AnySpace> SPItem::getColorSpace() const
 bool SPItem::setColorSpace(std::shared_ptr<Inkscape::Colors::Space::AnySpace> const &space)
 {
     if (SPCSSAttr *style = sp_css_attr_from_object(this)) {
-        if (auto doc_space = document->getDocumentCMS().ensureColorSpaceIsInstalled(space)) {
+        if (!space) {
+            sp_repr_css_unset_property(style, "color-interpolation");
+        } else if (auto doc_space = document->getDocumentCMS().ensureColorSpaceIsInstalled(space)) {
             sp_repr_css_set_property(style, "color-interpolation", doc_space->getSvgName().c_str());
-            sp_repr_css_set(getRepr(), style, "style");
-            sp_repr_css_attr_unref(style);
-            return true;
+        } else {
+            return false;
         }
+        sp_repr_css_set(getRepr(), style, "style");
+        sp_repr_css_attr_unref(style);
+        return true;
     }
     return false;
 }

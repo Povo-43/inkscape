@@ -294,20 +294,35 @@ TEST_F(ColorDocumentCMSObjsTest, findSvgAttribute)
 TEST_F(ColorDocumentCMSObjsTest, getDocumentColorSpace)
 {
     auto &tr = doc->getDocumentCMS();
+    EXPECT_EQ(tr.getDocumentColorSpace()->getName(), "cmyk-acm");
 
-    auto space = tr.getDocumentColorSpace();
-    EXPECT_EQ(space->getName(), "cmyk-acm");
+    tr.setDocumentColorSpace(tr.getSpace("grb"));
+    EXPECT_EQ(std::string(doc->getReprRoot()->attribute("style")), "color-interpolation:Swapped-Red-and-Green");
+    EXPECT_EQ(tr.getDocumentColorSpace()->getName(), "Swapped-Red-and-Green");
+
+    tr.setDocumentColorSpace({});
+    EXPECT_FALSE(doc->getReprRoot()->attribute("style"));
+    EXPECT_EQ(tr.getDocumentColorSpace()->getName(), "RGB");
+}
+
+TEST_F(ColorDocumentCMSObjsTest, toDocumentColorString)
+{
+    auto &tr = doc->getDocumentCMS();
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "#cf2c2d icc-color(cmyk-acm, 0, 1, 1, 0)");
+
+    tr.setDocumentColorSpace(tr.getSpace("grb"));
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "#ff0000 icc-color(Swapped-Red-and-Green, 0, 1, 0)");
+
+    tr.setDocumentColorSpace({});
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "#ff0000");
 }
 
 TEST_F(ColorDocumentCMSObjsTest, mapToStorageFormat)
 {
     auto &tr = doc->getDocumentCMS();
-
-    EXPECT_EQ(tr.mapToStorageFormat(Manager::get().find("rgb"))->getName(), "cmyk-acm");
-    EXPECT_EQ(tr.mapToStorageFormat(Manager::get().find("hsl"))->getName(), "cmyk-acm");
-    EXPECT_EQ(tr.mapToStorageFormat(Manager::get().find("cmyk-acm"))->getName(), "cmyk-acm");
-
-
+    EXPECT_EQ(tr.mapToStorageFormat(Manager::get().find(Colors::Space::Type::RGB))->getName(), "cmyk-acm");
+    EXPECT_EQ(tr.mapToStorageFormat(Manager::get().find(Colors::Space::Type::HSL))->getName(), "cmyk-acm");
+    EXPECT_EQ(tr.mapToStorageFormat(tr.getSpace("cmyk-acm"))->getName(), "cmyk-acm");
 }
 
 class ColorDocumentCMSDefsTest : public ColorDocumentCMSObjsTest
@@ -358,6 +373,17 @@ TEST_F(ColorDocumentCMSDefsTest, getDocumentColorSpace)
     EXPECT_EQ(space->getName(), "RGB");
 }
 
+TEST_F(ColorDocumentCMSDefsTest, toDocumentColorString)
+{
+    auto &tr = doc->getDocumentCMS();
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "#ff0000");
+
+    tr.setDocumentColorSpace(Manager::get().find(Space::Type::HSL));
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "hsl(0, 100%, 50%)");
+
+    tr.setDocumentColorSpace(Manager::get().find(Space::Type::CMYK));
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "device-cmyk(0 1 1 0)");
+}
 } // namespace
 
 /*

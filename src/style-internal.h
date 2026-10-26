@@ -810,6 +810,7 @@ public:
     const Glib::ustring get_value() const override { return _value; }
     void clear() override {
         SPIBase::clear();
+        _value = "";
         _color_space_cache.reset();
     }
     void cascade( const SPIBase* const parent ) override;

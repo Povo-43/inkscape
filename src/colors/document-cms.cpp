@@ -111,14 +111,7 @@ DocumentCMS::DocumentCMS(SPDocument *document)
 {
     if (document) {
         _resource_connection =
-            _document->connectResourcesChanged("iccprofile", sigc::mem_fun(*this, &DocumentCMS::refreshResources));
-
-        // Reset the document_space cache when anythhing in the SPRoot style changes
-        _document_space_watcher = document->getRoot()->connectModified([this](SPObject *obj, unsigned flags) {
-            if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG && flags & SP_OBJECT_MODIFIED_FLAG && is<SPRoot>(obj)) {
-                _document_space.reset();
-            }
-        });
+            _document->connectResourcesChanged("iccprofile", sigc::mem_fun(*this, &DocumentCMS::_refresh_resources));
     }
 }
 
@@ -172,7 +165,7 @@ std::optional<Color> DocumentCMS::parse(std::string const &value) const
  * Make sure the icc-profile resource list is linked and up to date
  * with the color manager's list of available color spaces.
  */
-void DocumentCMS::refreshResources()
+void DocumentCMS::_refresh_resources()
 {
     bool changed = false;
 
@@ -208,7 +201,7 @@ void DocumentCMS::refreshResources()
     }
 
     // 4. Invalidate caches for map and document_profile
-    invalidateCaches();
+    _invalidate_caches();
 }
 
 /**
@@ -247,7 +240,7 @@ void DocumentCMS::removeProfile(std::shared_ptr<Space::CMS> space)
     if (result != _spaces.end()) {
         _spaces.erase(result);
     }
-    invalidateCaches();
+    _invalidate_caches();
 }
 
 /**
@@ -457,10 +450,63 @@ std::shared_ptr<Space::AnySpace> DocumentCMS::getDocumentColorSpace() const
 
 bool DocumentCMS::setDocumentColorSpace(std::shared_ptr<Space::AnySpace> const &space)
 {
+    _invalidate_caches();
     return _document->getRoot()->setColorSpace(space);
 }
 
-void DocumentCMS::invalidateCaches()
+/**
+ * Print the color out to a string suitable for this document using the configured storage format
+ */
+std::string DocumentCMS::toDocumentColorString(Color const &color)
+{
+    auto target = mapToStorageFormat(color.getSpace());
+    if (target != color.getSpace()) {
+        return color.converted(target)->toString(false);
+    }
+    return color.toString(false);
+}
+
+/**
+ * Map the given space from a color picker, to the best storage color space which
+ * will be used to encode the color into a string.
+ */
+std::shared_ptr<Space::AnySpace> DocumentCMS::mapToStorageFormat(std::shared_ptr<Space::AnySpace> const &space) const
+{
+    if (!space) {
+        throw Colors::Space::ColorSpaceError("Color space must exist to be mapped.");
+    }
+    auto id = space->getId();
+    auto iter = _storage_map_cache.find(id);
+    if (iter == _storage_map_cache.end()) {
+        _storage_map_cache[id] = _map_storage_format(space);
+    }
+    return _storage_map_cache[id];
+}
+
+std::shared_ptr<Space::AnySpace> DocumentCMS::_map_storage_format(std::shared_ptr<Space::AnySpace> const &space) const
+{
+    auto format = Space::Type::DOCUMENT;
+
+    if (auto picker = Manager::get().findPicker(space->getType())) {
+        format = picker->formatOutputType();
+    }
+
+    if (format == Space::Type::NONE) {
+        return space;
+    } else if (format == Space::Type::DOCUMENT) {
+        return getDocumentColorSpace();
+    }
+    if (auto target = Manager::get().find(format)) {
+        return target;
+    }
+    std::cerr << "Couldn't find color space for output formatting for '" << space->getName() << "'\n";
+    return getDocumentColorSpace();
+}
+
+/**
+ * Remove any cached data as the properties of the color space settings has changed.
+ */
+void DocumentCMS::_invalidate_caches()
 {
     _storage_map_cache.clear();
     _document_space.reset();

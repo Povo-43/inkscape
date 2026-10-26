@@ -68,8 +68,9 @@ enum class Type
     OKLCH,
     OKLAB,
     YCbCr,
-    CSSNAME, // Special css-named colors
-    CMS      // Special cms type
+    CSSNAME,  // Special css-named colors
+    DOCUMENT, // Special document space
+    CMS,      // Special cms type for picker type
 };
 
 } // namespace Space
