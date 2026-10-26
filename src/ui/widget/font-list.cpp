@@ -313,6 +313,9 @@ public:
             if (!_image) {
                 _image = Gtk::make_managed<Gtk::Picture>();
                 _image->set_content_fit(Gtk::ContentFit::SCALE_DOWN);
+                _image->set_halign(Gtk::Align::START);
+                _image->set_valign(Gtk::Align::CENTER);
+                _image->set_can_shrink(false);
                 append(*_image);
             }
             _image->set_size_request(-1, height);
@@ -324,7 +327,8 @@ public:
             }
             if (!_label) {
                 _label = Gtk::make_managed<FixedHeightLabel>();
-                _label->set_halign(Gtk::Align::CENTER);
+                _label->set_halign(Gtk::Align::START);
+                _label->set_valign(Gtk::Align::CENTER);
                 append(*_label);
             }
             _label->set_fixed_height(height);
