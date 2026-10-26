@@ -218,9 +218,17 @@ Output::save(SPDocument *doc, gchar const *filename, bool detachbase)
 
     if (loaded()) {
         imp->setDetachBase(detachbase);
+
+        // We're about to process actions for this output type, which can change the xml tree. Afterwards, we'll
+        // reset any of those changes via Undo::cancel. But first, we need to checkpoint any changes that haven't
+        // been checkpointed yet (can happen when copy/pasting and the copy data is put into the xml tree).
+        // If a user ends up seeing this in their undo history, it is a bug with some code missing a done() call.
+        DocumentUndo::done(doc, RC_("Undo", "Unknown"), "");
+
         doc->ensureUpToDate();
         run_processing_actions(doc);
         imp->save(this, doc, filename);
+
         DocumentUndo::cancel(doc); // reset any changes from run_processing_actions
     }
 }
