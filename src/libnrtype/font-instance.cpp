@@ -295,6 +295,9 @@ inline double FTFixedToDouble (FT_Fixed value) {
 // Internal function to find baselines
 void FontInstance::find_font_metrics()
 {
+    // TO DO: Convert this whole section to using HarfBuzz. Harfbuzz has more complete fallback
+    // provisions and as an industrial standard, it will be more consistent with other programs.
+
     // CSS2 recommends using the OS/2 values sTypoAscender and sTypoDescender for the Typographic ascender and descender values:
     //   http://www.w3.org/TR/CSS2/visudet.html#sTypoAscender
     // On Windows, the typographic ascender and descender are taken from the otmMacAscent and
@@ -302,8 +305,6 @@ void FontInstance::find_font_metrics()
     //   http://microsoft.public.win32.programmer.gdi.narkive.com/LV6k4BDh/msdn-documentation-outlinetextmetrics-clarification
     // The otmAscent and otmDescent values are the maximum ascent and maximum descent of all the glyphs in a font.
 
-    // TO DO: Convert this to using HarfBuzz. Harfbuzz has more complete fallback provisions and as
-    // an industrial standard, it will be more consistent with other programs.
     int x_scale, y_scale;
     hb_font_get_scale(hb_font, &x_scale, &y_scale);
 
@@ -338,7 +339,7 @@ void FontInstance::find_font_metrics()
         }
 
         // x-height: If not set in font, position of top of 'x' relative to alphabetic baseline.
-        hb_position_t xheight_int = -999;
+        hb_position_t xheight_int = -999; // Dummy number, HB will fill.
         hb_ot_metrics_get_position_with_fallback(hb_font, HB_OT_METRICS_TAG_X_HEIGHT, &xheight_int);
         double _xheight = xheight_int / (double)y_scale;
 
@@ -396,18 +397,18 @@ void FontInstance::find_font_metrics()
     hb_position_t underline_thickness_int   = -999;
     hb_position_t linethrough_position_int  = -999;
     hb_position_t linethrough_thickness_int = -999;
+    hb_position_t ascender_int              = -999;
     hb_ot_metrics_get_position_with_fallback(hb_font, HB_OT_METRICS_TAG_UNDERLINE_OFFSET, &underline_position_int);
     hb_ot_metrics_get_position_with_fallback(hb_font, HB_OT_METRICS_TAG_UNDERLINE_SIZE,   &underline_thickness_int);
     hb_ot_metrics_get_position_with_fallback(hb_font, HB_OT_METRICS_TAG_STRIKEOUT_OFFSET, &linethrough_position_int);
     hb_ot_metrics_get_position_with_fallback(hb_font, HB_OT_METRICS_TAG_STRIKEOUT_SIZE,   &linethrough_thickness_int);
-    hb_font_extents_t extents;
-    hb_font_get_h_extents(hb_font, &extents);
+    hb_ot_metrics_get_position_with_fallback(hb_font, HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER, &ascender_int);
 
     _underline_position    = underline_position_int    / (double)y_scale;
     _underline_thickness   = underline_thickness_int   / (double)y_scale;
     _linethrough_position  = linethrough_position_int  / (double)y_scale;
     _linethrough_thickness = linethrough_thickness_int / (double)y_scale;
-    _overline_position     = extents.ascender / (double)y_scale;
+    _overline_position     = ascender_int              / (double)y_scale;
     _overline_thickness    = _underline_thickness;
 
     // Postscript table gives underline center postion, but Harfbuzz translate it to top of
@@ -641,7 +642,7 @@ bool FontInstance::FontMetrics(double &ascent, double &descent, double &xheight)
     return true;
 }
 
-bool FontInstance::FontDecoration(double &underline_position,   double &underline_thickness,
+void FontInstance::FontDecoration(double &underline_position,   double &underline_thickness,
                                   double &linethrough_position, double &linethrough_thickness,
                                   double &overline_position,    double &overline_thickness) const
 {
@@ -651,8 +652,6 @@ bool FontInstance::FontDecoration(double &underline_position,   double &underlin
     linethrough_thickness = _linethrough_thickness;
     overline_position     = _overline_position;
     overline_thickness    = _overline_thickness;
-
-    return true;
 }
 
 bool FontInstance::FontSlope(double &run, double &rise) const

@@ -2999,7 +2999,7 @@ SPITextDecorationLine::read( gchar const *str ) {
     }
 
     // If we set text_decoration_line, then update style_td (for CSS2 text-decoration)
-    if( set && style) {
+    if (set && style) {
         style->text_decoration.style_td = style;
     }
 }

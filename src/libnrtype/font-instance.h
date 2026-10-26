@@ -111,7 +111,7 @@ public:
 
     bool FontMetrics(double &ascent, double &descent, double &leading) const;
 
-    bool FontDecoration(double &underline_position, double &underline_thickness,
+    void FontDecoration(double &underline_position, double &underline_thickness,
                         double &linethrough_position, double &linethrough_thickness,
                         double &overline_position, double &overline_thickness) const;
 

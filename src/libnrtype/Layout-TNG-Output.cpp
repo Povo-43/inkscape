@@ -160,7 +160,7 @@ void Layout::show(DrawingGroup *parent, StyleAttachments &style_attachments, Geo
         auto text_source = static_cast<InputStreamTextSource const *>(_input_stream[_spans[i].in_input_stream_item]);
         auto style = text_source->style;
 
-        // These things must be set here as they depend on this Span. They are comsumed
+        // The following three things must be set here as they depend on this Span. They are comsumed
         // in drawing_text->setStyle() below. This is a poor design!
         style->text_decoration_data.tspan_width = _spans[i].width();
 

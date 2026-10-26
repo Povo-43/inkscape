@@ -317,23 +317,6 @@ void DrawContext::paint_text_layout(Text::Layout const &layout, SPStyle const *c
     paint_text_decoration(layout, context_style, false);
 }
 
-#if 0
-static void print_text_decoration(SPStyle* style)
-{
-    std::cout << "print_text_decoration: ";
-    if (style->text_decoration_line.underline)    std::cout << " underline";
-    if (style->text_decoration_line.line_through) std::cout << " line-through";
-    if (style->text_decoration_line.overline)     std::cout << " overline";
-
-    if (style->text_decoration_style.solid)    std::cout << " solid";
-    if (style->text_decoration_style.dotted)   std::cout << " dotted";
-    if (style->text_decoration_style.dashed)   std::cout << " dashed";
-    if (style->text_decoration_style.wavy)     std::cout << " wavy";
-    if (style->text_decoration_style.isdouble) std::cout << " double";
-    std::cout << std::endl;
-}
-#endif
-
 enum TD_POSITION {
     UNDERLINE,
     OVERLINE,
@@ -370,7 +353,7 @@ void DrawContext::paint_text_decoration(Text::Layout const &layout, SPStyle cons
 
         auto style = text_source->style;
 
-        // Style comes from ancestor if set (only set for 'text-decoration', not 'text-decoration-line', CHECK)
+        // Style comes from ancestor if set (only set for 'text-decoration' and 'text-decoration-line').
         // This is temporary. We need to be able to draw across all spans that belong to a text or tspan
         // element where the decoration was set including all child elements. We can't do that at the moment.
         if (style->text_decoration.style_td) {
@@ -439,7 +422,7 @@ void DrawContext::paint_text_decoration(Text::Layout const &layout, SPStyle cons
                 continue;
             }
 
-            // If this glyph is in this span (this is bad)
+            // If this glyph is in this span (this is very inefficient and can probably done better with Layout iterators).
             if (&glyph.span(&layout) == &span) {
                 auto Tm = glyph.transform(layout);
                 auto chars = glyph.characters(&layout);
@@ -465,33 +448,23 @@ void DrawContext::paint_text_decoration(Text::Layout const &layout, SPStyle cons
         auto overline_position      = font_size;
         auto overline_thickness     = font_size * style->text_decoration_data.underline_thickness;
 
-        // print_text_decoration(style);
-
-        for (int i = 0; i < 3; ++i) {
-            auto y_mid = y;
-            auto y_min = y;
-            auto y_max = y;
-            if (i == UNDERLINE) {
-                if (!under || !style->text_decoration_line.underline) continue;
-                y_mid -= underline_position;
-                y_min -= underline_position - underline_thickness/2.0;
-                y_max -= underline_position + underline_thickness/2.0;
-                paint_text_decoration_line(x_min, x_max, y_mid, y_min-y_max, style, context_style, UNDERLINE );
-            }
-            if (i == OVERLINE) {
-                if (!under || !style->text_decoration_line.overline) continue;
-                y_mid -= overline_position;
-                y_min -= overline_position - overline_thickness/2.0;
-                y_max -= overline_position + overline_thickness/2.0;
-                paint_text_decoration_line(x_min, x_max, y_mid, y_min-y_max, style, context_style, OVERLINE );
-            }
-            if (i == LINETHROUGH) {
-                if (under || !style->text_decoration_line.line_through) continue;
-                y_mid -= line_through_position;
-                y_min -= line_through_position - line_through_thickness/2.0;
-                y_max -= line_through_position + line_through_thickness/2.0;
-                paint_text_decoration_line(x_min, x_max, y_mid, y_min-y_max, style, context_style, LINETHROUGH );
-            }
+        if (under && style->text_decoration_line.underline) {
+            auto y_mid = y - underline_position;
+            auto y_min = y - underline_position + underline_thickness/2.0;
+            auto y_max = y - underline_position - underline_thickness/2.0;
+            paint_text_decoration_line(x_min, x_max, y_mid, y_min-y_max, style, context_style, UNDERLINE );
+        }
+        if (under && style->text_decoration_line.overline) {
+            auto y_mid = y - overline_position;
+            auto y_min = y - overline_position + overline_thickness/2.0;
+            auto y_max = y - overline_position - overline_thickness/2.0;
+            paint_text_decoration_line(x_min, x_max, y_mid, y_min-y_max, style, context_style, OVERLINE );
+        }
+        if (!under && style->text_decoration_line.line_through) {
+            auto y_mid = y - line_through_position;
+            auto y_min = y - line_through_position + line_through_thickness/2.0;
+            auto y_max = y - line_through_position - line_through_thickness/2.0;
+            paint_text_decoration_line(x_min, x_max, y_mid, y_min-y_max, style, context_style, LINETHROUGH );
         }
         _ctx.cmd_Q();
     }
@@ -618,7 +591,6 @@ void DrawContext::paint_text_decoration_prepare_path(double const &x_min, double
 
 void DrawContext::paint_text_decoration_line(double const &x_min, double const &x_max, double const &y_mid, double const &y_width,
                                              SPStyle const *style, SPStyle const *context_style, int position) {
-
 
     _ctx.cmd_q();
     for (auto layer : get_paint_layers(style, context_style)) {

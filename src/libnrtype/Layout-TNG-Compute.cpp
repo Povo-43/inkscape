@@ -2180,18 +2180,12 @@ void Layout::_fillTextDecorationData()
         style->text_decoration_data.descender   = _spans[i].line_height.getTypoDescent();
 
         if (_spans[i].font) {
-            double underline_thickness,    underline_position;
-            double line_through_thickness, line_through_position;
-            double overline_thickness,     overline_position;
-            _spans[i].font->FontDecoration(underline_position,    underline_thickness,
-                                           line_through_position, line_through_thickness,
-                                           overline_position,     overline_thickness);
-            style->text_decoration_data.underline_thickness    = underline_thickness;
-            style->text_decoration_data.underline_position     = underline_position;
-            style->text_decoration_data.line_through_thickness = line_through_thickness;
-            style->text_decoration_data.line_through_position  = line_through_position;
-            style->text_decoration_data.overline_thickness     = overline_thickness;
-            style->text_decoration_data.overline_position      = overline_position;
+            _spans[i].font->FontDecoration(style->text_decoration_data.underline_position,
+                                           style->text_decoration_data.underline_thickness,
+                                           style->text_decoration_data.line_through_position,
+                                           style->text_decoration_data.line_through_thickness,
+                                           style->text_decoration_data.overline_position,
+                                           style->text_decoration_data.overline_thickness);
         }
     }
 }
