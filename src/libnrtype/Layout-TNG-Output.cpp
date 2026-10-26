@@ -11,17 +11,19 @@
  */
 
 #include "Layout-TNG.h"
-#include "style-attachments.h"
-#include "display/drawing-text.h"
-#include "print.h"
-#include "extension/print.h"
-#include "livarot/Path.h"
+
 #include "font-instance.h"
-#include "extension/internal/cairo-render-context.h"
-#include "path/path-curve.h"
-#include "libnrtype/font-factory.h"
-#include "util-string/symbol-convert.h"
+#include "print.h"
+#include "style-attachments.h"
 #include "style-text.h"
+
+#include "display/drawing-text.h"
+#include "extension/internal/cairo-render-context.h"
+#include "extension/print.h"
+#include "libnrtype/font-factory.h"
+#include "livarot/Path.h"
+#include "path/path-curve.h"
+#include "util-string/symbol-convert.h"
 
 using Inkscape::Extension::Internal::CairoRenderContext;
 using Inkscape::Extension::Internal::CairoGlyphInfo;
@@ -667,33 +669,50 @@ Glib::ustring Layout::dumpAsText() const
 }
 #endif //DEBUG_TEXTLAYOUT_DUMPASTEXT
 
+// Path is a Livarot path.
 void Layout::fitToPathAlign(SVGLength const &startOffset, Path const &path)
 {
-    double offset = 0.0;
+    Geom::PathVector pathv = path.MakePathVector();
+    if (pathv.empty()) {
+        return;
+    }
+
+    double cluster_offset = 0.0; // cluster position relative to path start.
+    double path_length = const_cast<Path&>(path).Length();
 
     if (startOffset._set) {
         if (startOffset.unit == SVGLength::PERCENT)
-            offset = startOffset.computed * const_cast<Path&>(path).Length();
+            cluster_offset = startOffset.computed * path_length;
         else
-            offset = startOffset.computed;
+            cluster_offset = startOffset.computed;
     }
 
+
+    double path_start = cluster_offset;
+    // Text on a path should have only one chunk.
     Alignment alignment = _paragraphs.empty() ? LEFT : _paragraphs.front().alignment;
     switch (alignment) {
         case CENTER:
-            offset -= _getChunkWidth(0) * 0.5;
+            path_start -= path_length/2.0;
+            cluster_offset -= _getChunkWidth(0) * 0.5;
             break;
         case RIGHT:
-            offset -= _getChunkWidth(0);
+            path_start -= path_length;
+            cluster_offset -= _getChunkWidth(0);
             break;
         default:
             break;
     }
+    if (!pathv[0].closed()) {
+        path_start = 0;
+    }
+    double path_stop = path_start + path_length;
 
     if (_characters.empty()) {
+        // Find cursor position.
         int unused = 0;
-        Path::cut_position *point_otp = const_cast<Path&>(path).CurvilignToPosition(1, &offset, unused);
-        if (offset >= 0.0 && point_otp != nullptr && point_otp[0].piece >= 0) {
+        Path::cut_position *point_otp = const_cast<Path&>(path).CurvilignToPosition(1, &cluster_offset, unused);
+        if (cluster_offset >= 0.0 && point_otp != nullptr && point_otp[0].piece >= 0) {
             Geom::Point point;
             Geom::Point tangent;
             const_cast<Path&>(path).PointAndTangentAt(point_otp[0].piece, point_otp[0].t, point, tangent);
@@ -709,6 +728,11 @@ void Layout::fitToPathAlign(SVGLength const &startOffset, Path const &path)
     for (unsigned char_index = 0 ; char_index < _characters.size() ; ) {
         Span const &span = _characters[char_index].span(this);
 
+        // We position one cluster at a time. A cluster may correspond to:
+        // - one or more characters
+        // - one or more glyphs.
+
+        // Find first character of next cluster.
         size_t next_cluster_char_index = 0; // TODO refactor to not bump via for loops
         for (next_cluster_char_index = char_index + 1 ; next_cluster_char_index < _characters.size() ; next_cluster_char_index++) {
             if (_characters[next_cluster_char_index].in_glyph != -1 && _characters[next_cluster_char_index].char_attributes.is_cursor_position)
@@ -717,6 +741,7 @@ void Layout::fitToPathAlign(SVGLength const &startOffset, Path const &path)
             }
         }
 
+        // Find first glyph of next cluster.
         size_t next_cluster_glyph_index = 0;
         if (next_cluster_char_index == _characters.size()) {
             next_cluster_glyph_index = _glyphs.size();
@@ -724,47 +749,47 @@ void Layout::fitToPathAlign(SVGLength const &startOffset, Path const &path)
             next_cluster_glyph_index = _characters[next_cluster_char_index].in_glyph;
         }
 
-        double start_offset = offset + span.x_start + _characters[char_index].x;
-        Geom::PathVector pathv = path.MakePathVector();
-        if (pathv.empty()) {
-            return;
-        }
-
-        if (pathv[0].closed()) {
-            start_offset = const_cast<Path&>(path).Length() + start_offset;
-        }
-
+        // Find width of "cluster".
         double cluster_width = 0.0;
         size_t const current_cluster_glyph_index = _characters[char_index].in_glyph;
         for (size_t glyph_index = current_cluster_glyph_index ; glyph_index < next_cluster_glyph_index ; glyph_index++)
         {
             cluster_width += _glyphs[glyph_index].advance;
         }
+
+        double cluster_start = cluster_offset + span.x_start + _characters[char_index].x;
+
         // TODO block progression?
         if (span.direction == RIGHT_TO_LEFT)
         {
-            start_offset -= cluster_width;
+            cluster_start -= cluster_width;
         }
-        double end_offset = start_offset + cluster_width;
+        double cluster_end = cluster_start + cluster_width;
 
         int unused = 0;
-        double midpoint_offset = (start_offset + end_offset) * 0.5;
+        double cluster_mid = (cluster_start + cluster_end) * 0.5;
+        bool on_path = cluster_mid > path_start && cluster_mid < path_stop; // Calculate now before messing with positions.
 
-        if (auto const path_len = const_cast<Path &>(path).Length(); pathv[0].closed() && path_len > Geom::EPSILON) {
-            midpoint_offset = std::fmod((start_offset + end_offset) * 0.5, path_len);
+        // Translate positions to actual path, if on closed path. Accounts for wrapping backwards and forwards.
+        if (pathv[0].closed() && path_length > Geom::EPSILON) {
+            cluster_start = std::fmod(cluster_start + path_length, path_length); // Add path_length to ensure positive.
+            cluster_mid   = std::fmod(cluster_mid   + path_length, path_length);
+            cluster_end   = std::fmod(cluster_end   + path_length, path_length);
         }
+        Path::cut_position *midpoint_otp = const_cast<Path&>(path).CurvilignToPosition(1, &cluster_mid, unused);
+        if (on_path && midpoint_otp != nullptr) {
+            // On path
 
-        // as far as I know these functions are const, they're just not marked as such
-        Path::cut_position *midpoint_otp = const_cast<Path&>(path).CurvilignToPosition(1, &midpoint_offset, unused);
-        if (midpoint_offset >= 0.0 && midpoint_otp != nullptr && midpoint_otp[0].piece >= 0) {
+            // Find rotation for glyphs based on cluster position along path.
             Geom::Point midpoint;
             Geom::Point tangent;
             const_cast<Path&>(path).PointAndTangentAt(midpoint_otp[0].piece, midpoint_otp[0].t, midpoint, tangent);
 
-            if (start_offset >= 0.0 && end_offset >= 0.0) {
-                Path::cut_position *start_otp = const_cast<Path&>(path).CurvilignToPosition(1, &start_offset, unused);
+            // Try to get a better tangent (i.e. at sharp corner).
+            if (cluster_start >= 0.0 && cluster_end >= 0.0) {
+                Path::cut_position *start_otp = const_cast<Path&>(path).CurvilignToPosition(1, &cluster_start, unused);
                 if (start_otp != nullptr && start_otp[0].piece >= 0) {
-                    Path::cut_position *end_otp = const_cast<Path&>(path).CurvilignToPosition(1, &end_offset, unused);
+                    Path::cut_position *end_otp = const_cast<Path&>(path).CurvilignToPosition(1, &cluster_end, unused);
                     if (end_otp != nullptr && end_otp[0].piece >= 0) {
                         bool on_same_subpath = true;
                         for (const auto & pt : path.pts) {
@@ -791,6 +816,7 @@ void Layout::fitToPathAlign(SVGLength const &startOffset, Path const &path)
                 }
             }
 
+            // Position and rotate glyphs in cluster.
             if (_directions_are_orthogonal(_blockProgression(), TOP_TO_BOTTOM)) {
                 double rotation = atan2(-tangent[Geom::X], tangent[Geom::Y]);
                 for (size_t glyph_index = current_cluster_glyph_index; glyph_index < next_cluster_glyph_index ; glyph_index++) {
@@ -812,7 +838,8 @@ void Layout::fitToPathAlign(SVGLength const &startOffset, Path const &path)
                 }
             }
             _input_truncated = false;
-        } else {  // outside the bounds of the path: hide the glyphs
+        } else {
+            // Outside path, hide glyphs
             _characters[char_index].in_glyph = -1;
             _input_truncated = true;
         }
@@ -822,8 +849,8 @@ void Layout::fitToPathAlign(SVGLength const &startOffset, Path const &path)
     }
 
     for (auto & _span : _spans) {
-        _span.x_start += offset;
-        _span.x_end += offset;
+        _span.x_start += cluster_offset;
+        _span.x_end += cluster_offset;
     }
 
     _path_fitted = &path;
