@@ -154,6 +154,7 @@ private:
     void _handleGrabbed();
     bool _handleClicked(Handle *, ButtonReleaseEvent const &);
     void _handleUngrabbed();
+    void _documentReplaced();
 
     void _externalChange(unsigned type);
     void _removeNodesFromSelection();
@@ -181,6 +182,8 @@ private:
     bool _live_objects = true;
     bool _is_bspline = false;
     Glib::ustring _lpe_key;
+
+    sigc::scoped_connection _doc_modified_conn;
 
     friend class PathManipulatorObserver;
     friend class CurveDragPoint;

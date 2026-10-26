@@ -125,10 +125,13 @@ PathManipulator::PathManipulator(MultiPathManipulator &mpm, SPObject *path,
         sigc::mem_fun(*this, &PathManipulator::_selectionChangedM));
     _desktop->signal_zoom_changed.connect(
         sigc::hide( sigc::mem_fun(*this, &PathManipulator::_updateOutlineOnZoomChange)));
+    _desktop->connectDocumentReplaced(
+        sigc::hide(sigc::hide(sigc::mem_fun(*this, &PathManipulator::_documentReplaced))));
 
     //Define if the path is BSpline on construction
     _recalculateIsBSpline();
     _createControlPointsFromGeometry();
+    _documentReplaced();
 }
 
 PathManipulator::~PathManipulator()
@@ -197,6 +200,14 @@ void PathManipulator::writeXML()
         _path = nullptr;
     }
     _observer->unblock();
+}
+
+void PathManipulator::_documentReplaced()
+{
+    // Detect changes to document transform
+    _doc_modified_conn = _desktop->getDocument()->connectModified([this](unsigned) {
+        _externalChange(PATH_CHANGE_TRANSFORM);
+    });
 }
 
 /** Remove all nodes from the path. */
