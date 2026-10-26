@@ -705,8 +705,12 @@ void Script::_change_extension(Inkscape::Extension::Extension *module, Execution
     } // data_read
 
     if (new_xmldoc) {
-        //uncomment if issues on ref extensions links (with previous function)
-        //sp_change_hrefs(new_xmldoc, tempfile_out.get_filename().c_str(), doc->getDocumentFilename());
+        if (doc->getDocumentBase()) {
+            // When the tempfiles are created, the relative paths get changed
+            // to the base of the temp file. This changes them back relative
+            // to the base of the actual output file.
+            Inkscape::XML::rebase_hrefs(new_xmldoc->root(), Glib::path_get_dirname(tempfile_out.get_filename()).c_str(), doc->getDocumentBase(), false);
+        }
         doc->rebase(new_xmldoc);
     } else {
         Inkscape::UI::gui_warning(_("The output from the extension could not be parsed."), parent_window);
