@@ -11,6 +11,7 @@
 #define LIBNRTYPE_FONT_GLYPH_H
 
 #include <memory>
+#include <string>
 #include <2geom/pathvector.h>
 
 // The info for a glyph in a font. It's totally resolution- and fontsize-independent.
@@ -22,6 +23,11 @@ struct FontGlyph
     Geom::Rect bbox_exact;                        // Exact bounding box, from font.
     Geom::Rect bbox_pick = {0.0, -0.2, 1.0, 0.8}; // Expanded bounding box (initialize to em box). (y point down.)
     Geom::Rect bbox_draw = {0.0, -0.2, 1.0, 0.8}; // Expanded bounding box (initialize to em box).
+    bool has_svg    = false; // SVG    (Mozzila/Adobe)
+    bool has_png    = false; // CBLC   (Google) or sbix (Apple)
+    bool has_layers = false; // COLRv0 (Microsoft)
+    bool has_paint  = false; // COLRv1
+    std::string unicode_name;
 };
 
 #endif // LIBNRTYPE_FONT_GLYPH_H

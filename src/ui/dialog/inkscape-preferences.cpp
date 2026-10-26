@@ -70,6 +70,7 @@
 #include "io/resource.h"
 #include "object/box3d-side.h"
 #include "object/box3d.h"
+#include "libnrtype/font-instance.h"
 #include "path-prefix.h"
 #include "selcue.h"
 #include "selection-chemistry.h"
@@ -3156,6 +3157,16 @@ void InkscapePreferences::initPageRendering()
     add_devmode_line(_("Sticky decoupled mode"), _canvas_debug_sticky_decoupled, "", _("Stay in decoupled mode even after rendering is complete"));
     _canvas_debug_animate.init("", "/options/rendering/debug_animate", false);
     add_devmode_line(_("Animate"), _canvas_debug_animate, "", _("Continuously adjust viewing parameters in an animation loop."));
+
+    add_devmode_line(_("Draw glyph boxes"), _canvas_debug_glyph_boxes, "", _("Show boxes around glyphs"));
+    _canvas_debug_glyph_boxes.init("", "/options/rendering/debug_glyph_boxes", false);
+    add_devmode_line(_("Debug color fonts"), _canvas_debug_color_fonts, "", _("Enable debug output for color fonts"));
+    _canvas_debug_color_fonts.init("", "/options/rendering/debug_color_fonts", false);
+    _debug_color_fonts = Preferences::PreferencesObserver::create("/options/rendering/debug_color_fonts", [this] (auto &entry) {
+        FontInstance::debug_color_fonts = entry.getBool("/options/rendering/debug_color_fonts");
+    });
+    add_devmode_line(_("Debug Cairo fonts"), _canvas_debug_cairo_fonts, "", _("Enable rendering for Cairo fonts even for 1.18.4 and earlier with deadlock issues."));
+    _canvas_debug_cairo_fonts.init("", "/options/rendering/debug_cairo_fonts", false);
 
     AddPage(_page_rendering, _("Rendering"), PREFS_PAGE_RENDERING);
 }

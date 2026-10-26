@@ -19,6 +19,7 @@
 #include "font-factory.h"
 #include "font-instance.h"
 #include "livarot/Shape.h"
+
 #include "object/sp-flowdiv.h"
 #include "object/sp-object.h"
 #include "style-text.h"
@@ -165,8 +166,6 @@ bool Layout::Calculator::_measureUnbrokenSpan(ParagraphInfo const &para,
             // with upright orientation (pre 1.44.0).
             auto font = para.pango_items[span->end.iter_span->pango_item_index].font;
             double font_size = span->start.iter_span->font_size;
-          //double glyph_h_advance = font_size * font->Advance(info->glyph, false);
-            double glyph_v_advance = font_size * font->Advance(info->glyph, true );
 
             if (_block_progression == LEFT_TO_RIGHT || _block_progression == RIGHT_TO_LEFT) {
                 // Vertical text
@@ -186,6 +185,7 @@ bool Layout::Calculator::_measureUnbrokenSpan(ParagraphInfo const &para,
                             char_width += glyph_width;
                         } else {
                             // Pango < 1.44.0  glyph_width returned is horizontal width, not vertical.
+                            double glyph_v_advance = font_size * font->Advance(info->glyph, true );
                             char_width += glyph_v_advance;
                         }
                     }
@@ -441,10 +441,6 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
             double x_in_span_last = 0.0;  // set at the END when a new cluster starts
             double x_in_span      = 0.0;  // set from the preceding at the START when a new cluster starts.
 
-            // for (int i = 0; i < unbroken_span.glyph_string->num_glyphs; ++i) {
-            //     std::cout << "Unbroken span: " << unbroken_span.glyph_string->glyphs[i].glyph << std::endl;
-            // }
-
             if (it_span->start.char_byte == 0) {
                 // Start of an unbroken span, we might have dx, dy or rotate still to process
                 // (x and y are done per chunk)
@@ -569,7 +565,6 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
                     // Advance does not include kerning but Pango <= 1.43 gives wrong advances for verical upright text.
                     double glyph_h_advance = new_span.font_size * font->Advance(new_glyph.glyph, false);
                     double glyph_v_advance = new_span.font_size * font->Advance(new_glyph.glyph, true );
-
 #ifdef DEBUG_GLYPH
 
                     bool is_cluster_start = unbroken_span_glyph_info->attr.is_cluster_start;
@@ -1375,6 +1370,11 @@ unsigned Layout::Calculator::_buildSpansForPara(ParagraphInfo *para) const
                                      -1,
                                      &para->pango_items[pango_item_index].item->analysis,
                                      new_span.glyph_string);
+
+                    if (FontInstance::debug_color_fonts) {
+                        printf("Layout::Calculator::_buildSpansForPara: %*.*s\n", new_span.text_bytes, new_span.text_bytes,
+                           para->text.data() + para_text_index);
+                    }
 
                     if (para->pango_items[pango_item_index].item->analysis.level & 1) {
                         // Right to left text (Arabic, Hebrew, etc.)

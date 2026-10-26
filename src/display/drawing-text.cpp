@@ -23,6 +23,8 @@
 #include "drawing-text.h"
 #include "drawing.h"
 
+#include "preferences.h"
+
 #include "helper/geom.h"
 
 #include "libnrtype/font-instance.h"
@@ -78,6 +80,8 @@ std::shared_ptr<Pixbuf> DrawingGlyphs::_get_svg_glyph(std::shared_ptr<FontInstan
 
 void DrawingGlyphs::setGlyph(std::shared_ptr<FontInstance> font, unsigned int glyph, Geom::Affine const &trans)
 {
+    assert(font);
+
     defer([=, this, font = std::move(font)] {
 
         assert(!_drawing.snapshotted());
@@ -92,17 +96,25 @@ void DrawingGlyphs::setGlyph(std::shared_ptr<FontInstance> font, unsigned int gl
 
         // Load pathvectors and pixbufs in advance, as must be done on main thread.
         if (font) {
+            cairo_font_face = font->CairoFontFace();
             design_units = font->GetDesignUnits();
             pathvec      = font->PathVector(_glyph);
             bbox_exact   = font->BBoxExact(_glyph);
             bbox_pick    = font->BBoxPick( _glyph);
             bbox_draw    = font->BBoxDraw( _glyph);
             if (font->FontHasSVG()) {
+                has_svg = true;
                 // CACHE the pixbuf here
                 pixbuf = _get_svg_glyph(font, _glyph).get();
             }
-            font_descr   = pango_font_description_to_string(font->get_descr());
+            has_png    = font->FontHasPNG();
+            has_layers = font->FontHasLayers();
+            has_paint  = font->FontHasPaint();
+
+            font_descr = pango_font_description_to_string(font->get_descr());
+
             // std::cout << "DrawingGlyphs::setGlyph: " << std::setw(6) << glyph
+            //           << "  " << font->getUnicodeName(glyph)
             //           << "  design_units: " << design_units
             //           << "  bbox_exact: " << bbox_exact
             //           << "  bbox_pick: " << bbox_pick
@@ -125,7 +137,7 @@ unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext
     }
 
     if (!pathvec) {
-        // Bitmap font
+        // Can happen for code points other than spaces that don't have paths ('LF', etc.).
         return STATE_ALL;
     }
 
@@ -160,12 +172,6 @@ unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext
 
     // drawing-item variable
     _bbox = bbox_draw_scaled;
-
-    // std::cout << "DrawingGlyphs::_updateItem: "
-    //           << " glyph: " << std::setw(6) << _glyph
-    //           << " bbox_pick_scaled: "  << bbox_pick_scaled
-    //           << " bbox_draw_scaled: "  << bbox_draw_scaled
-    //           << std::endl;
 
     return STATE_ALL;
 }
@@ -450,6 +456,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::I
 {
     auto visible = area & _bbox;
     if (!visible) {
+        // std::cout << "DrawingText::_renderItem: not visible" << std::endl;
         return RENDER_OK;
     }
 
@@ -590,7 +597,17 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::I
             dc.newPath(); // Clear text-decoration path
         }
 
-        // Accumulate the path that represents the glyphs and/or draw SVG glyphs.
+        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+        bool debug_color_fonts = prefs->getBool("/options/rendering/debug_color_fonts");
+        bool debug_glyph_boxes = prefs->getBool("/options/rendering/debug_glyph_boxes");
+
+        // Cairo 1.18.4 and earlier has a deadlock issue resulting in crashes with cairo fonts.
+#ifdef WITH_HARFBUZZ_CAIRO
+        bool debug_cairo_fonts = prefs->getBool("/options/rendering/debug_cairo_fonts", false);
+        bool use_cairo_fonts = (cairo_version() > CAIRO_VERSION_ENCODE(1, 18, 4)) || debug_cairo_fonts;
+#endif
+
+        // Accumulate the path that represents the glyphs and/or draw color glyphs.
         for (auto &i : _children) {
             auto g = cast<DrawingGlyphs>(&i);
             if (!g) throw InvalidItemException();
@@ -602,75 +619,95 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::I
             }
             dc.transform(g->_ctm);
 
-#if 0
-            // Draw various boxes for debugging
-            auto path_copy = cairo_copy_path(dc.raw()); // Cairo save/restore doesn't apply to path!
-            {
-                Inkscape::DrawingContext::Save save(dc);
-                dc.newPath();
-                dc.rectangle(g->bbox_exact);
-                dc.setLineWidth(0.02);
-                dc.setSource(0.0, 0.0, 1.0, 1.0); // Blue
-                dc.stroke();
-            }
-            {
-                Inkscape::DrawingContext::Save save(dc);
-                dc.newPath();
-                dc.rectangle(g->bbox_pick);
-                dc.setLineWidth(0.02);
-                dc.setSource(1.0, 0.0, 0.0, 1.0); // Red
-                dc.stroke();
-            }
-            {
-                Inkscape::DrawingContext::Save save(dc);
-                dc.newPath();
-                dc.rectangle(g->bbox_draw);
-                dc.setLineWidth(0.02);
-                dc.setSource(0.0, 1.0, 0.0, 1.0); // Green
-                dc.stroke();
-            }
-            cairo_append_path(dc.raw(), path_copy);
-            cairo_path_destroy(path_copy);
-            // End debug boxes.
-#endif
-
-            if (g->pathvec) {
-
+            if (debug_glyph_boxes) {
                 // Draw various boxes for debugging
-                // auto path_copy = cairo_copy_path(dc.raw()); // Cairo save/restore doesn't apply to path!
-                // {
-                //     Geom::OptRect box = bounds_exact(*g->pathvec);
-                //     if (box) {
-                //         Inkscape::DrawingContext::Save save(dc);
-                //         dc.newPath();
-                //         dc.rectangle(*box);
-                //         dc.setLineWidth(0.02);
-                //         dc.setSource(0xff000080);
-                //         dc.stroke();
-                //     }
-                // }
-                // cairo_append_path(dc.raw(), path_copy); // Restore path.
-                // cairo_path_destroy(path_copy);
-                // End debug boxes.
-
-                if (g->pixbuf) {
-                    {
-                        // pixbuf is in font design units, scale to embox.
-                        double scale = g->design_units;
-                        if (scale <= 0) scale = 1000;
-                        Inkscape::DrawingContext::Save save(dc);
-                        dc.translate(g->bbox_draw.corner(3));
-                        dc.scale(1.0 / scale, -1.0 / scale);
-                        dc.setSource(g->pixbuf->getSurfaceRaw(), 0, 0);
-                        dc.paint(1);
-                    }
-                } else {
-                    dc.path(*g->pathvec);
+                auto path_copy = cairo_copy_path(dc.raw()); // Cairo save/restore doesn't apply to path!
+                {
+                    Inkscape::DrawingContext::Save save(dc);
+                    dc.newPath();
+                    dc.rectangle(g->bbox_exact);
+                    dc.setLineWidth(0.02);
+                    dc.setSource(0.0, 0.0, 1.0, 1.0); // Blue
+                    dc.stroke();
                 }
+                {
+                    Inkscape::DrawingContext::Save save(dc);
+                    dc.newPath();
+                    dc.rectangle(g->bbox_pick);
+                    dc.setLineWidth(0.02);
+                    dc.setSource(1.0, 0.0, 0.0, 1.0); // Red
+                    dc.stroke();
+                }
+                {
+                    Inkscape::DrawingContext::Save save(dc);
+                    dc.newPath();
+                    dc.rectangle(g->bbox_draw);
+                    dc.setLineWidth(0.02);
+                    dc.setSource(0.0, 1.0, 0.0, 1.0); // Green
+                    dc.stroke();
+                }
+                cairo_append_path(dc.raw(), path_copy);
+                cairo_path_destroy(path_copy);
+                // End debug boxes.
+            }
+
+            if (debug_color_fonts) {
+                std::cout << "DrawingText::_renderItem: "
+                          << std::setw(6) << g->_glyph
+                          << "  " << std::setw(20) << (g->font_descr ? g->font_descr : " No font description!!")
+                          << "   Design units: " << g->design_units
+                          << "  svg: "     << std::boolalpha << g->has_svg
+                          << "  png: "     << std::boolalpha << g->has_png
+                          << "  layers: "  << std::boolalpha << g->has_layers
+                          << "  paint: "   << std::boolalpha << g->has_paint
+                          << "  pathvec: " << std::boolalpha << (bool)g->pathvec
+                          << std::endl;
+            }
+
+            // +++++++++++++++++++++++++++++++++
+
+            if (g->has_svg && g->pixbuf) {
+                // Cairo does not support SVG color fonts.
+                Inkscape::DrawingContext::Save save(dc);
+
+                // pixbuf is in font design units, scale to embox.
+                double scale = g->design_units;
+                if (scale <= 0) scale = 1000;
+                dc.translate(g->bbox_draw.corner(3));
+                dc.scale(1.0 / scale, -1.0 / scale);
+                dc.setSource(g->pixbuf->getSurfaceRaw(), 0, 0);
+                dc.paint(1);
+#ifdef WITH_HARFBUZZ_CAIRO
+            } else if ((g->has_png || g->has_layers || g->has_paint) && use_cairo_fonts) {
+                // Other color fonts. Rendered by Cairo.
+                Inkscape::DrawingContext::Save save(dc);
+
+                cairo_glyph_t glyph = { 0, 0, 0 }; // {index, x, y}
+                glyph.index = g->_glyph;
+
+                dc.setUnitFontMatrix();  // We do all scaling ourselves.
+                dc.setFontFace(g->cairo_font_face);
+                if (has_fill) {
+                    // Set foreground color if fill is solid.
+                    if (cairo_pattern_get_type(has_fill.get()) == CAIRO_PATTERN_TYPE_SOLID) {
+                        double r, g, b, a;
+                        cairo_pattern_get_rgba(has_fill.get(), &r, &g, &b, &a);
+                        dc.setSource(has_fill.get()); // using cairo_font_options_set_custom_palette_color() works for everything but foreground (0xffff).
+                    }
+                }
+                dc.showGlyphs(&glyph, 1);
+#endif
+            } else if (g->pathvec) {
+                // Non-color fonts, we fill and stroke ourselves.
+                dc.path(*g->pathvec);
+            } else {
+                // Can happen for code points other than spaces that don't have paths ('LF', etc.).
+                // std::cerr << "DrawingText::_renderItem: No glyph data! "
+                //           << std::setw(6) << g->_glyph << std::endl;
             }
         }
 
-        // Draw the glyphs (non-SVG glyphs).
+        // Draw the glyphs (non-color glyphs, draw as one path).
         {
             Inkscape::DrawingContext::Save save(dc);
             dc.transform(_ctm);

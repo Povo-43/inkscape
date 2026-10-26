@@ -117,13 +117,26 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(INKSCAPE_DEP REQUIRED IMPORTED_TARGET
-                  harfbuzz>=2.6.5
+                  harfbuzz>=7.0.0
                   pangocairo>=1.44
                   pangoft2
                   fontconfig
                   gmodule-2.0
                   bdw-gc #boehm-demers-weiser gc
                   lcms2)
+
+# AFTER WINDOWS CI UPDATED: add 'harbuzz-cairo' above and remove the following (see !7565):
+message("Checking for module 'harfbuzz-cairo'")
+pkg_check_modules(HARFBUZZ_CAIRO IMPORTED_TARGET harfbuzz-cairo)
+if(HARFBUZZ_CAIRO_FOUND)
+    message("- Found 'harfbuzz-cairo'")
+    list(APPEND INKSCAPE_LIBS PkgConfig::HARFBUZZ_CAIRO)
+    set(WITH_HARFBUZZ_CAIRO ON)
+    add_definitions(-DWITH_HARFBUZZ_CAIRO)
+else()
+    message("- Not found 'harfbuzz-cairo'")
+    set(WITH_HARFBUZZ_CAIRO OFF)
+endif()
 
 list(APPEND INKSCAPE_LIBS PkgConfig::INKSCAPE_DEP)
 

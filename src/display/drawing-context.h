@@ -100,6 +100,17 @@ public:
     void strokePreserve() { cairo_stroke_preserve(_ct); }
     void clip() { cairo_clip(_ct); }
 
+    void setFontFace(cairo_font_face_t *font_face) {
+        cairo_set_font_face(_ct, font_face);
+    }
+    void showGlyphs(const cairo_glyph_t *glyphs, int num_glyphs) {
+        cairo_show_glyphs(_ct, glyphs, num_glyphs); // For color glyphs.
+    }
+    void setUnitFontMatrix() {
+        cairo_matrix_t unit_matrix = { 1, 0, 0, -1, 0, 0 };
+        cairo_set_font_matrix(_ct, &unit_matrix);
+    }
+
     void setLineWidth(double w) { cairo_set_line_width(_ct, w); }
     void setHairline();
     void setLineCap(cairo_line_cap_t cap) { cairo_set_line_cap(_ct, cap); }
