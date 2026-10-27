@@ -1004,8 +1004,8 @@ void InkscapePreferences::initPageTools()
     _t_too_group.init ( C_("Translucency Group", "When in Groups"), "/options/translucency_groups/value", 1, true, &_t_too_off);
     _page_selector.add_line( true, "", _t_too_group, "", _("Indicate the entered group by making all other objects fade."));
 
-    _t_too_layer.init ( C_("Translucency Group", "When in Layers"), "/options/translucency_groups/value", 2, false, &_t_too_off);
-    _page_selector.add_line( true, "", _t_too_layer, "", _("Indicate the selected layer by making all other layers fade."));
+    _t_too_layer.init ( C_("Translucency Group", "When in Groups or Layers"), "/options/translucency_groups/value", 2, false, &_t_too_off);
+    _page_selector.add_line( true, "", _t_too_layer, "", _("Indicate the selected group or layer by making all other groups or layers fade."));
 
     //Node
     AddSelcueCheckbox(_page_node, "/tools/nodes", true);

@@ -38,6 +38,7 @@
 #include "layer-manager.h"
 #include "message-context.h"
 #include "message-stack.h"
+#include "preferences.h"
 #include "style.h"
 #include "actions/actions-canvas-mode.h"
 #include "actions/actions-canvas-transform.h"
@@ -186,6 +187,9 @@ void SPDesktop::_setupCanvasItems()
 
     canvas->set_drawing(_canvas_drawing->get_drawing());
 
+    _translucency_observer = Preferences::PreferencesObserver::create("/options/translucency_groups/value", [this] (auto &entry) {
+        updateTranslucencyGroups();
+    });
     _layer_changed_connection = _layer_manager->connectCurrentLayerChanged([this](SPGroup *group) {
         updateTranslucencyGroups();
     });
