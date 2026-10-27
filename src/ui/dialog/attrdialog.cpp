@@ -420,11 +420,6 @@ void AttrDialog::startValueEdit(Gtk::CellEditable *cell, const Glib::ustring &pa
         // close in-line entry
         cell->property_editing_canceled() = true;
         cell->remove_widget();
-        // cannot dismiss it right away without warning from GTK, so delay it
-        Glib::signal_timeout().connect_once([=](){
-            cell->editing_done(); // only this call will actually remove in-line edit widget
-            cell->remove_widget();
-        }, 0);
         // and show popup edit instead
         Glib::signal_timeout().connect_once([=, this]{ UI::popup_at(*_popover, _treeView, rect); },
                                             10);
