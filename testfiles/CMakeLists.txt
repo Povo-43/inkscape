@@ -89,15 +89,14 @@ set(TEST_SOURCES
     sp-object-tags-test
     object-links-test
     object-set-test
-    object-style-test
     page-management
     path-reverse-lpe-test
     preferences-test
     rebase-hrefs-test
     stream-test
-    style-elem-test
-    style-internal-test
-    style-test
+    style/internal-test
+    style/object-test
+    style/style-test
     svg-affine-test
     svg-box-test
     svg-path-parser-test

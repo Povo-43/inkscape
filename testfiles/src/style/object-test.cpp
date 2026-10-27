@@ -17,6 +17,7 @@
 #include <src/style.h>
 #include <src/object/sp-root.h>
 #include <src/object/sp-rect.h>
+#include <src/object/sp-style-elem.h>
 
 using namespace Inkscape;
 using namespace Inkscape::XML;
@@ -27,13 +28,23 @@ public:
     ObjectTest() {
         constexpr auto docString = R"A(
 <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
-<style>
+<style id='style0'>
 rect { fill: #808080; opacity:0.5; }
 .extra { opacity:1.0; }
 .overload { fill: #d0d0d0 !important; stroke: #c0c0c0 !important; }
 .font { font: italic bold 12px/30px Georgia, serif; }
 .exsize { stroke-width: 1ex; }
 .fosize { font-size: 15px; }
+</style>
+<style id='style1'>
+polyline { fill: red; opacity:0.5; }
+#id1, #id2 { fill: red; stroke: #c0c0c0; }
+.cls1 { fill: red; opacity:1.0; }
+</style>
+<style id='style2'>
+polyline { fill: green; opacity:1.0; }
+#id3, #id4 { fill: green; stroke: #606060; }
+.cls2 { fill: green; opacity:0.5; }
 </style>
 <g style='fill:blue; stroke-width:2px;font-size: 14px;'>
   <rect id='one' style='fill:red; stroke:green;'/>
@@ -139,6 +150,32 @@ TEST_F(ObjectTest, StyleSource) {
     EXPECT_EQ(four->style->stroke.style_src, SPStyleSrc::STYLE_PROP);
     EXPECT_EQ(four->style->opacity.style_src, SPStyleSrc::STYLE_SHEET);
     EXPECT_EQ(four->style->stroke_width.style_src, SPStyleSrc::STYLE_PROP);
+}
+
+
+/*
+ * Test sp-style-element objects created in document.
+ */
+TEST_F(ObjectTest, StyleElems) {
+    ASSERT_TRUE(doc);
+    ASSERT_TRUE(doc->getRoot());
+
+    SPRoot *root = doc->getRoot();
+    ASSERT_TRUE(root->getRepr());
+
+    auto one = cast<SPStyleElem>(doc->getObjectById("style1"));
+    ASSERT_TRUE(one);
+
+    for (auto &style : one->get_styles()) {
+        EXPECT_EQ(style->fill.get_value(), Glib::ustring("red"));
+    }
+
+    auto two = cast<SPStyleElem>(doc->getObjectById("style2"));
+    ASSERT_TRUE(one);
+
+    for (auto &style : two->get_styles()) {
+        EXPECT_EQ(style->fill.get_value(), Glib::ustring("green"));
+    }
 }
 
 /*
