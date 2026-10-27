@@ -103,6 +103,9 @@ ThemeContext::get_available_themes()
         if (g_str_has_suffix(builtin_themes[i], "/")) {
             theme = builtin_themes[i];
             theme.resize(theme.size() - 1);
+            if (theme == "Empty") {
+                continue; // this is a bogus test theme shipped inside gtk
+            }
             Glib::ustring theme_path = "/org/gtk/libgtk/theme";
             theme_path += "/" + theme;
             gchar **builtin_themes_files =
@@ -260,6 +263,12 @@ void ThemeContext::add_gtk_css(bool only_providers, bool cached)
         g_object_get(settings, "gtk-icon-theme-name", &gtkIconThemeName, nullptr);
         g_object_get(settings, "gtk-theme-name", &gtkThemeName, nullptr);
         g_object_get(settings, "gtk-application-prefer-dark-theme", &gtkApplicationPreferDarkTheme, nullptr);
+
+        // Adwaita is a gtk alias for Default, let's keep things consistent internally
+        if (g_strcmp0(gtkThemeName, "Adwaita") == 0) {
+            gtkThemeName = g_strdup("Default");
+        }
+
         prefs->setBool("/theme/defaultPreferDarkTheme", gtkApplicationPreferDarkTheme);
         prefs->setString("/theme/defaultGtkTheme", Glib::ustring(gtkThemeName ? gtkThemeName : ""));
         prefs->setString("/theme/defaultIconTheme", Glib::ustring(gtkIconThemeName ? gtkIconThemeName : ""));
@@ -493,9 +502,10 @@ bool ThemeContext::isCurrentThemeDark(Gtk::Window * const window)
 #if GTKMM_CHECK_VERSION(4, 20, 0)
         settings->property_gtk_interface_color_scheme() =
             preferDarkTheme ? Gtk::InterfaceColorScheme::DARK : Gtk::InterfaceColorScheme::LIGHT;
-#else
-        settings->property_gtk_application_prefer_dark_theme() = preferDarkTheme;
 #endif
+        // This method is deprecated, but still has effect on older themes that don't use CSS media queries to find
+        // the current dark/light setting.
+        settings->property_gtk_application_prefer_dark_theme() = preferDarkTheme;
     }
 
     auto dark = current_theme.find(":dark") != std::string::npos;
