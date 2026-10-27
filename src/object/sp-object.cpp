@@ -207,6 +207,14 @@ gchar const* SPObject::getId() const {
     return id;
 }
 
+Glib::ustring SPObject::getIdLabel() const {
+    if (id) {
+        return Glib::ustring(id);
+    } else {
+        return "No ID";
+    }
+}
+
 /**
  * Accumulate this id and all it's descendants ids
  */

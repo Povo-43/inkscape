@@ -117,7 +117,7 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(INKSCAPE_DEP REQUIRED IMPORTED_TARGET
-                  harfbuzz>=7.0.0
+                  harfbuzz>=8.0.0
                   pangocairo>=1.44
                   pangoft2
                   fontconfig

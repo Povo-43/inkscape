@@ -449,6 +449,7 @@ SPStyle::SPStyle(SPDocument *document_in, SPObject *object_in) :
 
     // 'text_decoration' shorthand requires access to included properties.
     text_decoration.setStylePointer( this );
+    text_decoration_line.setStylePointer( this );
 
     // SPIPaint, SPIFilter needs access to 'this' (SPStyle)
     // for setting up signals...  'fill', 'stroke' already done
