@@ -227,9 +227,8 @@ void DrawContext::clip_text_layout(Text::Layout const &layout)
 
     auto &input_stream = layout.input_stream();
     for (Layout::Span const &span : layout.spans()) {
-        auto text_source = static_cast<Layout::InputStreamTextSource const *>(input_stream[span.in_input_stream_item]);
-        if (text_source->Type() != Layout::InputStreamItemType::TEXT_SOURCE || span.line(&layout).hidden ||
-            !span.font) {
+        auto text_source = dynamic_cast<Layout::InputStreamTextSource const *>(input_stream[span.in_input_stream_item]);
+        if (!text_source || span.line(&layout).hidden || !span.font) {
             continue;
         }
         if (!tx.set_text_style(span.font, text_source->style)) {
@@ -269,10 +268,9 @@ void DrawContext::paint_text_layout(Text::Layout const &layout, SPStyle const *c
 
     auto &input_stream = layout.input_stream();
     for (Layout::Span const &span : layout.spans()) {
-        auto text_source = static_cast<Layout::InputStreamTextSource const *>(input_stream[span.in_input_stream_item]);
+        auto text_source = dynamic_cast<Layout::InputStreamTextSource const *>(input_stream[span.in_input_stream_item]);
 
-        if (text_source->Type() != Layout::InputStreamItemType::TEXT_SOURCE || span.line(&layout).hidden ||
-            !span.font) {
+        if (!text_source || span.line(&layout).hidden || !span.font) {
             // Hidden spans correspond to text overflow.
             continue;
         }
@@ -343,10 +341,9 @@ void DrawContext::paint_text_decoration(Text::Layout const &layout, SPStyle cons
     auto &input_stream = layout.input_stream();
     for (Layout::Span const &span : layout.spans()) {
 
-        auto text_source = static_cast<Layout::InputStreamTextSource const *>(input_stream[span.in_input_stream_item]);
+        auto text_source = dynamic_cast<Layout::InputStreamTextSource const *>(input_stream[span.in_input_stream_item]);
 
-        if (text_source->Type() != Layout::InputStreamItemType::TEXT_SOURCE || span.line(&layout).hidden ||
-            !span.font) {
+        if (!text_source || span.line(&layout).hidden || !span.font) {
             // Hidden spans correspond to text overflow.
             continue;
         }
@@ -445,8 +442,8 @@ void DrawContext::paint_text_decoration(Text::Layout const &layout, SPStyle cons
         auto underline_thickness    = font_size * style->text_decoration_data.underline_thickness;
         auto line_through_position  = font_size * style->text_decoration_data.line_through_position;
         auto line_through_thickness = font_size * style->text_decoration_data.line_through_thickness;
-        auto overline_position      = font_size;
-        auto overline_thickness     = font_size * style->text_decoration_data.underline_thickness;
+        auto overline_position      = font_size * style->text_decoration_data.overline_position;
+        auto overline_thickness     = font_size * style->text_decoration_data.overline_thickness;
 
         if (under && style->text_decoration_line.underline) {
             auto y_mid = y - underline_position;
