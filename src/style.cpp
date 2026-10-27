@@ -111,11 +111,11 @@ class SPStylePropHelper {
         REGISTER_PROPERTY(SPAttr::TEXT_ALIGN, text_align, "text-align");
 
         REGISTER_PROPERTY(SPAttr::TEXT_DECORATION, text_decoration, "text-decoration");
+        REGISTER_PROPERTY(SPAttr::TEXT_DECORATION_LINE, text_decoration_line, "text-decoration-line");
         REGISTER_PROPERTY(SPAttr::TEXT_DECORATION_STYLE, text_decoration_style, "text-decoration-style");
         REGISTER_PROPERTY(SPAttr::TEXT_DECORATION_COLOR, text_decoration_color, "text-decoration-color");
         REGISTER_PROPERTY(SPAttr::TEXT_DECORATION_FILL, text_decoration_fill, "text-decoration-fill");
         REGISTER_PROPERTY(SPAttr::TEXT_DECORATION_STROKE, text_decoration_stroke, "text-decoration-stroke");
-        REGISTER_PROPERTY(SPAttr::TEXT_DECORATION_LINE, text_decoration_line, "text-decoration-line");
 
         REGISTER_PROPERTY(SPAttr::LETTER_SPACING, letter_spacing, "letter-spacing");
         REGISTER_PROPERTY(SPAttr::WORD_SPACING, word_spacing, "word-spacing");

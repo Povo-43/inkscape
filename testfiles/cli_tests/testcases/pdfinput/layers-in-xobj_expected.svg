@@ -4,12 +4,12 @@
 <svg
    version="2.0"
    id="svg1"
+   inkscape:version="1.5-dev (fab64003b6, 2026-10-27, custom)"
    width="287.999988"
    height="456.0000053"
    viewBox="0 0 287.999988 456.0000053"
    sodipodi:docname="layers-in-xobj.pdf"
    standalone="no"
-   inkscape:version="1.5-dev (6f35fa1fa1, 2026-06-26, custom)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,12 +25,19 @@
        viewBox="0 0 287.999988 456.0000053"
        inkscape:margin="0"
        inkscape:bleed="0" />
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath5">
+      <path
+         d="m -27.09525629,4.621420433 h 72.355265 v -7.435720975 h -72.355265 z"
+         id="path5" />
+    </clipPath>
   </defs>
   <sodipodi:namedview
      id="namedview1"
      pagecolor="#ffffff"
      bordercolor="#000000"
-     borderopacity="0.25"
+     borderopacity="0.1"
      inkscape:showpageshadow="2"
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
@@ -78,7 +85,8 @@
     <text
        id="text4"
        xml:space="preserve"
-       transform="matrix(0,3.779528,-3.779528,0,133.3632723,217.6729048)"><tspan
+       transform="matrix(0,3.779528,-3.779528,0,133.3632723,217.6729048)"
+       clip-path="url(#clipPath5)"><tspan
          id="tspan4"
          style="font-variant:normal;font-weight:normal;font-size:3.70417px;font-family:'Droid Arabic Kufi';writing-mode:lr-tb;fill:#000000;fill-opacity:0.297209;fill-rule:nonzero;stroke:none"
          x="0"
@@ -90,7 +98,7 @@
      inkscape:groupmode="layer"
      inkscape:label="Cutting Line">
     <path
-       id="path5"
+       id="path6"
        d="m 44.449219,73.023438 c 0,34.925782 0,69.851562 0,104.777342 21.167317,0 42.334635,0 63.501951,0 0,-22.62825 0,-45.25651 0,-67.88476 -4.23539,-1.51577 -8.56548,-3.12962 -12.018029,-6.11181 -3.934378,-3.23026 -6.64593,-8.022183 -6.960028,-13.144274 -0.15439,-4.054848 -0.03132,-8.116716 -0.07077,-12.174389 0,-2.879297 0,-5.758594 0,-8.637891 -14.817709,0 -29.635417,0 -44.453125,0 0,1.058594 0,2.117188 10e-7,3.175782 z"
        style="fill:none;stroke:#000000;stroke-width:0.352778;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
        transform="matrix(3.779528,0,0,3.779528,-144.0000206,-240.0000318)" />
