@@ -2997,6 +2997,11 @@ SPITextDecorationLine::read( gchar const *str ) {
             inherit      = false;
         }
     }
+
+    // If we set text_decoration_line, then update style_td (for CSS2 text-decoration)
+    if (set && style) {
+        style->text_decoration.style_td = style;
+    }
 }
 
 const Glib::ustring SPITextDecorationLine::get_value() const
@@ -3198,6 +3203,7 @@ SPITextDecoration::read( gchar const *str ) {
     bool is_css3 = false;
 
     decltype(style->text_decoration_line) test_line;
+    test_line.setStylePointer(style);
     test_line.read( str );
     if( test_line.set ) {
         if (!style->text_decoration_line.set) {
@@ -3250,7 +3256,7 @@ SPITextDecoration::read( gchar const *str ) {
     if( is_css3 ) {
         style->text_decoration_line.set = true;
         style->text_decoration_style.set = true;
-        style->text_decoration_color.set = true;
+        // style->text_decoration_color.set = true; // Default is "currentColor" which needs evaluation.
         set = true;
     }
 

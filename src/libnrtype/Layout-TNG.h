@@ -955,6 +955,7 @@ private:
     double _getChunkWidth(unsigned chunk_index) const;
 
     void _calculateBaselines();
+    void _fillTextDecorationData();
     PangoLogAttr const &_get_attributes(iterator const &it) const;
 };
 

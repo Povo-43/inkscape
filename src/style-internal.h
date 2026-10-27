@@ -1220,6 +1220,8 @@ struct SPITextDecorationData {
     double   underline_position;
     double   line_through_thickness;
     double   line_through_position;
+    double   overline_thickness;
+    double   overline_position;
 };
 
 /// Vector Effects.  THIS SHOULD BE A GENERIC CLASS

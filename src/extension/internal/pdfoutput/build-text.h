@@ -27,6 +27,7 @@ public:
     void set_paint_style(StyleMap const &map, SPStyle const *style, SPStyle const *context_style);
     void set_text_mode(CapyPDF_Text_Mode mode);
     void render_text(Text::Layout const &layout, Text::Layout::Span const &span);
+    void render_decoration(Geom::Rect &rect, SPStyle const *style, SPStyle const *context_style);
     void finalize();
 
 protected:
