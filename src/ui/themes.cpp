@@ -42,6 +42,10 @@
 #include <gdk/macos/gdkmacos.h>
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 namespace Inkscape::UI {
 
 ThemeContext::ThemeContext()
@@ -595,13 +599,26 @@ std::vector<guint32> ThemeContext::getHighlightColors(Gtk::Window *window)
 }
 
 // That's what Gtk Inspector does to determine 100% scale, i.e. "normal" dpi
-static double get_dpi_ratio(Gdk::Display* display) {
+static double get_dpi_ratio(Gdk::Display *display)
+{
+    double dpi = 96.0;
 #ifdef __APPLE__
     if (GDK_IS_MACOS_DISPLAY(display ? display->gobj() : nullptr)) {
-        return 72.0 * 1024.0;
+        dpi = 72.0;
+    }
+#elifdef _WIN32
+    // test for the availability of the GetDpiForSystem function
+    // Based on the example at
+    // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress
+    auto dpiFn =
+        reinterpret_cast<UINT(__cdecl *)()>(GetProcAddress(GetModuleHandle(TEXT("User32.dll")), "GetDpiForSystem"));
+    if (dpiFn != nullptr) {
+        dpi = static_cast<double>(dpiFn());
+    } else {
+        g_warning("Could not get system DPI, falling back to 96");
     }
 #endif
-    return 96.0 * 1024.0;
+    return dpi * 1024.0;
 }
 
 void ThemeContext::adjustGlobalFontScale(double factor) {
