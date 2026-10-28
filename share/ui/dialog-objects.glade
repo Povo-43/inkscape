@@ -82,9 +82,9 @@
               <object class="GtkLabel" id="setting-fade-title">
                 <property name="label" translatable="yes">Fade Other Objects on Canvas</property>
                 <property name="xalign">0</property>
-                <style>
-                  <class name="heading"/>
-                </style>
+                <attributes>
+                   <attribute name="weight" value="bold"/>
+                </attributes>
               </object>
             </child>
             <child>
@@ -107,8 +107,8 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="setting-fade-layer">
-                    <property name="label" translatable="yes">When in Layers</property>
-                    <property name="tooltip-text" translatable="yes">Indicate the selected layer by making all other layers fade.</property>
+                    <property name="label" translatable="yes">When in Groups or Layers</property>
+                    <property name="tooltip-text" translatable="yes">Indicate the selected group or layer by making all other groups or layers fade.</property>
                     <property name="group">setting-fade-never</property>
                   </object>
                 </child>
