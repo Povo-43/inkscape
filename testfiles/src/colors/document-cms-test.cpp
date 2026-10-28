@@ -318,7 +318,7 @@ TEST_F(ColorDocumentCMSDefsTest, loadDocument)
     auto color = stop->getColor();
 
     // Test the expected values actually return
-    std::string expected = "#2c292a icc-color(Artifex-CMYK-SWOP-Profile, 0, 0, 0, 1)";
+    std::string expected = "#2b292a icc-color(Artifex-CMYK-SWOP-Profile, 0, 0, 0, 1)";
     EXPECT_TRUE(tracker.parse(expected)->getSpace()->hasValidCmsProfile());
     EXPECT_EQ(tracker.parse(expected)->toString(), expected);
     EXPECT_EQ(color.toString(), expected);

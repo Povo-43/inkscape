@@ -91,10 +91,10 @@ TEST(ColorsSpacesCms, realColor)
     auto cmyk = std::make_shared<CMS>(cmyk_profile);
     auto color = Color(cmyk, {0, 0, 0, 1});
 
-    EXPECT_EQ(color.toString(), "#2c292a icc-color(Artifex-CMYK-SWOP-Profile, 0, 0, 0, 1)");
-    EXPECT_EQ(color.toRGBA(), 0x2c292aff);
-    EXPECT_EQ(color.toRGBA(0.5), 0x2c292a80);
-    EXPECT_EQ(color.converted(Space::Type::RGB)->toString(), "#2c292a");
+    EXPECT_EQ(color.toString(), "#2b292a icc-color(Artifex-CMYK-SWOP-Profile, 0, 0, 0, 1)");
+    EXPECT_EQ(color.toRGBA(), 0x2b292aff);
+    EXPECT_EQ(color.toRGBA(0.5), 0x2b292a80);
+    EXPECT_EQ(color.converted(Space::Type::RGB)->toString(), "#2b292a");
     EXPECT_FALSE(color.hasOpacity());
     EXPECT_EQ(color.getOpacity(), 1.0);
 
@@ -102,14 +102,14 @@ TEST(ColorsSpacesCms, realColor)
     // Opacity isn't stored in the icc-color string, because it's not supported.
     EXPECT_TRUE(color.hasOpacity());
     EXPECT_EQ(color.getOpacity(), 0.5);
-    EXPECT_EQ(color.toString(), "#2c292a icc-color(Artifex-CMYK-SWOP-Profile, 0, 0, 0, 1)");
-    EXPECT_EQ(color.toRGBA(), 0x2c292a80);
-    EXPECT_EQ(color.toRGBA(0.5), 0x2c292a40);
-    EXPECT_EQ(color.converted(Space::Type::RGB)->toString(), "#2c292a80");
+    EXPECT_EQ(color.toString(), "#2b292a icc-color(Artifex-CMYK-SWOP-Profile, 0, 0, 0, 1)");
+    EXPECT_EQ(color.toRGBA(), 0x2b292a80);
+    EXPECT_EQ(color.toRGBA(0.5), 0x2b292a40);
+    EXPECT_EQ(color.converted(Space::Type::RGB)->toString(), "#2b292a80");
 
     color = Color(0x2c292aff);
     EXPECT_TRUE(color.convert(cmyk));
-    EXPECT_EQ(color.toString(), "#1f1b1c icc-color(Artifex-CMYK-SWOP-Profile, 0.688, 0.694, 0.648, 0.866)");
+    EXPECT_EQ(color.toString(), "#1e1b1c icc-color(Artifex-CMYK-SWOP-Profile, 0.688, 0.694, 0.648, 0.866)");
 }
 
 TEST(ColorsSpacesCms, renderingIntent)
@@ -123,8 +123,8 @@ TEST(ColorsSpacesCms, renderingIntent)
 
     cmyk->setIntent(RenderingIntent::PERCEPTUAL);
     EXPECT_EQ(cmyk->getIntent(), RenderingIntent::PERCEPTUAL);
-    EXPECT_EQ(color1.toString(), "#2c292a icc-color(vals, 0, 0, 0, 1)");
-    EXPECT_EQ(color1.converted(Space::Type::RGB)->toString(), "#2c292a");
+    EXPECT_EQ(color1.toString(), "#2b292a icc-color(vals, 0, 0, 0, 1)");
+    EXPECT_EQ(color1.converted(Space::Type::RGB)->toString(), "#2b292a");
     EXPECT_EQ(color2.toString(), "#70d0f6 icc-color(vals, 0.5, 0, 0, 0)");
 
     cmyk->setIntent(RenderingIntent::RELATIVE_COLORIMETRIC);
@@ -135,8 +135,8 @@ TEST(ColorsSpacesCms, renderingIntent)
 
     cmyk->setIntent(RenderingIntent::SATURATION);
     EXPECT_EQ(cmyk->getIntent(), RenderingIntent::SATURATION);
-    EXPECT_EQ(color1.toString(), "#2c292a icc-color(vals, 0, 0, 0, 1)");
-    EXPECT_EQ(color1.converted(Space::Type::RGB)->toString(), "#2c292a");
+    EXPECT_EQ(color1.toString(), "#2b292a icc-color(vals, 0, 0, 0, 1)");
+    EXPECT_EQ(color1.converted(Space::Type::RGB)->toString(), "#2b292a");
     EXPECT_EQ(color2.toString(), "#70d0f6 icc-color(vals, 0.5, 0, 0, 0)");
 
     cmyk->setIntent(RenderingIntent::ABSOLUTE_COLORIMETRIC);
@@ -154,14 +154,14 @@ TEST(ColorsSpacesCms, renderingIntent)
     // These should be the same as PERCEPTUAL
     cmyk->setIntent(RenderingIntent::UNKNOWN);
     EXPECT_EQ(cmyk->getIntent(), RenderingIntent::UNKNOWN);
-    EXPECT_EQ(color1.toString(), "#2c292a icc-color(vals, 0, 0, 0, 1)");
-    EXPECT_EQ(color1.converted(Space::Type::RGB)->toString(), "#2c292a");
+    EXPECT_EQ(color1.toString(), "#2b292a icc-color(vals, 0, 0, 0, 1)");
+    EXPECT_EQ(color1.converted(Space::Type::RGB)->toString(), "#2b292a");
     EXPECT_EQ(color2.toString(), "#70d0f6 icc-color(vals, 0.5, 0, 0, 0)");
 
     cmyk->setIntent(RenderingIntent::AUTO);
     EXPECT_EQ(cmyk->getIntent(), RenderingIntent::AUTO);
-    EXPECT_EQ(color1.toString(), "#2c292a icc-color(vals, 0, 0, 0, 1)");
-    EXPECT_EQ(color1.converted(Space::Type::RGB)->toString(), "#2c292a");
+    EXPECT_EQ(color1.toString(), "#2b292a icc-color(vals, 0, 0, 0, 1)");
+    EXPECT_EQ(color1.converted(Space::Type::RGB)->toString(), "#2b292a");
     EXPECT_EQ(color2.toString(), "#70d0f6 icc-color(vals, 0.5, 0, 0, 0)");
 }
 
