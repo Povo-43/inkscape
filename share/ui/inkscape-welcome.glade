@@ -661,7 +661,9 @@
                                 <property name="sort-order">descending</property>
                                 <property name="sort-column-id">0</property>
                                 <child>
-                                  <object class="GtkCellRendererText"/>
+                                  <object class="GtkCellRendererText">
+                                    <property name="ellipsize">middle</property>
+                                  </object>
                                   <attributes>
                                     <attribute name="text">0</attribute>
                                   </attributes>
