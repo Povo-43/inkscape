@@ -217,23 +217,6 @@ void SPText::modified(guint flags) {
         cflags |= SP_OBJECT_PARENT_MODIFIED_FLAG;
     }
 
-    // FIXME: all that we need to do here is to call setStyle, to set the changed
-    // style, but there's no easy way to access the drawing glyphs or texts corresponding to a
-    // text this. Therefore we do here the same as in _update, that is, destroy all items
-    // and create new ones. This is probably quite wasteful.
-    if (flags & ( SP_OBJECT_STYLE_MODIFIED_FLAG )) {
-        Geom::OptRect paintbox = geometricBounds();
-
-        for (auto &v : views) {
-            auto &sa = view_style_attachments[v.key];
-            sa.unattachAll();
-            auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
-            _clearFlow(g);
-            g->setStyle(style, parent->style);
-            layout.show(g, sa, paintbox);
-        }
-    }
-
     // Create temporary list of children
     std::vector<SPObject *> l;
     for (auto& child: children) {
