@@ -13,9 +13,11 @@
 
 #include "color-entry.h"
 
+#include "colors/document-cms.h"
 #include "colors/manager.h"
 #include "colors/spaces/gamut.h"
 #include "colors/spaces/base.h"
+#include "document.h"
 #include "svg/css-ostringstream.h"
 
 namespace Inkscape::UI::Widget {
@@ -86,9 +88,10 @@ void ColorEntry::_onColorChanged()
         set_icon_from_icon_name(_show_real ? "object-visible" : "object-hidden", IconPosition::SECONDARY);
     }
 
-    if (!_show_real) {
-        color = *color.converted(rgb);
-    }
+    // If there's no _doc, then we have to fallback to rgb only because we can't be sure if the color's space
+    // can be put into a string. If it can't it will throw a ColorSpaceError on the toString below.
+    color = *color.converted((_show_real && _doc) ? _doc->getDocumentCMS().mapToStorageFormat(color.getSpace()) : rgb);
+
     if (Colors::out_of_gamut(color, color.getSpace())) {
         _signal_out_of_gamut.emit(Glib::ustring::compose(_("Color %1 is out of gamut for %2.\nIt has been mapped to sRGB gamut."), color.toString().c_str(), color.getSpace()->getName().c_str()));
         _warning = true;

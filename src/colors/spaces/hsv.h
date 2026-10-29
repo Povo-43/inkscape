@@ -23,8 +23,10 @@ public:
     constexpr static int ProfileChannels = 3;
     constexpr static int OutputChannels = 3;
 
-    HSV(): RGBBase(Type::HSV, "HSV", "HSV", "color-selector-hsx") {}
+    HSV(): RGBBase(Type::HSV, "HSV", "HSV", "hsv") {}
     ~HSV() override = default;
+
+    std::string const getIcon() const override { return "color-selector-hsx"; }
 
     /**
      * Convert the HSV color into sRGB components used in the sRGB icc profile.

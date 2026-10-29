@@ -23,7 +23,7 @@ public:
     constexpr static int ProfileChannels = 3;
     constexpr static int OutputChannels = 3;
 
-    OkHsv(): RGBBase(Type::OKHSV, "OkHsv", "OkHsv", "color-selector-okhsv") {}
+    OkHsv(): RGBBase(Type::OKHSV, "OkHsv", "OkHsv", "okhsv") {}
     ~OkHsv() override = default;
 
     bool canToString() const override { return false; }

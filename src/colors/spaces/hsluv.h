@@ -29,7 +29,7 @@ public:
     constexpr static int ProfileChannels = 3;
     constexpr static int OutputChannels = 3;
 
-    HSLuv(): XYZBase(Type::HSLUV, "HSLuv", "HSLuv", "color-selector-hsluv") {}
+    HSLuv(): XYZBase(Type::HSLUV, "HSLuv", "HSLuv", "hsluv") {}
     ~HSLuv() override = default;
 
     bool canToString() const override { return false; }

@@ -39,7 +39,7 @@ public:
     constexpr static double MIN_V = -200;
     constexpr static double MAX_V = 120;
 
-    Luv(): XYZBase(Type::LUV, "Luv", "Luv", "color-selector-luv") {}
+    Luv(): XYZBase(Type::LUV, "Luv", "Luv", "luv") {}
     ~Luv() override = default;
 
     bool canToString() const override { return false; }

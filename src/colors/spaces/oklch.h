@@ -25,7 +25,7 @@ public:
 
     constexpr static double HUE_SCALE = 360;
 
-    OkLch(): RGBBase(Type::OKLCH, "OkLch", "OkLch", "color-selector-oklch") {
+    OkLch(): RGBBase(Type::OKLCH, "OkLch", "OkLch", "oklch") {
         _svgNames.emplace_back("oklch");
     }
     ~OkLch() override = default;

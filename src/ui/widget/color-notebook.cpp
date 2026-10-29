@@ -20,9 +20,12 @@
 #include <gtkmm/stackswitcher.h>
 
 #include "desktop.h"
+#include "document.h"
 #include "inkscape.h"
+#include "colors/document-cms.h"
 #include "colors/manager.h"
 #include "colors/spaces/base.h"
+#include "colors/spaces/cms.h"
 #include "ui/dialog-events.h"
 #include "ui/icon-loader.h"
 #include "ui/pack.h"
@@ -62,7 +65,14 @@ ColorNotebook::~ColorNotebook()
 void ColorNotebook::setDocument(SPDocument *document)
 {
     _document = document;
-    // XXX Watch for new icc spaces here using the profile tracker
+    _rgba_entry->setDocument(document);
+    _cms_space_changed.disconnect();
+    if (_document) {
+        _cms_space_changed = _document->getDocumentCMS().connectChanged([this]() {
+            _updateColorList();
+        });
+        _updateColorList();
+    }
 }
 
 void ColorNotebook::set_label(const Glib::ustring& label) {
@@ -97,11 +107,6 @@ void ColorNotebook::_initUI()
     _combo->set_focusable(false);
     _combo->set_tooltip_text(_("Choose style of color selection"));
 
-    // Add all universal (non-document icc profile) color spaces
-    for (auto &picker : Colors::Manager::get().pickers()) {
-        _addPageForPicker(picker);
-    }
-
     _label = Gtk::make_managed<Gtk::Label>();
     _label->set_visible();
     _label->set_xalign(0);
@@ -130,11 +135,9 @@ void ColorNotebook::_initUI()
     attach(*_book, 0, row, 2, 1);
 
     // restore the last active page
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    Glib::ustring page_name = prefs->getString("/colorselector/page", "");
-    _setCurrentPage(getPageIndex(page_name), true);
     row++;
 
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     _observer = prefs->createObserver("/colorselector/switcher", [this](const Preferences::Entry& new_value) {
         _switcher->set_visible(!new_value.getBool());
         _buttonbox->set_visible(new_value.getBool());
@@ -181,10 +184,10 @@ void ColorNotebook::_initUI()
     gtk_widget_set_hexpand(_rgbal, TRUE);
     gtk_box_append(rgbabox_box, _rgbal);
 
-    auto const rgba_entry = Gtk::make_managed<ColorEntry>(_colors);
-    rgba_entry->set_max_width_chars(8);
-    auto const rgba_entry_widget = rgba_entry->Gtk::Widget::gobj();
-    sp_dialog_defocus_on_enter(rgba_entry);
+    _rgba_entry = Gtk::make_managed<ColorEntry>(_colors);
+    _rgba_entry->set_max_width_chars(8);
+    auto const rgba_entry_widget = _rgba_entry->Gtk::Widget::gobj();
+    sp_dialog_defocus_on_enter(_rgba_entry);
     gtk_box_append(rgbabox_box, rgba_entry_widget);
     gtk_label_set_mnemonic_widget(GTK_LABEL(_rgbal), rgba_entry_widget);
 
@@ -196,16 +199,6 @@ void ColorNotebook::_initUI()
     gtk_widget_set_margin_top(rgbabox, 8);
     gtk_widget_set_margin_bottom(rgbabox, YPAD);
     attach(*Glib::wrap(rgbabox), 0, row, 2, 1);
-
-    // remember the page we switched to
-    _book->property_visible_child_name().signal_changed().connect([this]() {
-        // We don't want to remember auto cms selection
-        Glib::ustring name = _book->get_visible_child_name();
-        if (get_visible() && !name.empty() && name != "CMS") {
-            Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-            prefs->setString("/colorselector/page", name);
-        }
-    });
 
 #ifdef SPCS_PREVIEW
     _p = sp_color_preview_new(0xffffffff);
@@ -287,15 +280,48 @@ void ColorNotebook::_setCurrentPage(int i, bool sync_combo)
         page = _book->get_first_child();
     }
 
+    // We don't want to remember auto cms selection
+    Glib::ustring name = _book->get_visible_child_name();
+    if (get_visible()) {
+        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+        prefs->setString("/colorselector/page", name);
+    }
+
     _book->set_visible_child(*page);
     if (sync_combo) {
         _combo->set_active_by_id(i);
     }
 }
 
-void ColorNotebook::_addPageForPicker(std::shared_ptr<Colors::Picker> picker)
+void ColorNotebook::_updateColorList()
 {
-    auto space = Colors::Manager::get().find(picker->getType());
+    // 1. Remove existing cms entries from _combo
+    _combo->clear();
+    _visibility_connections.clear();
+
+    // Add all universal (non-document icc profile) color spaces
+    for (auto &picker : Colors::Manager::get().pickers()) {
+        if (auto space = Colors::Manager::get().find(picker->getType())) {
+            _addPageForSpace(picker, space);
+        }
+    }
+
+    // 2. Add any icc profiles now
+    if (_document) {
+        auto picker = Colors::Manager::get().findPicker(Colors::Space::Type::CMS);
+        for (auto space : _document->getDocumentCMS().getSpaces()) {
+            _addPageForSpace(picker, space);
+        }
+    }
+
+    // 3. Set the page to the best color selector for this document
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    Glib::ustring page_name = prefs->getString("/colorselector/page", "");
+    _setCurrentPage(getPageIndex(page_name), true);
+}
+
+void ColorNotebook::_addPageForSpace(std::shared_ptr<Colors::Picker> picker, std::shared_ptr<Colors::Space::AnySpace> const &space)
+{
     auto selector_widget = Gtk::make_managed<ColorPage>(space, _colors);
     auto mode_name = space->getName();
     _book->add(*selector_widget, mode_name, mode_name);

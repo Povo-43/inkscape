@@ -44,7 +44,7 @@ public:
     constexpr static int ProfileChannels = 3;
     constexpr static int OutputChannels = 3;
 
-    RGB(): ProfileSpace(Type::RGB, 3, "RGB", "RGB", "color-selector-rgb") {
+    RGB(): ProfileSpace(Type::RGB, 3, "RGB", "RGB", "rgb") {
         _svgNames.emplace_back("sRGB");
     }
     // Unique constructor for CSSNAME which is just sRGB with strings

@@ -29,17 +29,18 @@ namespace Inkscape::Colors::Space {
  * @arg components - The number of component channels in this color space
  * @arg name       - The common name for this color space
  * @arg shortName  - A shorter name used in drop down selections and other tight spaces
- * @arg icon       - An icon name which is used in many UI locations as a short hand for this space.
+ * @arg tag        - A lower-case name used in icons and prefs which is the same for this /type/ of space.
+ *                   for example sRGB would be rgb, and CMS would be cms, but not "Fogra Uncoated 2.0"
  * @arg spaceIsUnbounded - If true, this color space can have values larger and smaller than 0.0 to 1.0
  *
  * Further information about the components themselves are contained within components.cpp
  */
-AnySpace::AnySpace(Type type, int components, std::string name, std::string shortName, std::string icon, bool spaceIsUnbounded)
+AnySpace::AnySpace(Type type, int components, std::string name, std::string shortName, std::string tag, bool spaceIsUnbounded)
     : _type(type)
     , _components(components)
     , _name(std::move(name))
     , _shortName(std::move(shortName))
-    , _icon(std::move(icon))
+    , _type_tag(std::move(tag))
     , _spaceIsUnbounded(spaceIsUnbounded)
 {
     static int next_id = 0;

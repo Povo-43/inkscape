@@ -59,9 +59,11 @@ MultiMarkerColorPlate::MultiMarkerColorPlate(Colors::ColorSet const &colors)
 
     int index = 0;
     for (auto &picker : Colors::Manager::get().pickers()) {
-        auto space = manager->find(picker->getType());
-        _createSlidersForSpace(space, _specific_colors, index);
-        _addPageForSpace(space, index++);
+        // CMS returns none here as there's never a cms space
+        if (auto space = manager->find(picker->getType())) {
+            _createSlidersForSpace(space, _specific_colors, index);
+            _addPageForSpace(space, index++);
+        }
     }
 
     _lightness_icon->set_from_icon_name(INKSCAPE_ICON("lightness"));

@@ -24,7 +24,7 @@ class Alpha : public ProfileSpace<true>
 {
 public:
     Alpha()
-        : ProfileSpace(Type::Alpha, 0, "Alpha", "Alpha", "")
+        : ProfileSpace(Type::Alpha, 0, "Alpha", "Alpha", "alpha")
     {}
 
     std::shared_ptr<Colors::CMS::Profile> const getProfile() const override

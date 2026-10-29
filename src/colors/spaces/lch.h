@@ -31,7 +31,7 @@ public:
     constexpr static double CHROMA_SCALE = 150;
     constexpr static double HUE_SCALE = 360;
 
-    Lch(): LabBase(Type::LCH, "Lch", "Lch", "color-selector-lch", true) {
+    Lch(): LabBase(Type::LCH, "Lch", "Lch", "lch", true) {
         _svgNames.emplace_back("lch");
     }
     ~Lch() override = default;

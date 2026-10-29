@@ -76,7 +76,8 @@ public:
     std::string const& getShortName() const { return _shortName; }
     std::string getSvgName() const { return _svgNames.empty() ? "" : _svgNames[0]; }
     std::vector<std::string> const& getSvgNames() const { return _svgNames; }
-    std::string const& getIcon() const { return _icon; }
+    std::string const& getTypeTag() const { return _type_tag; }
+    virtual std::string const getIcon() const { return "color-selector-" + _type_tag; }
     unsigned int getComponentCount() const { return _components; }
     virtual Type getComponentType() const { return getType(); }
     virtual std::shared_ptr<Colors::CMS::Profile> const getProfile() const = 0;
@@ -150,7 +151,7 @@ private:
     int _id;
     std::string _name;
     std::string _shortName;
-    std::string _icon;
+    std::string _type_tag;
     bool _spaceIsUnbounded;
     bool _can_print;
 };

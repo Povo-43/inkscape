@@ -30,6 +30,7 @@ class StackSwitcher;
 
 namespace Inkscape::UI::Widget {
 
+class ColorEntry;
 class IconComboBox;
 
 class ColorNotebook
@@ -44,7 +45,9 @@ public:
 
 protected:
     void _initUI();
-    void _addPageForPicker(std::shared_ptr<Colors::Picker> picker);
+    void _addPageForSpace(std::shared_ptr<Colors::Picker> picker, std::shared_ptr<Colors::Space::AnySpace> const &space);
+    void _updateColorList();
+
     void setDocument(SPDocument *document);
 
     static void _onPickerClicked(GtkWidget *widget, ColorNotebook *colorbook);
@@ -62,6 +65,7 @@ protected:
     Gtk::Box* _buttonbox = nullptr;
     Gtk::Label* _label = nullptr;
     GtkWidget *_rgbal = nullptr; /* RGBA entry */
+    ColorEntry *_rgba_entry = nullptr;
     GtkWidget *_outofgamut = nullptr;
     GtkWidget *_colormanaged = nullptr;
     GtkWidget *_toomuchink = nullptr;
@@ -76,6 +80,7 @@ private:
 
     SPDocument *_document = nullptr;
     sigc::connection _doc_replaced_connection;
+    sigc::connection _cms_space_changed;
 };
 
 } // namespace Inkscape::UI::Widget

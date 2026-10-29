@@ -17,6 +17,8 @@
 #include "colors/color-set.h"
 #include "ui/widget/generic/text-entry.h"
 
+class SPDocument;
+
 namespace Inkscape::UI::Widget {
 
 class ColorEntry : public TextEntry
@@ -27,6 +29,7 @@ public:
 
     sigc::signal<void (Glib::ustring)>& get_out_of_gamut_signal() { return _signal_out_of_gamut; }
 
+    void setDocument(SPDocument *doc) { _doc = doc; }
 protected:
     void on_changed() override;
 
@@ -34,6 +37,8 @@ private:
     void _onColorChanged();
 
     std::shared_ptr<Colors::ColorSet> _colors;
+
+    SPDocument *_doc = nullptr;
 
     bool _show_real = true;
     bool _updating = false;

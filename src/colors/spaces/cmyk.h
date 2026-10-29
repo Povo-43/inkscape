@@ -24,7 +24,7 @@ public:
     constexpr static int OutputChannels = 4;
     constexpr static int ProfileChannels = 3;
 
-    DeviceCMYK(): RGBBase(Type::CMYK, "DeviceCMYK", "CMYK", "color-selector-cmyk") {
+    DeviceCMYK(): RGBBase(Type::CMYK, "DeviceCMYK", "CMYK", "cmyk") {
         _svgNames.emplace_back("device-cmyk");
     }
     ~DeviceCMYK() override = default;

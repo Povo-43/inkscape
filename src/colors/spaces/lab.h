@@ -44,7 +44,7 @@ public:
     static constexpr double MIN_SCALE = -128;
     static constexpr double MAX_SCALE = 127;
 
-    Lab(): ProfileSpace(Type::LAB, 3, "Lab", "Lab", "color-selector-lab", true) {
+    Lab(): ProfileSpace(Type::LAB, 3, "Lab", "Lab", "lab", true) {
         _svgNames.emplace_back("lab");
         _intent = RenderingIntent::ABSOLUTE_COLORIMETRIC;
         _intent_priority = 10;
