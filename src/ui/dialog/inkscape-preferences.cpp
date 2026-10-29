@@ -1427,7 +1427,6 @@ void InkscapePreferences::toggleSymbolic()
 void InkscapePreferences::comboThemeChange()
 {
     //we reset theming on combo change
-    _dark_theme.set_active(false);
     _symbolic_base_colors.set_active(false);
     if (_contrast_theme.getSpinButton()->get_value() != 10.0){
         _contrast_theme.getSpinButton()->set_value(10.0);
@@ -1798,7 +1797,7 @@ void InkscapePreferences::initPageUI()
         std::sort(values.begin(), values.end());
         labels.erase(unique(labels.begin(), labels.end()), labels.end());
         values.erase(unique(values.begin(), values.end()), values.end());
-        values.emplace_back("");
+        values.emplace_back(default_theme);
         Glib::ustring default_theme_label = _("Use system theme");
         default_theme_label += " (" + default_theme + ")";
         labels.emplace_back(default_theme_label);
