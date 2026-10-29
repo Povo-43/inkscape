@@ -57,6 +57,10 @@
 #include "ui/widget/desktop-widget.h"
 #include "util/enums.h"
 
+#ifdef __APPLE__
+#include "ui/macos/window-animation.h"
+#endif
+
 using Inkscape::UI::Dialog::DialogManager;
 using Inkscape::UI::Dialog::DialogContainer;
 using Inkscape::UI::Dialog::DialogWindow;
@@ -176,13 +180,30 @@ void InkscapeWindow::on_realize()
 {
     Gtk::ApplicationWindow::on_realize();
 
+#ifdef __APPLE__
+    Inkscape::UI::MacOS::enable_window_animation(GTK_WINDOW(gobj()));
+#endif
+
     // Note: Toplevel only becomes non-null after realisation.
     _toplevel_state_connection = get_toplevel()->property_state().signal_changed().connect(
         sigc::mem_fun(*this, &InkscapeWindow::on_toplevel_state_changed)
     );
 }
 
-InkscapeWindow::~InkscapeWindow() = default;
+void InkscapeWindow::on_unrealize()
+{
+#ifdef __APPLE__
+    Inkscape::UI::MacOS::disable_window_animation(GTK_WINDOW(gobj()));
+#endif
+    Gtk::ApplicationWindow::on_unrealize();
+}
+
+InkscapeWindow::~InkscapeWindow()
+{
+#ifdef __APPLE__
+    Inkscape::UI::MacOS::disable_window_animation(GTK_WINDOW(gobj()));
+#endif
+}
 
 // Change a document, leaving desktop/view the same. (Eventually move all code here.)
 void InkscapeWindow::change_document(SPDocument *document)

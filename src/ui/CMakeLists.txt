@@ -655,6 +655,12 @@ target_sources(inkscape_base PRIVATE
 	view/svg-view-widget.h
 )
 
+if(APPLE)
+    target_sources(inkscape_base PRIVATE macos/window-animation.mm macos/window-animation.h)
+    target_compile_options(inkscape_base PRIVATE $<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc>)
+    target_link_libraries(inkscape_base PRIVATE "-framework AppKit")
+endif()
+
 if(${WITH_LIBSPELLING})
 	target_sources(inkscape_base PRIVATE
 		dialog/spellcheck.cpp
