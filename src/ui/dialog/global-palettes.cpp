@@ -254,6 +254,12 @@ void load_ase_swatches(PaletteFileData& palette, std::string const &fname) {
             for (unsigned i = 0; i < space->getComponentCount(); i++) {
                 data.emplace_back(read_float(stream));
             }
+            if (it->second == Space::Type::LAB) {
+                // LAB colors need to be correctly rescaled to preserve original values.
+                // Magic 125 corresponds to MIN_CSS_SCALE in "lab.cpp" and CSS Lab range.
+                data[1] = SCALE_DOWN(data[1], -125, 125);
+                data[2] = SCALE_DOWN(data[2], -125, 125);
+            }
             auto color = Color(space, data);
 
             read_value<uint16_t>(stream); // type uint16, ignored for now
