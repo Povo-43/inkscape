@@ -33,6 +33,11 @@
 #include "io/resource.h" // UI File location
 #include "preferences.h" // max recent documents
 
+// For debugging/development purposes, you can still launch the legacy version of the Text & Font dialog by enabling
+// this flag, rebuilding, and opening it from the menu. At some point, once we no longer need to compare how it used to
+// work to how the new dialog works, we can remove this and its related code in TextEdit.
+#define SHOW_LEGACY_TEXT_AND_FONT_DIALOG 1
+
 // Rebuild menu with icons enabled or disabled. Recursive.
 static void rewrite_menu(Glib::RefPtr<Gio::Menu> const &menu, int use_icons);
 
@@ -156,6 +161,14 @@ void build_menu()
     };
 
     rebuild_recent(recent_menu);
+
+#if SHOW_LEGACY_TEXT_AND_FONT_DIALOG
+    auto const font_section = builder->get_object<Gio::Menu>("font-section");
+    auto const legacy_item = Gio::MenuItem::create("_Legacy Text and Font...", "");
+    auto const legacy_target = Glib::Variant<Glib::ustring>::create("LegacyText");
+    legacy_item->set_action_and_target("win.dialog-open", legacy_target);
+    font_section->insert_item(1, legacy_item);
+#endif
 
     // Remove all or some icons. Also create label to tooltip map.
     auto prefs = Inkscape::Preferences::get();

@@ -1116,17 +1116,11 @@
     </submenu>
     <submenu id="text-menu">
       <attribute name="label" translatable="yes">_Text</attribute>
-      <section>
+      <section id="font-section">
         <item>
           <attribute name="label" translatable="yes">_Text and Font...</attribute>
           <attribute name="action">win.dialog-open</attribute>
           <attribute name="target">Text</attribute>
-          <attribute name="icon">dialog-text-and-font</attribute>
-        </item>
-        <item>
-          <attribute name="label" translatable="yes">Font _Browser...</attribute>
-          <attribute name="action">win.dialog-open</attribute>
-          <attribute name="target">FontBrowser</attribute>
           <attribute name="icon">dialog-text-and-font</attribute>
         </item>
         <item>

@@ -113,9 +113,9 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
     else if (dialog_type == "FilterEffects")      return std::make_unique<FilterEffectsDialog>();
     else if (dialog_type == "FilterGallery")      return std::make_unique<ExtensionsGallery>(ExtensionsGallery::Filters);
     else if (dialog_type == "Find")               return std::make_unique<Find>();
-    else if (dialog_type == "FontBrowser")        return std::make_unique<TextEdit>(true);
     else if (dialog_type == "FontCollections")    return std::make_unique<FontCollectionsManager>();
     else if (dialog_type == "IconPreview")        return std::make_unique<IconPreviewPanel>();
+    else if (dialog_type == "LegacyText")         return std::make_unique<TextEdit>(true);
     else if (dialog_type == "LivePathEffect")     return std::make_unique<LivePathEffectEditor>();
     else if (dialog_type == "ObjectProperties")   return std::make_unique<ObjectAttributes>();
     else if (dialog_type == "Objects")            return std::make_unique<ObjectsPanel>();
