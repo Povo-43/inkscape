@@ -176,7 +176,6 @@
        style="display:inline"
        inkscape:label="distribute-unclump-colors">
       <rect
-         opacity="0"
          id="rect5769-4"
          width="16"
          height="16"
@@ -185,7 +184,7 @@
          inkscape:label="bbox"
          inkscape:tile-x0="1856"
          inkscape:tile-y0="308"
-         class="bbox " />
+         opacity="0" />
       <rect
          style="display:inline;fill:url(#linearGradient138);fill-opacity:1;stroke:none"
          id="rect9"

@@ -159,7 +159,6 @@
        style="display:inline"
        inkscape:label="snap-grid-lines-symbolic">
       <rect
-         opacity="0"
          id="rect149-0"
          width="16"
          height="16"
@@ -169,7 +168,7 @@
          inkscape:tile-x0="1856"
          inkscape:tile-y0="308"
          transform="translate(-1418.948,1831)"
-         class="bbox " />
+         opacity="0" />
       <path
          id="path149-8"
          opacity="0.5"
