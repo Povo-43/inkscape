@@ -98,9 +98,20 @@ Glib::RefPtr<Gio::File> choose_file_save(Glib::ustring const &title, Gtk::Window
 
     if (filters_model) {
         set_filters(*file_dialog, filters_model);
-        // for (int i = 0; i < filters_model->get_n_items(); ++i) {
-        //     std::cout << filters_model->get_item(i)->get_name() << std::endl;
-        // }
+
+        // Find filter that matches file extension.
+        GFileInfo *info_c = g_file_info_new(); // No C++ API!
+        g_file_info_set_display_name(info_c, file_name.c_str());
+        auto info = Glib::wrap(info_c);
+
+        for (int i = 0; i < filters_model->get_n_items(); ++i) {
+            auto filter = filters_model->get_item(i);
+            // std::cout << filter->get_name() << std::endl;
+            if (filter && filter->match(info)) {
+                file_dialog->set_default_filter(filter);
+            }
+            // No break! First match will be "All files" so we want second match.
+        }
     }
 
     file_dialog->set_initial_name(file_name);
