@@ -356,6 +356,7 @@ void DialogNotebook::add_page(Gtk::Widget &page) {
         auto const wrapper = Gtk::make_managed<Gtk::ScrolledWindow>();
         wrapper->set_vexpand(true);
         wrapper->set_propagate_natural_height(true);
+        wrapper->set_propagate_natural_width(true);
         wrapper->set_overlay_scrolling(false);
         wrapper->get_style_context()->add_class("noborder");
 
