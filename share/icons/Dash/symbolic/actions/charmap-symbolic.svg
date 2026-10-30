@@ -157,7 +157,7 @@
          inkscape:label="bbox"
          inkscape:tile-x0="1856"
          inkscape:tile-y0="308"
-         class="bbox " />
+         opacity="0" />
       <path
          id="rect48"
          style="display:inline;opacity:0.4;fill:#000000ff;stroke-width:0.999985"
