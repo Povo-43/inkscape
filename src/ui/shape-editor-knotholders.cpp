@@ -225,6 +225,7 @@ public:
     void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state) override {};
     void knot_set(Geom::Point const &p, Geom::Point const &origin, unsigned int state) override;
     void knot_grabbed(Geom::Point const & grab_position, unsigned state) override;
+    void knot_click(unsigned state) override;
 
     std::string get_mod_label() const { return mod_trans_confine->get_label(); }
 
@@ -233,6 +234,8 @@ protected:
     void set_internal(Geom::Point const &opposite_point);
 
 private:
+    void _mark_initial_point();
+
     Geom::Point initialXY;
     Modifiers::Modifier *mod_trans_confine = Modifiers::Modifier::get(Modifiers::Type::TRANS_CONFINE);
 };
@@ -244,11 +247,14 @@ public:
     void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state) override {};
     void knot_set(Geom::Point const &p, Geom::Point const &origin, unsigned int state) override;
     void knot_grabbed(Geom::Point const & grab_position, unsigned state) override;
+    void knot_click(unsigned state) override;
 
     std::string get_mod_label() const { return mod_trans_confine->get_label(); }
 
 private:
     void set_internal(Geom::Point const &opposite_of_the_opposite_point);
+    void _mark_initial_point();
+
     Geom::Point initial_opposite_XY;
     Modifiers::Modifier *mod_trans_confine = Modifiers::Modifier::get(Modifiers::Type::TRANS_CONFINE);
 };
@@ -476,13 +482,22 @@ void RectKnotHolderEntityWH::set_internal(Geom::Point const &opposite_point)
     rect->height = geomRect.height();
 }
 
-void
-RectKnotHolderEntityWH::knot_grabbed(Geom::Point const & grab_position, unsigned state)
+void RectKnotHolderEntityWH::_mark_initial_point()
 {
     auto rect = cast<SPRect>(item);
     g_assert(rect != nullptr);
 
     initialXY = Geom::Point(rect->x.computed, rect->y.computed);
+}
+
+void RectKnotHolderEntityWH::knot_grabbed(Geom::Point const &grab_position, unsigned state)
+{
+    _mark_initial_point();
+}
+
+void RectKnotHolderEntityWH::knot_click(unsigned state)
+{
+    _mark_initial_point();
 }
 
 void
@@ -501,15 +516,23 @@ RectKnotHolderEntityXY::knot_get() const
     return Geom::Point(rect->x.computed, rect->y.computed);
 }
 
-void
-RectKnotHolderEntityXY::knot_grabbed(Geom::Point const & grab_position, unsigned state)
+void RectKnotHolderEntityXY::_mark_initial_point()
 {
     auto rect = cast<SPRect>(item);
     g_assert(rect != nullptr);
 
-    initial_opposite_XY = Geom::Point(
-        rect->x.computed + rect->width.computed,
-        rect->y.computed + rect->height.computed);
+    initial_opposite_XY = Geom::Point(rect->x.computed + rect->width.computed,
+                                      rect->y.computed + rect->height.computed);
+}
+
+void RectKnotHolderEntityXY::knot_grabbed(Geom::Point const &grab_position, unsigned state)
+{
+    _mark_initial_point();
+}
+
+void RectKnotHolderEntityXY::knot_click(unsigned state)
+{
+    _mark_initial_point();
 }
 
 void
