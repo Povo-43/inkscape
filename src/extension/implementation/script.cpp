@@ -705,8 +705,12 @@ void Script::_change_extension(Inkscape::Extension::Extension *module, Execution
     } // data_read
 
     if (new_xmldoc) {
-        //uncomment if issues on ref extensions links (with previous function)
-        //sp_change_hrefs(new_xmldoc, tempfile_out.get_filename().c_str(), doc->getDocumentFilename());
+        // Reset any relative hrefs from script dir (tmpdir) to the doc's dir
+        auto absref = prefs->getBool("/options/svgoutput/usesodipodiabsref", false);
+        auto out_dirname = Glib::path_get_dirname(tempfile_out.get_filename());
+        Inkscape::XML::rebase_hrefs(new_xmldoc->root(), out_dirname.c_str(), doc->getDocumentBase(), absref);
+
+        // Push the parsed xml tree into the document
         doc->rebase(new_xmldoc);
     } else {
         Inkscape::UI::gui_warning(_("The output from the extension could not be parsed."), parent_window);
