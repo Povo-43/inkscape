@@ -36,7 +36,7 @@
 // For debugging/development purposes, you can still launch the legacy version of the Text & Font dialog by enabling
 // this flag, rebuilding, and opening it from the menu. At some point, once we no longer need to compare how it used to
 // work to how the new dialog works, we can remove this and its related code in TextEdit.
-#define SHOW_LEGACY_TEXT_AND_FONT_DIALOG 1
+#define SHOW_LEGACY_TEXT_AND_FONT_DIALOG 0
 
 // Rebuild menu with icons enabled or disabled. Recursive.
 static void rewrite_menu(Glib::RefPtr<Gio::Menu> const &menu, int use_icons);
