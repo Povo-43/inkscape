@@ -1274,6 +1274,10 @@ void propagate_antialias(SPShapeRendering shape_rendering, DrawingItem &item)
 // Remove this node from its parent, then delete it.
 void DrawingItem::unlink()
 {
+    bool expected = false;
+    if (!_unlink_scheduled.compare_exchange_strong(expected, true)) {
+        return;// if the unlink is already scheduled it will directly return
+    }
     defer([=, this] {
         // This only happens for the top-level deleted item.
         if (_parent) {

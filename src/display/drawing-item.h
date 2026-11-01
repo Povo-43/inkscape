@@ -13,6 +13,7 @@
 #ifndef INKSCAPE_DISPLAY_DRAWING_ITEM_H
 #define INKSCAPE_DISPLAY_DRAWING_ITEM_H
 
+#include <atomic>
 #include <cstdint>
 #include <exception>
 #include <list>
@@ -172,6 +173,9 @@ public:
     void recursivePrintTree(unsigned level = 0) const;  // For debugging
 
 protected:
+
+     std::atomic<bool> _unlink_scheduled { false }; // for tracking if already an unlink is scheduled
+
     enum class ChildType : unsigned char
     {
         ORPHAN = 0, // No parent - implies !parent.
