@@ -115,6 +115,14 @@ void build_menu()
             }
             current_menu->append(entry.effect_name, "app." + entry.effect_id);
         }
+
+#if SHOW_LEGACY_TEXT_AND_FONT_DIALOG
+        auto const font_section = builder->get_object<Gio::Menu>("font-section");
+        auto const legacy_item = Gio::MenuItem::create("_Legacy Text and Font...", "");
+        auto const legacy_target = Glib::Variant<Glib::ustring>::create("LegacyText");
+        legacy_item->set_action_and_target("win.dialog-open", legacy_target);
+        font_section->insert_item(1, legacy_item);
+#endif
     }
 
     // Recent file
@@ -161,14 +169,6 @@ void build_menu()
     };
 
     rebuild_recent(recent_menu);
-
-#if SHOW_LEGACY_TEXT_AND_FONT_DIALOG
-    auto const font_section = builder->get_object<Gio::Menu>("font-section");
-    auto const legacy_item = Gio::MenuItem::create("_Legacy Text and Font...", "");
-    auto const legacy_target = Glib::Variant<Glib::ustring>::create("LegacyText");
-    legacy_item->set_action_and_target("win.dialog-open", legacy_target);
-    font_section->insert_item(1, legacy_item);
-#endif
 
     // Remove all or some icons. Also create label to tooltip map.
     auto prefs = Inkscape::Preferences::get();
