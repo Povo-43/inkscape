@@ -262,8 +262,8 @@ object_rotate_90_cw(InkscapeApplication *app)
     Inkscape::Selection *selection = app->get_active_selection();
 
     // Object Rotate 90
-    auto desktop = selection->desktop();
-    selection->rotateAnchored((!desktop || desktop->is_yaxisdown()) ? 90 : -90);
+    auto doc = selection->document();
+    selection->rotateAnchored((!doc || doc->is_yaxisdown()) ? 90 : -90);
 }
 
 void
@@ -272,8 +272,8 @@ object_rotate_90_ccw(InkscapeApplication *app)
     Inkscape::Selection *selection = app->get_active_selection();
 
     // Object Rotate 90 CCW
-    auto desktop = selection->desktop();
-    selection->rotateAnchored((!desktop || desktop->is_yaxisdown()) ? -90 : 90);
+    auto doc = selection->document();
+    selection->rotateAnchored((!doc || doc->is_yaxisdown()) ? -90 : 90);
 }
 
 void
