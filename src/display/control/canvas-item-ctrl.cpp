@@ -283,6 +283,7 @@ void CanvasItemCtrl::set_selected(bool selected)
 {
     defer([=, this] {
         _handle.selected = selected;
+        _handle_neutral = false;
         _built.reset();
         request_update();
     });
@@ -292,6 +293,7 @@ void CanvasItemCtrl::set_click(bool click)
 {
     defer([=, this] {
         _handle.click = click;
+        _handle_neutral = false;
         _built.reset();
         request_update();
     });
@@ -301,6 +303,7 @@ void CanvasItemCtrl::set_hover(bool hover)
 {
     defer([=, this] {
         _handle.hover = hover;
+        _handle_neutral = false;
         _built.reset();
         request_update();
     });
@@ -313,6 +316,7 @@ void CanvasItemCtrl::set_normal(bool selected)
 {
     defer([=, this] {
         _handle.selected = selected;
+        if (!selected) _handle_neutral = true;
         _handle.hover = false;
         _handle.click = false;
         _built.reset();
@@ -543,7 +547,7 @@ void CanvasItemCtrl::build_cache(int device_scale) const
 
     _cache = Handles::draw({
         .shape = _shape_set ? _shape : style.shape(),
-        .fill = _fill_set ? _fill : style.getFill(),
+        .fill = (_fill_set && _handle_neutral) ? _fill : style.getFill(),
         .stroke = _stroke_set ? _stroke : style.getStroke(),
         .outline = style.getOutline(),
         .stroke_width = stroke_width,

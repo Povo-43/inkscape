@@ -85,6 +85,7 @@ private:
     // Properties
     Handles::TypeState _handle;
     CanvasItemCtrlShape _shape = CANVAS_ITEM_CTRL_SHAPE_SQUARE;
+    bool _handle_neutral = true;
     uint32_t _fill = 0x000000ff;
     uint32_t _stroke = 0xffffffff;
     bool _shape_set = false;

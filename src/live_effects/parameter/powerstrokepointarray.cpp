@@ -34,7 +34,7 @@ PowerStrokePointArrayParam::PowerStrokePointArrayParam( const Glib::ustring& lab
                         Effect* effect)
     : ArrayParam<Geom::Point>(label, tip, key, wr, effect, 0)
     , knot_shape(Inkscape::CANVAS_ITEM_CTRL_SHAPE_DIAMOND)
-    , knot_color(0xff88ff00)
+    , knot_color(0xff88ffff)
 {
 }
 

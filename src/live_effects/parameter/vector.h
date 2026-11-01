@@ -68,9 +68,9 @@ private:
 
     /// The looks of the vector and origin knots oncanvas
     Inkscape::CanvasItemCtrlShape vec_knot_shape = Inkscape::CANVAS_ITEM_CTRL_SHAPE_DIAMOND;
-    uint32_t                      vec_knot_color = 0xffffb500;
+    uint32_t                      vec_knot_color = 0xffffb5ff;
     Inkscape::CanvasItemCtrlShape ori_knot_shape = Inkscape::CANVAS_ITEM_CTRL_SHAPE_CIRCLE;
-    uint32_t                      ori_knot_color = 0xffffb500;
+    uint32_t                      ori_knot_color = 0xffffb5ff;
 
     friend class VectorParamKnotHolderEntity_Origin;
     friend class VectorParamKnotHolderEntity_Vector;

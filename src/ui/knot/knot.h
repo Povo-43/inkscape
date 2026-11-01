@@ -102,6 +102,7 @@ public:
 
     // TODO: all the members above should eventually become private, accessible via setters/getters
     void setSize(Inkscape::HandleSize size);
+    void setFill(uint32_t color);
     void setAnchor(unsigned int i);
     void setAngle(double i);
 

@@ -415,6 +415,10 @@ void SPKnot::setSize(Inkscape::HandleSize size) {
     size_set = true;
 }
 
+void SPKnot::setFill(uint32_t color) {
+    ctrl->set_fill(color);
+}
+
 void SPKnot::setAnchor(guint i) {
     anchor = (SPAnchorType) i;
 }

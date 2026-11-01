@@ -322,7 +322,7 @@ void LPEOffset::addKnotHolderEntities(KnotHolder *knotholder, SPItem *item)
     _knotholder = knotholder;
     KnotHolderEntity * knot_entity = new OfS::KnotHolderEntityOffsetPoint(this);
     knot_entity->create(nullptr, item, knotholder, Inkscape::CANVAS_ITEM_CTRL_TYPE_LPE,
-                         "LPEOffset", _("Offset point"));
+                         "LPEOffset", _("Offset point"), 0xff6600ff);
     knot_entity->knot->updateCtrl();
     offset_pt = Geom::Point(Geom::infinity(), Geom::infinity());
     _knotholder->add(knot_entity);
