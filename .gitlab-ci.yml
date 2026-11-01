@@ -215,9 +215,11 @@ inkscape:macos:
     MSYSTEM: UCRT64
     CCACHE_BASEDIR: $CI_PROJECT_DIR/src
     # ICW = inkscape-ci-windows, https://gitlab.com/inkscape/infra/inkscape-ci-windows
-    ICW_VERSION: 177
+    ICW_VERSION: 185
     ICW_NAME: ink$ICW_VERSION
-    ICW_RELEASE_URL: $CI_API_V4_URL/projects/46863172/packages/generic/windows/r$ICW_VERSION/${ICW_NAME}_$MSYSTEM.wim
+    #ICW_RELEASE_URL: $CI_API_V4_URL/projects/46863172/packages/generic/windows/r$ICW_VERSION/${ICW_NAME}_$MSYSTEM.wim
+    # FIXME: this is WIP until the MR is ready
+    ICW_RELEASE_URL: https://gitlab.com/inkscape/infra/inkscape-ci-windows/-/jobs/17464737587/artifacts/raw/ink185_UCRT64.wim
   before_script:
     - $drive = (Split-Path "${Env:CI_PROJECT_DIR}" -Qualifier)
     - |
