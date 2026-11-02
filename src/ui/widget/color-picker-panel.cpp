@@ -9,6 +9,7 @@
 #include <gtkmm/aspectframe.h>
 #include <gtkmm/box.h>
 #include <gtkmm/stack.h>
+#include <gtkmm/togglebutton.h>
 #include <string>
 #include <utility>
 
@@ -126,7 +127,7 @@ public:
     Glib::RefPtr<Gtk::SizeGroup> _first_column = Gtk::SizeGroup::create(Gtk::SizeGroup::Mode::HORIZONTAL);
     Glib::RefPtr<Gtk::SizeGroup> _last_column = Gtk::SizeGroup::create(Gtk::SizeGroup::Mode::HORIZONTAL);
     // eye dropper - color picker
-    Gtk::Button _dropper;
+    Gtk::ToggleButton _dropper;
     // frame for RGB edit box
     Gtk::Box _frame;
     ColorPreview _preview;
@@ -142,10 +143,12 @@ public:
     PlateType _plate_type;
     std::unique_ptr<ColorPage> _page;
     ColorWheel* _plate = nullptr;
+    bool _color_picking_requested = false;
     sigc::scoped_connection _color_picking;
     SPDocument* _document = nullptr;
     SPDesktop* _desktop = nullptr;
     sigc::signal<void (std::shared_ptr<Colors::Space::AnySpace> const &)> _color_space_changed;
+    sigc::connection _tool_changed;
     sigc::connection _cms_space_changed;
 };
 
@@ -228,8 +231,25 @@ ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type initial_space, PlateType 
 }
 
 void ColorPickerPanelImpl::set_desktop(SPDesktop* dekstop) {
+    _tool_changed.disconnect();
     _cms_space_changed.disconnect();
     _desktop = dekstop;
+    if (_desktop) {
+        _tool_changed = _desktop->connectEventContextChanged([this](SPDesktop *desktop, UI::Tools::ToolBase *tool) {
+            auto dropper = dynamic_cast<Tools::DropperTool*>(tool);
+            if (dropper && _color_picking_requested) {
+                _color_picking = dropper->onetimepick_signal.connect([this](auto& color) {
+                    _color_set->setAll(color);
+                });
+            }
+            if (_color_picking && !dropper) {
+                _color_picking.disconnect();
+            }
+            _dropper.set_active(bool(dropper));
+            _dropper.set_sensitive(_color_picking || !dropper);
+            _color_picking_requested = false;
+        });
+    }
 }
 void ColorPickerPanelImpl::set_document(SPDocument* doc) {
     _document = doc;
@@ -300,24 +320,19 @@ void set_plate_type_preference(const char* pref_path_base, ColorPickerPanel::Pla
 }
 
 void ColorPickerPanelImpl::pick_color() {
-    // Set the dropper into a "one-click" mode, so it reverts to the previous tool after a click
-    if (_color_picking.connected()) {
-        _color_picking.disconnect();
-        return;
-    }
-
     // TODO: pass make clients call set_desktop()
     auto desktop = _desktop ? _desktop : SP_ACTIVE_DESKTOP;
     if (!desktop) return;
 
-    Tools::sp_toggle_dropper(desktop);
-    if (auto tool = dynamic_cast<Tools::DropperTool*>(desktop->getTool())) {
-        _color_picking = tool->onetimepick_signal.connect([this](auto& color) {
-            _color_set->setAll(color);
-        });
+    if (!_color_picking) {
+        // Tool changes may be threaded so we watch for tool changes and
+        // set out request for color picking so it can be seen by that watcher.
+        _color_picking_requested = true;
         // Close parent popover to release input grab
         UI::close_parent_popover(*this);
     }
+
+    Tools::sp_toggle_dropper(desktop);
 }
 
 } // namespace

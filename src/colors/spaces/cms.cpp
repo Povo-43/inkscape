@@ -36,7 +36,7 @@ CMS::CMS(std::shared_ptr<Inkscape::Colors::CMS::Profile> profile, std::string na
             profile ? profile->getSize() : 3,
             name.empty() ? profile->getName(true) : name,
             name.empty() ? profile->getName(true) : name,
-            "color-selector-cms")
+            "cms")
     , _profile_size(profile->getSize())
     , _profile_type(_lcmssig_to_space[profile->getColorSpace()])
     , _profile(profile)
@@ -49,7 +49,7 @@ CMS::CMS(std::shared_ptr<Inkscape::Colors::CMS::Profile> profile, std::string na
  * Naked CMS space for testing and data retention where the profile is unavailable.
  */
 CMS::CMS(std::string profile_name, unsigned profile_size, Space::Type profile_type)
-    : ProfileSpace(Type::CMS, profile_size + 3, profile_name, profile_name, {profile_name}, "color-selector-cms")
+    : ProfileSpace(Type::CMS, profile_size + 3, profile_name, profile_name, {profile_name}, "cms")
     , _profile_size(profile_size)
     , _profile_type(profile_type)
     , _profile(nullptr)

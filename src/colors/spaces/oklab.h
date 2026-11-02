@@ -64,7 +64,7 @@ public:
     constexpr static double MIN_SCALE = -0.4;
     constexpr static double MAX_SCALE = 0.4;
 
-    OkLab(): RGBBase(Type::OKLAB, "OkLab", "OkLab", "color-selector-oklab", true) {
+    OkLab(): RGBBase(Type::OKLAB, "OkLab", "OkLab", "oklab", true) {
         _svgNames.emplace_back("oklab");
     }
     ~OkLab() override = default;
