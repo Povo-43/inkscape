@@ -284,7 +284,7 @@ override) the bindings in the main default.xml.
   <bind gaction="app.unhide-all" />
 
   <bind gaction="app.object-set-clip"                    keys="&lt;primary&gt;m" /> 
-  <bind gaction="app.object-set-inverse-clip"            keys="&lt;primary&gt;alt&gt;m" /> 
+  <bind gaction="app.object-set-inverse-clip"            keys="&lt;primary&gt;&lt;alt&gt;m" />
   <bind gaction="app.object-release-clip"                keys="&lt;alt&gt;m" /> 
   <bind gaction="app.object-set-mask"/> 
   <bind gaction="app.object-set-inverse-mask" />
