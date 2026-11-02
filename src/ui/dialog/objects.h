@@ -23,7 +23,7 @@
 #include "selection.h"
 #include "style-enums.h"
 #include "ui/dialog/dialog-base.h"
-#include "ui/widget/color-notebook.h"
+#include "ui/widget/color-picker-panel.h"
 #include "ui/widget/generic/popover-bin.h"
 #include "ui/widget/preferences-widget.h"
 
@@ -199,7 +199,7 @@ private:
     Gtk::Popover& _settings_menu;
     Gtk::Popover& _object_menu;
     std::shared_ptr<Colors::ColorSet> _colors;
-    UI::Widget::ColorNotebook* _color_selector = nullptr;
+    UI::Widget::ColorPickerPanel* _color_selector = nullptr;
 
     Gtk::Scale& _opacity_slider;
     std::map<SPBlendMode, Gtk::CheckButton *> _blend_items;

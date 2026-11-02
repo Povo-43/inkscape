@@ -201,7 +201,6 @@ target_sources(inkscape_base PRIVATE
 	widget/canvas-grid.cpp
 	widget/canvas-notice.cpp
 	widget/color-entry.cpp
-	widget/color-notebook.cpp
 	widget/color-page.cpp
 	widget/color-palette.cpp
 	widget/color-palette-preview.cpp
@@ -532,7 +531,6 @@ target_sources(inkscape_base PRIVATE
 	widget/character-viewer.h
 	widget/completion-popup.h
 	widget/color-entry.h
-	widget/color-notebook.h
 	widget/color-page.h
 	widget/color-palette.h
 	widget/color-palette-preview.h

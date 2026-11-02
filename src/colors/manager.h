@@ -32,6 +32,8 @@ class Parser;
 class Picker
 {
 public:
+    static std::string prefPath() { return "/colorselector/"; }
+
     Picker(Space::Type type, Space::Type wheel_type, std::string name, std::string iconname)
         : _type(type)
         , _wheel_type(wheel_type)
@@ -39,33 +41,20 @@ public:
         , _iconname(std::move(iconname))
     {}
 
-    Space::Type getType() { return _type; }
-    Space::Type getWheelType() { return _wheel_type; }
-    std::string const getName() { return _name; }
-    std::string const getIconName() { return _iconname; }
-
-    bool isVisible() const { return _is_visible; }
-    void setVisible(bool visible) { _is_visible = visible; _changed_signal.emit(); }
-
-    Space::Type formatOutputType() const {
-        return _format_output_type != Space::Type::NONE
-            ? _format_output_type
-            : (_type == Space::Type::CMS
-                ? Space::Type::NONE
-                : Space::Type::DOCUMENT);
+    Space::Type getType() const { return _type; }
+    Space::Type getWheelType() const { return _wheel_type; }
+    std::string const getName() const { return _name; }
+    std::string const getIconName() const { return _iconname; }
+    std::string const getPrefPath(std::string const &pref) const
+    {
+        return prefPath() + getName() + "/" + pref;
     }
-    void setFormatOutputType(Space::Type type) { _format_output_type = type; _changed_signal.emit(); }
 
-    sigc::connection connectChanged(const sigc::slot<void()> &slot) { return _changed_signal.connect(slot); }
 private:
     Space::Type _type;
     Space::Type _wheel_type;
     std::string _name;
     std::string _iconname;
-
-    bool _is_visible = true;
-    Space::Type _format_output_type = Space::Type::NONE;
-    sigc::signal<void()> _changed_signal;
 };
 
 class Manager

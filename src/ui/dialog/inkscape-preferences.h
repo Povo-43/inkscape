@@ -279,7 +279,6 @@ protected:
     UI::Widget::PrefSlider _contrast_theme;
     UI::Widget::PrefCheckButton _enable_animations;
     UI::Widget::PrefCheckButton _narrow_spinbutton;
-    UI::Widget::PrefCheckButton _compact_colorselector;
     UI::Widget::PrefCheckButton _symbolic_icons;
     UI::Widget::PrefCheckButton _symbolic_base_colors;
     int                         _symbolic_base_row;
@@ -527,6 +526,7 @@ protected:
     UI::Widget::PrefCombo           _cms_proof_intent;
     UI::Widget::PrefCheckButton     _cms_proof_blackpoint;
 
+    Gtk::Notebook       _color_pickers_notebook;
     Gtk::Notebook       _grids_notebook;
     UI::Widget::PrefRadioButton     _grids_no_emphasize_on_zoom;
     UI::Widget::PrefRadioButton     _grids_emphasize_on_zoom;

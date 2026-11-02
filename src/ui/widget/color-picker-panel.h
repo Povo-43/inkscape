@@ -26,9 +26,11 @@ public:
     enum PlateType {Rect, Circle, None};
     // create a new color picker
     static std::unique_ptr<ColorPickerPanel> create(Colors::Space::Type initial_space, PlateType type, std::shared_ptr<Colors::ColorSet> color);
+    static ColorPickerPanel *make_managed(Colors::Space::Type initial_space, PlateType type, std::shared_ptr<Colors::ColorSet> color);
 
     virtual void set_desktop(SPDesktop* dekstop) = 0;
     virtual void set_document(SPDocument* document) = 0;
+    virtual void set_independent() = 0;
     virtual void set_color(const Colors::Color& color) = 0;
     // request color type/space change
     virtual void set_picker_space(std::shared_ptr<Colors::Space::AnySpace> const &space) = 0;

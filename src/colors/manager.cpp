@@ -41,7 +41,7 @@ Manager::Manager()
 {
     // Regular SVG 1.1 Colors
     addSpaceAndPicker(new Space::RGB(), Space::Type::RGB);
-    addSpaceAndPicker(new Space::NamedColor(), Space::Type::NONE);
+    addSpace(new Space::NamedColor());
 
     // Color module 4 and 5 support
     addSpaceAndPicker(new Space::HSL(), Space::Type::HSL);

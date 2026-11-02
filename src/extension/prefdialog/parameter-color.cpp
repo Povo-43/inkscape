@@ -22,7 +22,7 @@
 #include "preferences.h"
 #include "ui/pack.h"
 #include "ui/util.h"
-#include "ui/widget/color-notebook.h"
+#include "ui/widget/color-picker-panel.h"
 #include "xml/node.h"
 
 namespace Inkscape::Extension {
@@ -91,7 +91,10 @@ Gtk::Widget *ParamColor::get_widget(sigc::signal<void ()> *changeSignal)
 
         _color_button->signal_color_set().connect(sigc::mem_fun(*this, &ParamColor::_onColorButtonChanged));
     } else {
-        Gtk::Widget *selector = Gtk::make_managed<Inkscape::UI::Widget::ColorNotebook>(_colors);
+        // TODO: Remember the initial color picker from last time? Allow extension to set default space?
+        auto selector = UI::Widget::ColorPickerPanel::make_managed(
+            Colors::Space::Type::RGB, UI::Widget::ColorPickerPanel::Rect, _colors);
+        selector->set_independent();
         UI::pack_start(*hbox, *selector, true, true);
         selector->set_visible(true);
     }

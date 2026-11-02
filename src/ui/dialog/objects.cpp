@@ -1389,8 +1389,7 @@ bool ObjectsPanel::colorTagPopup(int const x, int const y, Gtk::TreeModel::Row r
     }
     _colors->set(item->highlight_color());
     auto color_popup = Gtk::make_managed<Gtk::Popover>();
-    _color_selector = Gtk::make_managed<ColorNotebook>(_colors);
-    _color_selector->set_label(_("Highlight Color"));
+    _color_selector = UI::Widget::ColorPickerPanel::make_managed(Colors::Space::Type::RGB, UI::Widget::ColorPickerPanel::Rect, _colors);
     _color_selector->set_margin(4);
     color_popup->set_child(*_color_selector);
     _colors->signal_changed.connect([this]() {

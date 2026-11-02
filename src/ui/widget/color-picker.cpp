@@ -19,7 +19,7 @@
 #include "document-undo.h"
 #include "inkscape.h"
 #include "ui/util.h"
-#include "ui/widget/color-notebook.h"
+#include "ui/widget/color-picker-panel.h"
 
 static bool _in_use = false;
 
@@ -82,8 +82,8 @@ void ColorPicker::_construct(Gtk::Widget* content) {
         // postpone color selector creation until the popup is open
         _popup.signal_show().connect([this](){
             if (!_color_selector) {
-                _color_selector = Gtk::make_managed<ColorNotebook>(_colors);
-                _color_selector->set_label(_title);
+                // TODO: Add label/title here if needed
+                _color_selector = UI::Widget::ColorPickerPanel::make_managed(Colors::Space::Type::RGB, UI::Widget::ColorPickerPanel::Rect, _colors);
                 _color_selector->set_margin(4);
                 _popup.set_child(*_color_selector);
             }

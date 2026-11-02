@@ -18,7 +18,7 @@
 #include <gtkmm/sizegroup.h>
 #include <sigc++/scoped_connection.h>
 
-#include "color-notebook.h"
+#include "colors/color-set.h"
 #include "color-slider.h"
 #include "color-preview.h"
 #include "ui/widget/color-slider.h"

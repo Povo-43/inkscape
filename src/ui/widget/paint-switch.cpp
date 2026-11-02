@@ -162,6 +162,7 @@ public:
 
         _desktop = desktop;
         _flat_color.set_desktop(desktop);
+        _gradient.set_desktop(desktop);
         _swatch.set_desktop(desktop);
 
         if (desktop) {

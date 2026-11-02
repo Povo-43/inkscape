@@ -26,7 +26,7 @@ class Builder;
 
 namespace Inkscape::UI::Widget {
 
-class ColorNotebook;
+class ColorPickerPanel;
 
 class ColorPicker : public Gtk::MenuButton {
 public:
@@ -77,7 +77,7 @@ private:
     bool          _updating = false;
     std::shared_ptr<Colors::ColorSet> _colors;
     Gtk::Popover _popup;
-    ColorNotebook* _color_selector = nullptr;
+    ColorPickerPanel* _color_selector = nullptr;
     sigc::signal<void (void)> _signal_open;
 };
 

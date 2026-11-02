@@ -2170,44 +2170,23 @@ void InkscapePreferences::initPageUI()
     static auto GRID_DEFAULT_BLOCK_COLOR = "#0047cb4d";
 
     // Color pickers
-    _compact_colorselector.init(_("Use compact color selector mode switch"), "/colorselector/switcher", true);
-    _page_color_pickers.add_line(false, "", _compact_colorselector, "", _("Use compact combo box for selecting color modes"), false);
+    _page_color_pickers.add_line(false, "", _color_pickers_notebook, "", "", false);
 
-    _page_color_pickers.add_group_header(_("Visible color pickers"));
-    {
-        auto const container = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
-        auto prefs = Inkscape::Preferences::get();
-        for (auto &picker : Colors::Manager::get().pickers()) {
-            auto const btn = Gtk::make_managed<Gtk::ToggleButton>();
-            auto const box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
-            auto const label = Gtk::make_managed<Gtk::Label>(picker->getName());
-            label->set_valign(Gtk::Align::CENTER);
-            UI::pack_start(*box, *label);
-            UI::pack_start(*box, *sp_get_icon_image(picker->getIconName(), 16));
-            box->set_spacing(3);
-            auto path = "/colorselector/" + picker->getName() + "/visible";
-            btn->set_active(prefs->getBool(path));
-            btn->set_child(*box);
-            btn->set_has_frame(false);
+    for (auto &picker : Colors::Manager::get().pickers()) {
 
-            btn->signal_toggled().connect([=, path = std::move(path)]() {
-                prefs->setBool(path, btn->get_active());
+        auto const box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
+        auto const label = Gtk::make_managed<Gtk::Label>(picker->getName());
+        label->set_valign(Gtk::Align::CENTER);
+        UI::pack_start(*box, *label);
+        UI::pack_start(*box, *sp_get_icon_image(picker->getIconName(), 16));
+        box->set_spacing(3);
 
-                auto const buttons = UI::children(*container);
-                auto const is_active = [](Gtk::Widget const &child) {
-                    return dynamic_cast<Gtk::ToggleButton const &>(child).get_active();
-                };
-                if (!buttons.empty() && std::ranges::none_of(buttons, is_active)) {
-                    // all pickers hidden; not a good combination; select first one
-                    dynamic_cast<Gtk::ToggleButton &>(buttons.front()).set_active(true);
-                }
-            });
+        auto& page = *Gtk::make_managed<UI::Widget::DialogPage>();
+        _color_pickers_notebook.append_page(page, *box);
 
-            UI::pack_start(*container, *btn);
-        }
-
-        container->set_spacing(5);
-        _page_color_pickers.add_line(true, "", *container, "", _("Select color pickers"), false);
+        auto const enabled = Gtk::make_managed<UI::Widget::PrefCheckButton>();
+        enabled->init(_("Enable color selector"), picker->getPrefPath("visible"), true);
+        page.add_line(false, "", *enabled, "", _("When disabled, this type of color selector will not appear in the color pickers in any document"));
     }
 
     AddPage(_page_color_pickers, _("Color Selector"), iter_ui, PREFS_PAGE_UI_COLOR_PICKERS);

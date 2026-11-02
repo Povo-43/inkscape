@@ -42,6 +42,8 @@ class TreeRow;
 class TreeView;
 } // namespace Gtk
 
+class SPDesktop;
+
 namespace Inkscape::UI::Widget {
 class ColorPage;
 class GradientSelector;
@@ -77,6 +79,7 @@ public:
     SPGradientType get_type() const;
     ColorPickerPanel& get_picker() { return *_color_picker; }
     Gtk::Box &getColorBox() { return _main_box; }
+    void set_desktop(SPDesktop *desktop);
 
 private:
     void set_gradient(SPGradient* gradient);

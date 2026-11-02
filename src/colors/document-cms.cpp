@@ -485,21 +485,17 @@ std::shared_ptr<Space::AnySpace> DocumentCMS::mapToStorageFormat(std::shared_ptr
 
 std::shared_ptr<Space::AnySpace> DocumentCMS::_map_storage_format(std::shared_ptr<Space::AnySpace> const &space) const
 {
-    auto format = Space::Type::DOCUMENT;
-
     if (auto picker = Manager::get().findPicker(space->getType())) {
-        format = picker->formatOutputType();
+        auto prefs = Preferences::get();
+        auto format_str = prefs->getString(picker->getPrefPath("format"), "");
+        if (format_str.empty()) {
+            if (picker->getType() == Space::Type::CMS) {
+                return space;
+            }
+        } else if (auto found = Manager::get().find(format_str)) {
+            return found;
+        }
     }
-
-    if (format == Space::Type::NONE) {
-        return space;
-    } else if (format == Space::Type::DOCUMENT) {
-        return getDocumentColorSpace();
-    }
-    if (auto target = Manager::get().find(format)) {
-        return target;
-    }
-    std::cerr << "Couldn't find color space for output formatting for '" << space->getName() << "'\n";
     return getDocumentColorSpace();
 }
 
