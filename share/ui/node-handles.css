@@ -21,6 +21,8 @@ Where 'shape' is one of:
     'square'
     'diamond'
     'circle'
+    'circle-line'
+    'target'
     'triangle'
     'triangle-angled'
     'cross'
@@ -120,7 +122,6 @@ Notes:
     fill: darkorange;
 }
 
-.inkscape-node-smooth,
 .inkscape-node-symmetrical,
 .inkscape-anchor, /* various drawing tools */
 .inkscape-sizer {
@@ -128,7 +129,13 @@ Notes:
     size-extra: 2px;
 }
 
-.inkscape-node-auto,
+.inkscape-node-auto {
+    shape: "target";
+    scale: 2.256758; /* 4 / sqrt(PI) */
+    size-extra: 2px;
+}
+
+.inkscape-node-smooth,
 .inkscape-margin, /* page tool */
 .inkscape-move { /* LPE chamfer fillet */
     shape: "circle";
