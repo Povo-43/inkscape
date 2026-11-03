@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
+<!-- Created with Cambalache 0.99.1 -->
+<cambalache-project version="0.96.0" target_tk="gtk-4.0">
+  <icontheme-search-path>icons/application/symbolic</icontheme-search-path>
+  <icontheme-search-path>icons/application/scalable</icontheme-search-path>
+  <icontheme-search-path>icons/multicolor/cursors</icontheme-search-path>
+  <icontheme-search-path>icons/multicolor/symbolic/actions</icontheme-search-path>
+  <icontheme-search-path>icons/Dash/cursors</icontheme-search-path>
+  <icontheme-search-path>icons/Dash/symbolic/actions</icontheme-search-path>
+  <icontheme-search-path>icons/Dash/scalable/actions</icontheme-search-path>
+  <icontheme-search-path>icons/hicolor/symbolic/actions</icontheme-search-path>
+  <icontheme-search-path>icons/hicolor/scalable/actions</icontheme-search-path>
+
+  <ui template-class="gtkmm__CustomObject_InkSpinButton">
+    <property id="adjustment" type-id="GtkAdjustment"/>
+    <property id="digits" type-id="gint"/>
+    <property id="value" type-id="gdouble"/>
+    <property id="min-value" type-id="gdouble"/>
+    <property id="max-value" type-id="gdouble"/>
+    <property id="step-value" type-id="gdouble"/>
+    <property id="scaling-factor" type-id="gdouble"/>
+    <property id="has-frame" type-id="gboolean"/>
+    <property id="show-arrows" type-id="gboolean"/>
+    <property id="enter-exit-editing" type-id="gboolean"/>
+    <property id="wrap-around" type-id="gboolean"/>
+    <property id="icon" type-id="gchararray"/>
+    <property id="label" type-id="gchararray"/>
+    <property id="prefix" type-id="gchararray"/>
+    <property id="suffix" type-id="gchararray"/>    
+    <content><![CDATA[<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="gtkmm__CustomObject_InkSpinButton" parent="GtkWidget">
+    <child>
+      <object class="GtkSpinButton"/>
+    </child>
+  </template>
+</interface>
+]]></content>
+  </ui>
+</cambalache-project>
