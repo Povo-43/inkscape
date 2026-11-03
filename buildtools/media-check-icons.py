@@ -8,6 +8,7 @@ import fnmatch
 import os
 import sys
 
+from lxml import etree
 from collections import defaultdict
 
 THEME_PATH = os.path.join('.', 'share', 'icons')
@@ -76,12 +77,22 @@ IGNORE_UI = {
 }
 
 NO_PROBLEM,\
+BAD_XML,\
 BAD_SYMBOLIC_NAME,\
 BAD_SCALABLE_NAME,\
 MISSING_FROM,\
 ONLY_FOUND_IN,\
 SCALABLE_ONLY,\
-SYMBOLIC_ONLY = range(7)
+SYMBOLIC_ONLY = range(8)
+
+lint_parser = etree.XMLParser(recover=False)
+
+def svg_has_errors(path):
+    try:
+        etree.parse(path, parser=lint_parser)
+        return False
+    except Exception as err:
+        return str(err)
 
 def icon_themes():
     for name in os.listdir(THEME_PATH):
@@ -98,6 +109,7 @@ def find_errors_in(themes):
     warnings = []
 
     data = defaultdict(set)
+    bad_xml = []
     bad_symbolic = []
     bad_scalable = []
     all_symbolics = set()
@@ -120,23 +132,29 @@ def find_errors_in(themes):
                 if not fname.endswith('.svg'):
                     continue
 
+                filepath = os.path.join(orig, fname)
+                if svg_has_errors(filepath):
+                    bad_xml.append(filepath)
+                    # don't 'continue', keep processing
+
                 if kind == "symbolic":
                     if not fname.endswith('-symbolic.svg'):
-                        bad_symbolic.append(os.path.join(orig, fname))
+                        bad_symbolic.append(filepath)
                         continue
                     else:
                         # Make filenames consistant for comparison
                         fname = fname.replace('-symbolic.svg', '.svg')
                 elif kind == "scalable" and fname.endswith('-symbolic.svg'):
-                    bad_scalable.append(os.path.join(orig, fname))
+                    bad_scalable.append(filepath)
                     continue
 
                 if fname in IGNORE_ILLUSTRATIONS or fname in IGNORE_UI:
                     continue
 
-                filename = os.path.join(root, fname)
-                data[filename].add(theme_name)
+                data[os.path.join(root, fname)].add(theme_name)
 
+    if bad_xml:
+        errors.append((BAD_XML, bad_xml))
     if bad_symbolic:
         errors.append((BAD_SYMBOLIC_NAME, bad_symbolic))
     if bad_scalable:
@@ -214,7 +232,13 @@ if __name__ == '__main__':
                 count += sum([len(v) for v in themes.values()])
         sys.stderr.write(f" == {count} errors found in icon themes! == \n\n")
         for error, themes in errors:
-            if error is BAD_SCALABLE_NAME:
+            if error is BAD_XML:
+                sys.stderr.write(f"Broken SVG xml detected:\n")
+                for name in themes:
+                    err = svg_has_errors(name)
+                    sys.stderr.write(f" - {name} ({err})\n")
+                sys.stderr.write("\n")
+            elif error is BAD_SCALABLE_NAME:
                 sys.stderr.write(f"Scalable themes should not have symbolic icons in them (They end with -symbolic.svg so won't be used):\n")
                 for name in themes:
                     sys.stderr.write(f" - {name}\n")
