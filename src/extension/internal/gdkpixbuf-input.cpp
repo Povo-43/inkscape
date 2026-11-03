@@ -159,17 +159,43 @@ GdkpixbufInput::init()
         gchar **extensions =  gdk_pixbuf_format_get_extensions(pixformat);
         gchar **mimetypes =   gdk_pixbuf_format_get_mime_types(pixformat);
 
+        // Some valid JPEG file extensions are not always reported by
+        // gdk-pixbuf (e.g. .jfif, which is a plain JPEG container commonly
+        // produced by web browsers and other applications). Register them
+        // explicitly for the JPEG format so that files bearing these
+        // extensions can be opened/imported like any other JPEG file.
+        std::vector<gchar *> extra_extensions;
+        bool has_jfif = false;
         for (int i = 0; extensions[i] != nullptr; i++) {
+            if (strcmp(extensions[i], "jfif") == 0) {
+                has_jfif = true;
+            }
+        }
+        if (strcmp(name, "jpeg") == 0 && !has_jfif) {
+            extra_extensions.push_back(g_strdup("jfif"));
+        }
+
+        // Build the full list of extensions to register: the ones reported by
+        // gdk-pixbuf plus any extras (such as .jfif for the JPEG format).
+        std::vector<gchar *> all_extensions;
+        for (int i = 0; extensions[i] != nullptr; i++) {
+            all_extensions.push_back(extensions[i]);
+        }
+        for (auto extra : extra_extensions) {
+            all_extensions.push_back(extra);
+        }
+
+        for (auto extension : all_extensions) {
         for (int j = 0; mimetypes[j] != nullptr; j++) {
 
             /* thanks but no thanks, we'll handle SVG extensions... */
-            if (strcmp(extensions[i], "svg") == 0) {
+            if (strcmp(extension, "svg") == 0) {
                 continue;
             }
-            if (strcmp(extensions[i], "svgz") == 0) {
+            if (strcmp(extension, "svgz") == 0) {
                 continue;
             }
-            if (strcmp(extensions[i], "svg.gz") == 0) {
+            if (strcmp(extension, "svg.gz") == 0) {
                 continue;
             }
             gchar *caption = g_strdup_printf(_("%s bitmap image import"), name);
@@ -206,11 +232,11 @@ GdkpixbufInput::init()
                     "</input>\n"
                 "</inkscape-extension>",
                 caption,
-                extensions[i],
-                extensions[i],
+                extension,
+                extension,
                 mimetypes[j],
                 name,
-                extensions[i],
+                extension,
                 description
                 );
             // clang-format off
@@ -224,6 +250,9 @@ GdkpixbufInput::init()
         g_free(description);
         g_strfreev(mimetypes);
         g_strfreev(extensions);
+        for (auto extra : extra_extensions) {
+            g_free(extra);
+        }
     }
 }
 
