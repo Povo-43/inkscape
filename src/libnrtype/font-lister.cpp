@@ -423,11 +423,9 @@ int FontLister::add_document_fonts_at_top(SPDocument *document)
         auto children = font_list_store->children();
         for (auto iter = children.begin(), end = children.end(); iter != end;) {
             if (!iter->get_value(font_list.onSystem)) {
-                // std::cout << " Not on system: " << row[FontList.family] << std::endl;
                 iter = font_list_store->erase(iter);
             } else {
-                // std::cout << " First on system: " << row[FontList.family] << std::endl;
-                break;
+                iter->set_value(font_list.isDuplicate, false);
             }
         }
     }
@@ -465,10 +463,12 @@ int FontLister::add_document_fonts_at_top(SPDocument *document)
         Styles data_styles;
 
         // Populate with the styles of the matching system font, if any.
-        if (auto const iter = find_matching_system_font(fam)) {
-            auto const row = *iter;
+        if (auto iter = find_matching_system_font(fam)) {
+            auto row = *iter;
             ensureRowStyles(iter);
             data_styles = *row.get_value(font_list.styles);
+            // Flag the system font entry as a duplicate
+            row[font_list.isDuplicate] = true;
         }
 
         // Add additional styles from 'font-variation-settings'; these may not be included in the system font's styles.

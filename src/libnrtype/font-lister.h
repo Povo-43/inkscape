@@ -107,7 +107,10 @@ public:
 
         /// Whether font is on system
         Gtk::TreeModelColumn<bool> onSystem;
-        
+
+        /// Font is a system font that is also a duplicate of a document font (only ever set if onSystem=true)
+        Gtk::TreeModelColumn<bool> isDuplicate;
+
         /**
          * Not actually a column.
          * Necessary for quick initialization of FontLister;
@@ -122,6 +125,7 @@ public:
             add(family);
             add(styles);
             add(onSystem);
+            add(isDuplicate);
             add(pango_family);
         }
     };

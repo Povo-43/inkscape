@@ -253,6 +253,12 @@ void ComboBoxEntryToolItem::popup_enable()
 
     _entry->set_completion(_entry_completion);
     _entry_completion->set_model(_model);
+    _entry_completion->set_match_func([](const Glib::ustring &key, const Gtk::TreeModel::const_iterator &iter) {
+        auto fontlister = FontLister::get_instance();
+        auto family = iter->get_value(fontlister->font_list.family).normalize().casefold();
+        auto is_duplicate = iter->get_value(fontlister->font_list.isDuplicate);
+        return family.compare(0, key.size(), key) == 0 && !is_duplicate;
+    });
     _entry_completion->set_text_column(0);
     _entry_completion->set_popup_completion(true);
     _entry_completion->set_inline_completion(false);
