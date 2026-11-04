@@ -14,15 +14,22 @@
 
 #include "objects.h"
 
+#include <forward_list>
+#include <glibmm/binding.h>
 #include <glibmm/main.h>
 #include <gtkmm/dragsource.h>
 #include <gtkmm/droptarget.h>
 #include <gtkmm/eventcontrollerkey.h>
 #include <gtkmm/eventcontrollermotion.h>
 #include <gtkmm/gestureclick.h>
+#include <gtkmm/liststore.h>
+#include <gtkmm/listview.h>
+#include <gtkmm/multiselection.h>
 #include <gtkmm/scale.h>
 #include <gtkmm/searchentry2.h>
 #include <gtkmm/separator.h>
+#include <gtkmm/treeexpander.h>
+#include <gtkmm/treelistmodel.h>
 #include <gtkmm/treestore.h>
 
 #include "desktop-style.h"
@@ -148,10 +155,61 @@ private:
     }
 };
 
+class ItemData : public Glib::Object {
+public:
+    Node* node;
+    Glib::RefPtr<Gio::ListStore<ItemData>> children;
+
+    Glib::PropertyProxy<Glib::ustring> property_label() {return _label.get_proxy(); }
+
+    Glib::ustring _colType;
+    unsigned int _colIconColor;
+    unsigned int _colClipMask;
+    Gdk::RGBA _colBgColor;
+    bool _colInvisible;
+    bool _colLocked;
+    bool _colAncestorInvisible;
+    bool _colAncestorLocked;
+    bool _colHover;
+    bool _colItemStateSet;
+    SPBlendMode _colBlendMode;
+    double _colOpacity;
+    Glib::ustring _colItemState;
+    // Set when hovering over the color tag cell
+    bool _colHoverColor;
+    bool _colIconsVisible;
+
+    static Glib::RefPtr<ItemData> create(Node *node) {
+        return Glib::make_refptr_for_instance<ItemData>(new ItemData(node));
+    }
+
+    void add_binding(Glib::RefPtr<Glib::Binding> binding) {
+        _bindings.emplace_front(binding);
+    }
+
+    void unbind() {
+        for (auto binding : _bindings) {
+            binding->unbind();
+        }
+    }
+
+private:
+    ItemData(Node *node)
+        : Glib::ObjectBase("ItemData")
+        , node(node)
+        , children(Gio::ListStore<ItemData>::create())
+        , _label(*this, "label", "")
+    {
+    }
+
+    Glib::Property<Glib::ustring> _label;
+    std::forward_list<Glib::RefPtr<Glib::Binding>> _bindings;
+};
+
 class ObjectWatcher : public Inkscape::XML::NodeObserver
 {
 public:
-    ObjectWatcher(ObjectsPanel *panel, SPItem *, Gtk::TreeRow *row, bool is_filtered);
+    ObjectWatcher(ObjectsPanel *panel, SPItem *, Gtk::TreeRow *row, Glib::RefPtr<ItemData> data, bool is_filtered);
     ~ObjectWatcher() override;
 
     void initRowInfo();
@@ -170,9 +228,12 @@ public:
     void rememberExtendedItems();
     void moveChild(Node &child, Node *sibling);
     bool isFiltered() const { return is_filtered; }
+    void watchChildren();
+    Glib::RefPtr<Gio::ListStore<ItemData>> getChildrenModel() const;
 
     Gtk::TreeNodeChildren getChildren() const;
     Gtk::TreeModel::iterator getChildIter(Node *) const;
+    std::optional<guint> getChildPosition(Node *) const;
 
     void notifyChildRemoved(Node &, Node &, Node *) final;
     void notifyChildOrderChanged(Node &, Node &child, Node *, Node *) final;
@@ -229,7 +290,9 @@ private:
     Gtk::TreeModel::RowReference row_ref;
     ObjectsPanel *panel;
     SelectionState selection_state;
+    Glib::RefPtr<ItemData> data;
     bool is_filtered;
+    bool watching_children;
 };
 
 class ObjectsPanel::ModelColumns final : public Gtk::TreeModel::ColumnRecord
@@ -285,29 +348,22 @@ public:
           if not provided, assumes this is the root 'document' object.
  * @param filtered, if true this watcher will filter all chldren using the panel filtering function on each item to decide if it should be shown.
  */
-ObjectWatcher::ObjectWatcher(ObjectsPanel* panel, SPItem* obj, Gtk::TreeRow *row, bool filtered)
+ObjectWatcher::ObjectWatcher(ObjectsPanel* panel, SPItem* obj, Gtk::TreeRow *row, Glib::RefPtr<ItemData> data, bool filtered)
     : panel(panel)
     , row_ref()
     , selection_state(0)
     , is_filtered(filtered)
     , node(obj->getRepr())
+    , data(data)
+    , watching_children(false)
 {
-    if(row != nullptr) {
+    if (row != nullptr) {
         assert(row->children().empty());
         setRow(*row);
         initRowInfo();
         updateRowInfo();
     }
     node->addObserver(*this);
-
-    // Only show children for groups (and their subclasses like SPAnchor or SPRoot)
-    if (!is<SPGroup>(obj)) {
-        return;
-    }
-
-    // Add children as a dummy row to avoid excensive execution when
-    // the tree is really large, but not in layers mode.
-    addChildren(obj, (bool)row && !obj->isExpanded());
 }
 
 ObjectWatcher::~ObjectWatcher()
@@ -345,6 +401,7 @@ void ObjectWatcher::updateRowInfo()
         // show ids without "#"
         char const *id = item->getId();
         row[_model->_colLabel] = id && !item->label() ? get_synthetic_object_name(item) : item->defaultLabel();
+        data->property_label().set_value(row[_model->_colLabel]);
 
         row[_model->_colType] = item->typeName();
         row[_model->_colClipMask] =
@@ -509,6 +566,9 @@ ObjectWatcher *ObjectWatcher::findChild(Node *node)
  */
 bool ObjectWatcher::addChild(SPItem *child, bool dummy)
 {
+    if (!watching_children) {
+        return false;
+    }
     if (is_filtered && !panel->showChildInTree(child)) {
         return false;
     }
@@ -539,9 +599,13 @@ bool ObjectWatcher::addChild(SPItem *child, bool dummy)
         row[_model->_colAncestorLocked] = false;
     }
 
+    auto data = ItemData::create(node);
+
     auto &watcher = child_watchers[node];
     assert(!watcher);
-    watcher.reset(new ObjectWatcher(panel, child, &row, is_filtered));
+    watcher.reset(new ObjectWatcher(panel, child, &row, data, is_filtered));
+
+    getChildrenModel()->insert(0, data);
 
     // Make sure new children have the right focus set.
     if ((selection_state & LAYER_FOCUSED) != 0) {
@@ -567,6 +631,31 @@ void ObjectWatcher::addChildren(SPItem *obj, bool dummy)
     }
 }
 
+void ObjectWatcher::watchChildren()
+{
+    if (watching_children) {
+        return;
+    }
+
+    watching_children = true;
+
+    if (auto item = cast<SPItem>(panel->getObject(node))) {
+        // Only show children for groups (and their subclasses like SPAnchor or SPRoot)
+        if (is<SPGroup>(item)) {
+            addChildren(item);
+        }
+    }
+}
+
+Glib::RefPtr<Gio::ListStore<ItemData>> ObjectWatcher::getChildrenModel() const
+{
+    if (data) {
+        return data->children;
+    } else {
+        return std::dynamic_pointer_cast<Gio::ListStore<ItemData>>(panel->_top_store);
+    }
+}
+
 /**
  * Move the child to just after the given sibling
  *
@@ -576,8 +665,13 @@ void ObjectWatcher::addChildren(SPItem *obj, bool dummy)
  */
 void ObjectWatcher::moveChild(Node &child, Node *sibling)
 {
+    if (!watching_children) {
+        return;
+    }
+
     auto child_iter = getChildIter(&child);
-    if (!child_iter)
+    auto child_pos = getChildPosition(&child);
+    if (!child_iter || !child_pos)
         return; // This means the child was never added, probably not an SPItem.
 
     // sibling might not be an SPItem and thus not be represented in the
@@ -588,6 +682,12 @@ void ObjectWatcher::moveChild(Node &child, Node *sibling)
 
     auto sibling_iter = getChildIter(sibling);
     panel->_store->move(child_iter, sibling_iter);
+
+    auto model = getChildrenModel();
+    auto child_data = model->get_item(*child_pos);
+    model->remove(*child_pos);
+    auto sibling_pos = getChildPosition(sibling);
+    model->insert(*sibling_pos, child_data);
 }
 
 /**
@@ -628,8 +728,29 @@ Gtk::TreeModel::iterator ObjectWatcher::getChildIter(Node *node) const
     return childrows.end();
 }
 
+/**
+ * Convert SPObject to position index, assuming the object is a child.
+ *
+ * @param child - The child object to find in this branch
+ * @returns guint position in the node's model
+ */
+std::optional<guint> ObjectWatcher::getChildPosition(Node *node) const
+{
+    auto model = getChildrenModel();
+    for (guint i = 0; i < model->get_n_items(); i++) {
+        if (model->get_item(i)->node == node) {
+            return i;
+        }
+    }
+    return {};
+}
+
 void ObjectWatcher::notifyChildAdded( Node &node, Node &child, Node *prev )
 {
+    if (!watching_children) {
+        return;
+    }
+
     assert(this->node == &node);
     // Ignore XML nodes which are not displayable items
     if (auto item = cast<SPItem>(panel->getObject(&child))) {
@@ -639,7 +760,15 @@ void ObjectWatcher::notifyChildAdded( Node &node, Node &child, Node *prev )
 }
 void ObjectWatcher::notifyChildRemoved( Node &node, Node &child, Node* /*prev*/ )
 {
+    if (!watching_children) {
+        return;
+    }
+
     assert(this->node == &node);
+
+    if (auto pos = getChildPosition(&child)) {
+        getChildrenModel()->remove(*pos);
+    }
 
     if (child_watchers.erase(&child) > 0) {
         return;
@@ -653,6 +782,10 @@ void ObjectWatcher::notifyChildRemoved( Node &node, Node &child, Node* /*prev*/ 
 }
 void ObjectWatcher::notifyChildOrderChanged( Node &parent, Node &child, Node */*old_prev*/, Node *new_prev )
 {
+    if (!watching_children) {
+        return;
+    }
+
     assert(this->node == &parent);
 
     moveChild(child, new_prev);
@@ -722,6 +855,46 @@ ObjectWatcher* ObjectsPanel::getWatcher(Node *node)
     return nullptr;
 }
 
+void row_setup(Glib::RefPtr<Gtk::ListItem> const &row)
+{
+    auto expander = Gtk::make_managed<Gtk::TreeExpander>();
+    expander->set_indent_for_depth();
+    expander->set_indent_for_icon();
+
+    auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 4);
+
+    auto label = Gtk::make_managed<Gtk::Label>();
+    label->set_halign(Gtk::Align::START);
+    label->set_hexpand(true);
+ 
+    box->append(*label);
+    expander->set_child(*box);
+    row->set_child(*expander);
+}
+
+void row_bind(Glib::RefPtr<Gtk::ListItem> const &list_item)
+{
+    auto row = std::dynamic_pointer_cast<Gtk::TreeListRow>(list_item->get_item());
+    auto data = std::dynamic_pointer_cast<ItemData>(row->get_item());
+    auto expander = dynamic_cast<Gtk::TreeExpander *>(list_item->get_child());
+    auto box = dynamic_cast<Gtk::Box *>(expander->get_child());
+    auto label = dynamic_cast<Gtk::Label *>(box->get_first_child());
+
+    expander->set_list_row(row);
+    auto flags = Glib::Binding::Flags::SYNC_CREATE;
+    data->add_binding(Glib::Binding::bind_property(
+        data->children->property_n_items(), expander->property_hide_expander(), flags,
+        [](const guint &n_items) { return n_items == 0; }));
+    data->add_binding(Glib::Binding::bind_property(data->property_label(), label->property_label(), flags));
+}
+
+void row_unbind(Glib::RefPtr<Gtk::ListItem> const &list_item)
+{
+    auto row = std::dynamic_pointer_cast<Gtk::TreeListRow>(list_item->get_item());
+    auto data = std::dynamic_pointer_cast<ItemData>(row->get_item());
+    data->unbind();
+}
+
 /**
  * Constructor
  */
@@ -743,6 +916,8 @@ ObjectsPanel::ObjectsPanel()
     , _setting_fade_group(get_derived_widget<PrefRadioButton, Glib::ustring, int, bool>(_builder, "setting-fade-group", "/options/translucency_groups/value", 1, true))
     , _setting_fade_layer(get_derived_widget<PrefRadioButton, Glib::ustring, int, bool>(_builder, "setting-fade-layer", "/options/translucency_groups/value", 2, false))
     , _tree{*Gtk::make_managed<TreeViewWithCssChanged>()}
+    , _top_store{Gio::ListStore<ItemData>::create()}
+    , _view{*Gtk::make_managed<Gtk::ListView>()}
 {
     _store = Gtk::TreeStore::create(*_model);
 
@@ -750,6 +925,16 @@ ObjectsPanel::ObjectsPanel()
     _tree.set_model(_store);
     _tree.set_headers_visible(false);
     _tree.set_name("ObjectsTreeView");
+
+    auto tree_model = Gtk::TreeListModel::create(_top_store, sigc::mem_fun(*this, &ObjectsPanel::createChildrenModel));
+    _view.set_model(Gtk::MultiSelection::create(tree_model));
+    _view.set_name("ObjectsTreeView");
+
+    auto factory = Gtk::SignalListItemFactory::create();
+    factory->signal_setup().connect(sigc::ptr_fun(&row_setup));
+    factory->signal_bind().connect(sigc::ptr_fun(&row_bind));
+    factory->signal_unbind().connect(sigc::ptr_fun(&row_unbind));
+    _view.set_factory(factory);
 
     auto& header = get_widget<Gtk::Box>(_builder, "header");
     // Search
@@ -1078,8 +1263,19 @@ ObjectsPanel::ObjectsPanel()
         _scroller.set_size_request(sreq.get_width(), minHeight);
     }
 
+    auto view_scroll = Gtk::make_managed<Gtk::ScrolledWindow>();
+    view_scroll->set_overlay_scrolling(false);
+    view_scroll->set_child(_view);
+    view_scroll->set_has_frame(true);
+    view_scroll->set_vexpand();
+    if (sreq.get_height() < minHeight) {
+        // Set a min height to see the layers when used with Ubuntu liboverlay-scrollbar
+        view_scroll->set_size_request(sreq.get_width(), minHeight);
+    }
+
     _page.append(header);
     _page.append(_scroller);
+    _page.append(*view_scroll);
     _popoverbin.setChild(&_page);
     _popoverbin.set_expand();
     append(_popoverbin);
@@ -1119,6 +1315,15 @@ ObjectsPanel::ObjectsPanel()
 
 ObjectsPanel::~ObjectsPanel() = default;
 
+Glib::RefPtr<Gio::ListModel> ObjectsPanel::createChildrenModel(const Glib::RefPtr<Glib::ObjectBase> &parent)
+{
+    auto data = std::dynamic_pointer_cast<ItemData>(parent);
+    auto watcher = getWatcher(data->node);
+    assert(watcher);
+    watcher->watchChildren();
+    return watcher->getChildrenModel();
+}
+
 void ObjectsPanel::desktopReplaced()
 {
     layer_changed.disconnect();
@@ -1147,7 +1352,8 @@ void ObjectsPanel::setRootWatcher()
 
     // A filtered object watcher behaves differently to an unfiltered one.
     // Filtering disables creating dummy children and instead processes entire trees.
-    root_watcher = std::make_unique<ObjectWatcher>(this, document->getRoot(), nullptr, filtered);
+    root_watcher = std::make_unique<ObjectWatcher>(this, document->getRoot(), nullptr, nullptr, filtered);
+    root_watcher->watchChildren();
     root_watcher->rememberExtendedItems();
     layerChanged(getDesktop()->layerManager().currentLayer());
     _selectionChanged();

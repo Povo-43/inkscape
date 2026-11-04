@@ -31,6 +31,10 @@ namespace Glib {
 class ValueBase;
 } // namespace Glib
 
+namespace Gio {
+class ListStoreBase;
+} // namespace Gio
+
 namespace Gdk {
 class Drag;
 } // namespace Gdk
@@ -43,6 +47,7 @@ class DropTarget;
 class EventControllerKey;
 class EventControllerMotion;
 class GestureClick;
+class ListView;
 class Popover;
 class Scale;
 class SearchEntry2;
@@ -150,6 +155,10 @@ private:
     sigc::scoped_connection _tree_style;
     Gtk::TreeRow _clicked_item_row;
     UI::Widget::PopoverBin _popoverbin;
+
+    Glib::RefPtr<Gio::ListStoreBase> _top_store;
+    Gtk::ListView &_view;
+    Glib::RefPtr<Gio::ListModel> createChildrenModel(const Glib::RefPtr<Glib::ObjectBase> &parent);
 
     void _activateAction(const std::string& layerAction, const std::string& selectionAction);
 
