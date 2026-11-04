@@ -79,6 +79,7 @@ set(TEST_SOURCES
     sp-object-lang-test
     sp-object-tags-test
     object-links-test
+    objects-panel-test
     object-set-test
     object-style-test
     page-management

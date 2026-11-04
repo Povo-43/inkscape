@@ -173,6 +173,7 @@ inkscape:macos:
 
 .windows:
   stage: build
+  timeout: 2h
   tags:
     - saas-windows-medium-amd64
   cache:
@@ -237,7 +238,7 @@ test:linux:
     - inkscape:linux
   needs: ["inkscape:linux"]
   script:
-    - sed -i '/<policy domain="coder" rights="none"/d' /etc/ImageMagick-6/policy.xml
+    - test ! -f /etc/ImageMagick-6/policy.xml || sed -i '/<policy domain="coder" rights="none"/d' /etc/ImageMagick-6/policy.xml
     - cd build
     - ctest -V
   artifacts:
@@ -498,7 +499,5 @@ translations:weekly:
       allow_failure: true # to deal with empty changesets
   script:
     - git submodule update --remote po && git add po && git commit --author "Inkscape <inkscape-translator@lists.inkscape.org>" -m "update translations" && git push https://ci:${TRANSLATION_TOKEN}@gitlab.com/inkscape/inkscape.git HEAD:${CI_COMMIT_BRANCH}
-
-
 
 
