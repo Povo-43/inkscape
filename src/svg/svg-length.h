@@ -77,6 +77,7 @@ public:
 
     operator bool() const { return _set; }
 
+    bool isZero(double epsilon = 0.001) const;
     bool read(char const *str);
     void readOrUnset(char const *str, Unit u = NONE, double v = 0, double c = 0);
     bool readAbsolute(char const *str);

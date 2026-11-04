@@ -112,8 +112,18 @@ void ArrangeDialog::_apply()
 void ArrangeDialog::desktopReplaced()
 {
     _gridArrangeTab->setDesktop(getDesktop());
-    _align_tab->desktop_changed(getDesktop());
+    _align_tab->desktopReplaced(getDesktop());
 }
+
+void ArrangeDialog::documentReplaced()
+{
+    _align_tab->documentReplaced(getDocument());
+}
+
+void ArrangeDialog::selectionChanged(Inkscape::Selection *selection)
+{
+    _align_tab->selectionChanged(selection);
+}  
 
 } // namespace Inkscape::UI::Dialog
 

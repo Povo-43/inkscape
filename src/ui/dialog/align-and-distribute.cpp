@@ -26,8 +26,11 @@
 
 #include "actions/actions-tools.h" // Tool switching.
 #include "desktop.h"               // Tool switching.
+#include "document.h"
 #include "inkscape-window.h"       // Activate window action.
 #include "io/resource.h"
+#include "object/sp-page.h"
+#include "page-manager.h"
 #include "selection.h"
 #include "ui/builder-utils.h"
 #include "ui/dialog/dialog-base.h" // Tool switching.
@@ -71,27 +74,22 @@ AlignAndDistribute::AlignAndDistribute(Inkscape::UI::Dialog::DialogBase *dlg)
     std::string align_to = prefs->getString("/dialogs/align/objects-align-to", "selection");
     multi_selection_align_to = align_to;
 
-    auto filtered_store = Gtk::TreeModelFilter::create(align_relative_object.get_model());
+    filtered_store = Gtk::TreeModelFilter::create(align_relative_object.get_model());
     filtered_store->set_visible_func([=, this](const Gtk::TreeModel::const_iterator &it) {
-        if (single_item) {
-            Glib::ustring name;
-            it->get_value(1, name);
-            return single_selection_relative_categories.contains(name);
+        Glib::ustring name;
+        it->get_value(1, name);
+        if (name == "page-margin") {
+            return _page_has_margin;
         }
-        return true;
+        if (name == "page-bleed") {
+            return _page_has_bleed;
+        }
+        return !single_item || name == "page" || name == "drawing";
     });
 
     if (auto win = InkscapeApplication::instance()->get_active_window()) {
         if (auto desktop = win->get_desktop()) {
-            if (auto selection = desktop->getSelection()) {
-                single_item = selection->singleItem();
-                sel_changed = selection->connectChanged([this, filtered_store](Inkscape::Selection *selection) {
-                    single_item = selection->singleItem();
-                    auto active_id = single_item ? single_selection_align_to : multi_selection_align_to;
-                    filtered_store->refilter();
-                    align_relative_object.set_active_id(active_id);
-                });
-            }
+            selectionChanged(desktop->getSelection());
         }
     }
 
@@ -151,12 +149,6 @@ AlignAndDistribute::AlignAndDistribute(Inkscape::UI::Dialog::DialogBase *dlg)
 
     // ------------ Set initial values ------------
 
-    // Normal or node alignment?
-    auto desktop = dlg->getDesktop();
-    if (desktop) {
-        desktop_changed(desktop);
-    }
-
     auto set_icon_size_prefs = [prefs, this]() {
         int size = prefs->getIntLimited("/toolbox/tools/iconsize", -1, 16, 48);
         Inkscape::UI::set_icon_sizes(this, size);
@@ -172,7 +164,7 @@ AlignAndDistribute::~AlignAndDistribute() {
     tool_connection.disconnect();
 }
 
-void AlignAndDistribute::desktop_changed(SPDesktop *desktop)
+void AlignAndDistribute::desktopReplaced(SPDesktop *desktop)
 {
     tool_connection.disconnect();
     if (desktop) {
@@ -183,6 +175,35 @@ void AlignAndDistribute::desktop_changed(SPDesktop *desktop)
     }
 }
 
+void AlignAndDistribute::documentReplaced(SPDocument *document)
+{
+    page_changed_connection.disconnect();
+    page_modified_connection.disconnect();
+
+    if (document) {
+        auto &pm = document->getPageManager();
+        page_changed_connection = pm.connectPagesChanged([this] (SPPage *page) {
+            page_changed(page);
+        });
+        page_modified_connection = pm.connectPageModified([this] (SPPage *page) {
+            page_changed(page);
+        });
+        page_changed(pm.getSelected());
+    } else {
+        page_changed(nullptr);
+    }
+}
+
+void AlignAndDistribute::selectionChanged(Inkscape::Selection *selection)
+{
+    if (selection) {
+        single_item = selection->singleItem();
+        auto active_id = single_item ? single_selection_align_to : multi_selection_align_to;
+        filtered_store->refilter();
+        align_relative_object.set_active_id(active_id);
+    }
+}
+
 void
 AlignAndDistribute::tool_changed(SPDesktop* desktop)
 {
@@ -190,6 +211,18 @@ AlignAndDistribute::tool_changed(SPDesktop* desktop)
     align_and_distribute_node  .set_visible( is_node);
     align_and_distribute_object.set_visible(!is_node);
     remove_overlap_frame.set_visible(!is_node);
+}
+
+void
+AlignAndDistribute::page_changed(SPPage *page)
+{
+    _page_has_margin = page && !page->getMarginBox().isZero();
+    _page_has_bleed = page && !page->getBleedBox().isZero();
+    filtered_store->refilter();
+
+    if (align_relative_object.get_active_id().empty()) {
+        align_relative_object.set_active_id("page");
+    }
 }
 
 void

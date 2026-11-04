@@ -31,11 +31,15 @@ class ComboBox;
 class Frame;
 class SpinButton;
 class ToggleButton;
+class TreeModelFilter;
 } // namespace Gtk
 
 class SPDesktop;
+class SPDocument;
+class SPPage;
 
 namespace Inkscape {
+class Selection;
 namespace UI {
 namespace Widget {
 class SpinButton;
@@ -54,8 +58,12 @@ public:
     AlignAndDistribute(Inkscape::UI::Dialog::DialogBase* dlg);
     ~AlignAndDistribute() override;
 
-    void desktop_changed(SPDesktop* desktop);
+    void desktopReplaced(SPDesktop *desktop);
+    void documentReplaced(SPDocument *document);
+    void selectionChanged(Inkscape::Selection *selection);
+
     void tool_changed(SPDesktop* desktop); // Need to show different widgets for node vs. other tools.
+    void page_changed(SPPage *page);
 
 private:
 
@@ -77,11 +85,12 @@ private:
     UI::Widget::SpinButton   &remove_overlap_hgap;
     UI::Widget::SpinButton   &remove_overlap_vgap;
 
-    // Valid relative alignment entries for single selection.
-    std::set<Glib::ustring> single_selection_relative_categories = {"drawing", "page"};
     Glib::ustring single_selection_align_to = "page";
     Glib::ustring multi_selection_align_to;
     bool single_item = false;
+    bool _page_has_margin = false;
+    bool _page_has_bleed = false;
+    Glib::RefPtr<Gtk::TreeModelFilter> filtered_store;
 
     // ********* Signal handlers ********** //
 
@@ -93,7 +102,9 @@ private:
     void on_remove_overlap_clicked();
     void on_align_node_clicked    (std::string const &align_to);
 
-    sigc::connection tool_connection;
+    sigc::scoped_connection tool_connection;
+    sigc::scoped_connection page_changed_connection;
+    sigc::scoped_connection page_modified_connection;
     sigc::scoped_connection sel_changed;
     Inkscape::PrefObserver _icon_sizes_changed;
 };
