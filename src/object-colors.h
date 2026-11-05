@@ -72,8 +72,11 @@ public:
     std::optional<Colors::Color>getColor(int index) const;
     SelectedColorsMap const &getSelectedColorsMap() const { return _selected_colors; }
     bool applyNewColorToSelection(uint32_t key_color, Colors::Color const &new_color);
+    std::vector<std::pair<uint32_t, uint32_t>> getChangedRows();
 
 private:
+    std::optional<Colors::Color> getCurrentColor(ColorRef const &ref, uint32_t key_color) const;
+
     SelectedColorsMap _selected_colors;
     std::unordered_map<uint32_t, std::vector<SPStop *>> _gradient_stops;
     std::vector<Colors::Color> colors;
