@@ -16,10 +16,17 @@
 #include <gtkmm/notebook.h>
 #include <gtkmm/sizegroup.h>
 #include <gtkmm/togglebutton.h>
+#include <gtkmm/version.h>
+#include <optional>
 
 #include "ui/dialog/dialog-base.h"
+#include "ui/widget/alignment-selector.h"
 #include "ui/widget/notebook-page.h"
 #include "ui/widget/scalar-unit.h"
+
+namespace Geom {
+class Point;
+} // namespace Geom
 
 namespace Gtk {
 class Button;
@@ -115,6 +122,7 @@ protected:
     UI::Widget::UnitMenu          _units_move;
     UI::Widget::UnitMenu          _units_scale;
     UI::Widget::UnitMenu          _units_rotate;
+    UI::Widget::UnitMenu          _units_rotate_center;
     UI::Widget::UnitMenu          _units_skew;
     UI::Widget::UnitMenu          _units_transform;
 
@@ -123,6 +131,8 @@ protected:
     UI::Widget::ScalarUnit        _scalar_scale_horizontal;
     UI::Widget::ScalarUnit        _scalar_scale_vertical;
     UI::Widget::ScalarUnit        _scalar_rotate;
+    UI::Widget::ScalarUnit        _scalar_rotate_center_x;
+    UI::Widget::ScalarUnit        _scalar_rotate_center_y;
     UI::Widget::ScalarUnit        _scalar_skew_horizontal;
     UI::Widget::ScalarUnit        _scalar_skew_vertical;
 
@@ -138,8 +148,10 @@ protected:
 
     Gtk::CheckButton  _check_move_relative;
     Gtk::CheckButton  _check_scale_proportional;
+    Gtk::CheckButton  _check_rotate_center_relative;
     Gtk::CheckButton  _check_apply_separately;
     Gtk::CheckButton  _check_replace_matrix;
+    UI::Widget::AlignmentSelector _rotation_center_selector;
 
     /**
      * Layout the GUI components, and prepare for use
@@ -163,6 +175,9 @@ protected:
     void onScaleYValueChanged();
     void onRotateCounterclockwiseClicked();
     void onRotateClockwiseClicked();
+    void onRotateCenterRelativeToggled();
+    void onRotationCenterAlignmentClicked(int index);
+    void onTransformValueChanged();
     void onReplaceMatrixToggled();
     void onScaleProportionalToggled();
 
@@ -194,6 +209,7 @@ protected:
 private:
     Geom::Affine getCurrentMatrix();
     void setButtonsSensitive();
+    std::optional<Geom::Point> rotationCenterFromFieldsPx(Inkscape::Selection *selection);
 
     Glib::RefPtr<Gtk::SizeGroup> _apply_buttons_size_group;
     Gtk::Button *applyButton;
@@ -201,6 +217,12 @@ private:
     Gtk::Button *resetButton;
 
     sigc::scoped_connection _tabSwitchConn;
+
+    bool _rotation_center_modified = false;
+
+    bool setRotationCenter(Inkscape::Selection *selection, Geom::Point const &center);
+    bool applyRotationCenterFromFields(bool record_undo);
+    void onRotationCenterChanged();
 };
 
 } // namespace Inkscape::UI::Dialog
