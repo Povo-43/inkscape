@@ -73,13 +73,13 @@ SPKnot::SPKnot(SPDesktop *desktop, char const *tip, Inkscape::CanvasItemCtrlType
 
 SPKnot::~SPKnot()
 {
+    // FIXME: cannot snap to destroyed knot (lp:1309050)
+    this->desktop->getTool()->discard_delayed_snap_event();
     // Make sure the knot is not grabbed, as it's destructing can be deferred causing
     // issues like https://gitlab.com/inkscape/inkscape/-/issues/4239
     ctrl->ungrab();
     ctrl.reset();
 
-    // FIXME: cannot snap to destroyed knot (lp:1309050)
-    // this->desktop->getTool()->discard_delayed_snap_event();
     knot_deleted_callback(this);
 }
 
