@@ -15,6 +15,12 @@
 
 #include "script.h"
 
+#include <algorithm>
+#include <climits>
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 #include <glib/gstdio.h>
 #include <glibmm/convert.h>
 #include <glibmm/fileutils.h>
@@ -589,6 +595,29 @@ void Script::effect(Inkscape::Extension::Effect *mod, SPDocument *document)
 }
 
 /**
+ * Conservative budget for the maximum command-line size
+ * Used to decide when to spill arguments to a file (see _change_extension).
+ */
+static size_t get_cmdline_budget()
+{
+#ifdef _WIN32
+    // Windows: Length limit is fixed at 32767
+    // Leave 4096 of overhead for executable and files (rough overestimate)
+    return 32767 - 4096;
+#else
+    // Unix: Length limit is from sysconf
+    // Leave 32K of overhead for executable, files, and environment (rough overestimate)
+    // Also guard against sysconf failure (-1)
+    long const arg_max = sysconf(_SC_ARG_MAX);
+    size_t usable = 0;
+    if (arg_max > 32768) {
+        usable = static_cast<size_t>(arg_max) - 32768;
+    }
+    return std::max(size_t{_POSIX_ARG_MAX}, usable);
+#endif
+}
+
+/**
  * Internally, any modification of an existing document, used by effect and resize_page extensions.
  */
 void Script::_change_extension(Inkscape::Extension::Extension *module, SPDocument *doc, std::list<std::string> &params, bool ignore_stderr)
@@ -611,6 +640,28 @@ void Script::_change_extension(Inkscape::Extension::Extension *module, SPDocumen
               doc, tempfile_in.get_filename().c_str(), false, false,
               Inkscape::Extension::FILE_SAVE_METHOD_TEMPORARY);
     prefs->setBool("/options/svgoutput/disable_optimizations", false);
+
+    // Workaround for command-line length limits
+    // With thousands of arguments the accumulated command line overflows
+    // Spill into a temp file and replace with a single --arg-file=<path>.
+    auto tempfile_sel = Inkscape::IO::TempFilename("ink_sel_XXXXXX.txt");
+    size_t cmdline_size = 0;
+    for (auto const &p : params) {
+        cmdline_size += p.size() + 1;
+    }
+    if (cmdline_size > get_cmdline_budget()) {
+        try {
+            auto sel_channel = Glib::IOChannel::create_from_file(tempfile_sel.get_filename(), "w");
+            sel_channel->set_encoding("UTF-8");
+            for (auto const &p : params) {
+                sel_channel->write(p + "\n");
+            }
+            sel_channel->close();
+            params = {"--arg-file=" + tempfile_sel.get_filename()};
+        } catch (Glib::Error const &e) {
+            g_warning("Script::_change_extension(): failed to spill args: %s", e.what().data());
+        }
+    }
 
     file_listener fileout;
     int data_read = execute(command, params, tempfile_in.get_filename(), fileout, ignore_stderr);
