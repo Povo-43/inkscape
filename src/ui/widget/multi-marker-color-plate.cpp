@@ -126,6 +126,7 @@ MultiMarkerColorPlate::MultiMarkerColorPlate(Colors::ColorSet const &colors)
 
     auto box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
     box->set_spacing(64);
+    box->set_halign(Gtk::Align::CENTER);
     box->append(*_color_wheel_preview);
     box->append(*_reset);
     box->append(_hue_lock);
