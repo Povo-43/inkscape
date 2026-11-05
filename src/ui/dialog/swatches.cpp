@@ -78,6 +78,10 @@ SwatchesPanel::SwatchesPanel(PanelType panel_type, char const *prefsPath)
 
     _palette = Gtk::make_managed<Inkscape::UI::Widget::ColorPalette>();
     _palette->set_visible();
+
+    _palette->enable_scrollbar(false);
+    _palette->show_scrollbar_checkbox(false);
+
     if (panel_type == Compact) {
         append(*_palette);
     } else {
@@ -174,8 +178,6 @@ SwatchesPanel::SwatchesPanel(PanelType panel_type, char const *prefsPath)
         get_widget<Gtk::Label>(_builder, "swatch-fill").set_visible();
         _palette->show_pinned_colors(false);
         // _palette->enable_color_selection(true);
-        _palette->enable_scrollbar(false);
-        _palette->show_scrollbar_checkbox(false);
         _palette->enable_stretch(false);
         _palette->show_stretch_checkbox(false);
         auto& header = get_widget<Gtk::Box>(_builder, "header");
