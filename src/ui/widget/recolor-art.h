@@ -14,17 +14,20 @@
 #include <glibmm/ustring.h>
 #include <gtkmm/box.h>
 #include <gtkmm/checkbutton.h>
-#include <gtkmm/togglebutton.h>
 #include <gtkmm/listview.h>
 #include <gtkmm/notebook.h>
+#include <gtkmm/popover.h>
 #include <gtkmm/signallistitemfactory.h>
 #include <gtkmm/singleselection.h>
-#include <gtkmm/popover.h>
+#include <gtkmm/togglebutton.h>
 
 #include "colors/color-set.h"
+#include "document.h"
+#include "event.h"
 #include "object-colors.h"
 #include "ui/operation-blocker.h"
 #include "ui/widget/ink-color-wheel.h"
+#include "undo-stack-observer.h"
 
 namespace Inkscape::Colors {
 class Color;
@@ -75,6 +78,7 @@ private:
 
     SPDesktop *_desktop = nullptr;
     sigc::scoped_connection _sel_changed_conn;
+    sigc::scoped_connection _sel_modified_conn;
     sigc::scoped_connection _desktop_destroyed_conn;
     Gtk::Box &_color_picker_container;
     Gtk::Notebook &_notebook;
@@ -103,6 +107,7 @@ private:
     void updateFromSelection();
 
     void generateVisualList();
+    void selectionModified();
     void layoutColorPicker(std::shared_ptr<Colors::ColorSet> updated_color = nullptr);
     void colorButtons(Gtk::Box *button, Colors::Color color, bool is_original = false);
 
@@ -113,6 +118,7 @@ private:
     void lpChecked(Colors::Color color = Colors::Color(0), bool wheel = false);
     void setUpTypeBox(Gtk::Box *box, Colors::Color const &color);
     void updateColorModel(std::vector<Colors::Color> const &new_colors = {});
+    void updateColorModelItems(std::vector<std::pair<uint32_t, uint32_t>> changes);
     std::pair<Glib::RefPtr<ColorItem>,guint> findColorItemByKey(uint32_t key);
 };
 

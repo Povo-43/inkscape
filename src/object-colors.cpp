@@ -194,6 +194,55 @@ bool ObjectColorSet::applyNewColorToSelection(uint32_t key_color, Color const &n
     return true;
 }
 
+/*
+ * read the color currently saved in the item style for the given color ref
+ * stops don't live in the item style so they are read from the _gradient_stops map
+ */
+std::optional<Color> ObjectColorSet::getCurrentColor(ColorRef const &ref, uint32_t key_color) const
+{
+    if (!ref.item) {
+        return {};
+    }
+
+    if (ref.kind == "stop") {
+        if (auto it = _gradient_stops.find(key_color); it != _gradient_stops.end() && !it->second.empty()) {
+            return it->second.back()->getColor();
+        }
+        return {};
+    }
+
+    // text content without id gets its style written to the parent in changeObjectColor
+    SPObject *object = ref.item->getId() ? ref.item : ref.item->parent;
+    if (!object || !object->style) {
+        return {};
+    }
+
+    SPIPaint const &paint = ref.kind == "stroke" ? static_cast<SPIPaint const &>(object->style->stroke)
+                                                 : static_cast<SPIPaint const &>(object->style->fill);
+    if (!paint.isColor()) {
+        return {};
+    }
+
+    auto color = paint.getColor();
+    color.enableOpacity(true);
+    return color;
+}
+
+std::vector<std::pair<uint32_t, uint32_t>> ObjectColorSet::getChangedRows()
+{
+    std::vector<std::pair<uint32_t, uint32_t>> changes;
+    for (auto &[key, value] : _selected_colors) {
+        if (value.first.empty() || !value.second) {
+            continue;
+        }
+        auto current = getCurrentColor(value.first.back(), key);
+        if (current && current->toRGBA() != value.second->new_color.toRGBA()) {
+            changes.push_back({key, current->toRGBA()});
+        }
+    }
+    return changes;
+}
+
 void ObjectColorSet::setSelectedNewColor(uint32_t key_color, Color const &new_color)
 {
     if (auto it = _selected_colors.find(key_color); it != _selected_colors.end()) {
