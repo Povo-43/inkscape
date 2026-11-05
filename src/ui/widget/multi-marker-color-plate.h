@@ -62,8 +62,10 @@ public:
     void changeColor(int index, Color color)
     {
         _color_wheel->changeColor(index, color);
-        _color_wheel_preview->setRgba32(color.toRGBA());
-        _specific_colors->set(color);
+        if (getActiveIndex() == index) {
+            _color_wheel_preview->setRgba32(color.toRGBA());
+            _specific_colors->set(color);
+        }
     }
 
 private:
