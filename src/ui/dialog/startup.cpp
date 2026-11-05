@@ -323,7 +323,7 @@ StartScreen::enlist_recent_files()
     // Open [other]
     Gtk::TreeModel::Row first_row = *(store->append());
     first_row[cols.col_name] = _("Browse for other files...");
-    first_row[cols.col_id] = "";
+    // Leave col_id null so Gtk::TreeView does not show an empty tooltip for this row.
     first_row[cols.col_dt] = std::numeric_limits<gint64>::max();
     recentfiles->get_selection()->select(store->get_path(first_row.get_iter()));
 
