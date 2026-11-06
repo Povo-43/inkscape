@@ -159,6 +159,27 @@ GdkpixbufInput::init()
         gchar **extensions =  gdk_pixbuf_format_get_extensions(pixformat);
         gchar **mimetypes =   gdk_pixbuf_format_get_mime_types(pixformat);
 
+        // JFIF is a JPEG interchange format, but GDK-Pixbuf does not list it
+        // among the JPEG filename extensions on every platform.
+        bool is_jpeg = false;
+        for (int i = 0; mimetypes[i] != nullptr; i++) {
+            is_jpeg |= strcmp(mimetypes[i], "image/jpeg") == 0;
+        }
+        if (is_jpeg) {
+            int length = 0;
+            while (extensions[length] != nullptr) {
+                if (strcmp(extensions[length], "jfif") == 0) {
+                    break;
+                }
+                length++;
+            }
+            if (extensions[length] == nullptr) {
+                extensions = static_cast<gchar **>(g_realloc_n(extensions, length + 2, sizeof(*extensions)));
+                extensions[length] = g_strdup("jfif");
+                extensions[length + 1] = nullptr;
+            }
+        }
+
         for (int i = 0; extensions[i] != nullptr; i++) {
         for (int j = 0; mimetypes[j] != nullptr; j++) {
 
