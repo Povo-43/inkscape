@@ -149,7 +149,6 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, std::vector<SPIte
     auto gmenu_section = Gio::Menu::create(); // Section (used multiple times)
 
     auto layer = Inkscape::LayerManager::asLayer(item);  // Layers have their own context menu in the Object and Layers dialog.
-    auto root = desktop->layerManager().currentRoot();
 
     // Save the items in context
     items_under_cursor = items;
@@ -291,8 +290,8 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, std::vector<SPIte
                         AppendItemFromAction( gmenu_section, "app.selection-ungroup",               _("_Ungroup"),              ""                                );
                         Glib::ustring label = Glib::ustring::compose(_("Enter Group %1"), item->defaultLabel());
                         AppendItemFromAction( gmenu_section, "win.selection-group-enter",           label,                      ""                                );
-                        if (!layer && (item->getParentGroup()->isLayer() || item->getParentGroup() == root)) {
-                            // A layer should be a child of root or another layer.
+                        if (!layer) {
+                            // Allowed inside other groups too, matching what "Layer to Group" on a parent produces.
                             AppendItemFromAction( gmenu_section, "win.layer-from-group",            _("Group to Layer"),        ""                                );
                         }
                     }
