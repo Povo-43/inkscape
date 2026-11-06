@@ -45,9 +45,10 @@
 #include "document.h"
 #include "events/canvas-event.h"
 #include "helper/geom.h"
+#include "inkscape-window.h"
 #include "ui/controller.h"
 #include "ui/tools/tool-base.h"      // Default cursor
-
+#include "ui/util.h"
 #include "canvas/updaters.h"         // Update strategies
 #include "canvas/framecheck.h"       // For frame profiling
 #define framecheck_whole_function(D) \
@@ -1128,11 +1129,19 @@ void Canvas::on_leave(Gtk::EventControllerMotion const &controller)
 void Canvas::on_focus_in()
 {
     grab_focus(); // Why? Is this even needed anymore?
+    // disable Windows IME
+    if (auto const surface = _desktop->getInkscapeWindow()->get_surface()) {
+        set_windows_ime_enabled(surface, false);
+    }
     _signal_focus_in.emit();
 }
 
 void Canvas::on_focus_out()
 {
+    // re-enable Windows IME
+    if (auto const surface = _desktop->getInkscapeWindow()->get_surface()) {
+        set_windows_ime_enabled(surface, true);
+    }
     _signal_focus_out.emit();
 }
 

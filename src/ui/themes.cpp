@@ -561,7 +561,7 @@ ThemeContext::themechangecallback() {
             wnd->add_css_class("regular");
             wnd->remove_css_class("symbolic");
         }
-#if (defined (_WIN32) || defined (_WIN64))
+#ifdef _WIN32
         wnd->present();
 #endif
     }

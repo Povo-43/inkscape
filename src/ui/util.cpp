@@ -41,10 +41,11 @@
 #include "widget/generic/spin-button.h"
 
 // NOTE: Include windows stuff last, as it #defines ERROR leading to compilation errors
-#if (defined (_WIN32) || defined (_WIN64))
+#ifdef _WIN32
 #undef NOGDI
 #include <gdk/win32/gdkwin32.h>
 #include <dwmapi.h>
+#include <imm.h> // ImmAssociateContext, ImmAssociateContextEx
 /* For Windows 10 version 1809, 1903, 1909. */
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE_OLD
 #define DWMWA_USE_IMMERSIVE_DARK_MODE_OLD 19
@@ -393,6 +394,20 @@ Geom::Affine gtk_to_2geom(graphene_matrix_t const &mat)
     return aff;
 }
 
+void set_windows_ime_enabled(Glib::RefPtr<Gdk::Surface> const &surface, bool enabled)
+{
+#ifdef _WIN32
+    if (surface) {
+        HWND hwnd = (HWND)gdk_win32_surface_get_handle((GdkSurface*)surface->gobj());
+        if (enabled) {
+            ImmAssociateContextEx(hwnd, nullptr, IACE_DEFAULT);
+        } else {
+            ImmAssociateContext(hwnd, nullptr);
+        }
+    }
+#endif
+}
+
 std::vector<GskColorStop> create_cubic_gradient(
     const Gdk::RGBA& from,
     const Gdk::RGBA& to,
@@ -450,7 +465,7 @@ uint32_t conv_gdk_color_to_rgba(const Gdk::RGBA& color, double replace_alpha) {
 
 void set_dark_titlebar(Glib::RefPtr<Gdk::Surface> const &surface, bool is_dark)
 {
-#if (defined (_WIN32) || defined (_WIN64))
+#ifdef _WIN32
     if (surface->gobj()) {
         BOOL w32_darkmode = is_dark;
         HWND hwnd = (HWND)gdk_win32_surface_get_handle((GdkSurface*)surface->gobj());

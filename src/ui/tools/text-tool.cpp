@@ -45,6 +45,7 @@
 #include "ui/icon-names.h"
 #include "ui/knot/knot-holder.h"
 #include "ui/shape-editor.h"
+#include "ui/util.h"
 #include "ui/widget/canvas.h"
 #include "ui/widget/events/debug.h"
 #include "util/callback-converter.h"
@@ -108,13 +109,9 @@ TextTool::TextTool(SPDesktop *desktop)
         gtk_im_context_set_client_widget(imc, canvas->Gtk::Widget::gobj());
 
         // Note: Connecting to property_is_focus().signal_changed() would result in slight regression due to signal emisssion ordering.
-        focus_in_conn = canvas->connectFocusIn([this] { gtk_im_context_focus_in(imc); });
-        focus_out_conn = canvas->connectFocusOut([this] { gtk_im_context_focus_out(imc); });
+        focus_in_conn = canvas->connectFocusIn([this] { _selectionChanged(_desktop->getSelection()); });
+        focus_out_conn = canvas->connectFocusOut([this] { _selectionChanged(_desktop->getSelection()); });
         g_signal_connect(G_OBJECT(imc), "commit", Util::make_g_callback<&TextTool::_commit>, this);
-
-        if (canvas->has_focus()) {
-            gtk_im_context_focus_in(imc);
-        }
     }
 
     shape_editor = new ShapeEditor(_desktop);
@@ -780,6 +777,9 @@ bool TextTool::root_handler(CanvasEvent const &event)
                             case GDK_KEY_Escape: {
                                 // Cancel unimode.
                                 unimode = false;
+                                if (auto const surface = _desktop->getInkscapeWindow()->get_surface()) {
+                                    set_windows_ime_enabled(surface, false);
+                                }
                                 gtk_im_context_reset(imc);
                                 defaultMessageContext()->clear();
                                 ret = true;
@@ -859,6 +859,9 @@ bool TextTool::root_handler(CanvasEvent const &event)
                                     defaultMessageContext()->set(NORMAL_MESSAGE, _("Unicode (<b>Enter</b> to finish): "));
                                 }
                                 if (imc) {
+                                    if (auto const surface = _desktop->getInkscapeWindow()->get_surface()) {
+                                        set_windows_ime_enabled(surface, false);
+                                    }
                                     gtk_im_context_reset(imc);
                                 }
                                 ret = true;
@@ -1208,6 +1211,10 @@ bool TextTool::root_handler(CanvasEvent const &event)
                             } else {
                                 _desktop->getSelection()->clear();
                             }
+                            if (auto const surface = _desktop->getInkscapeWindow()->get_surface()) {
+                                set_windows_ime_enabled(surface, false);
+                                gtk_im_context_focus_out(imc);
+                            }
                             nascent_object = false;
                             ret = true;
                             return;
@@ -1514,6 +1521,10 @@ void TextTool::_selectionChanged(Selection *selection)
 
     shape_editor->unset_item();
     if (is<SPText>(item) || is<SPFlowtext>(item)) {
+        if (auto const surface = _desktop->getInkscapeWindow()->get_surface()) {
+            set_windows_ime_enabled(surface, true);
+            gtk_im_context_focus_in(imc);
+        }
         shape_editor->set_item(item);
 
         text = item;
@@ -1521,6 +1532,15 @@ void TextTool::_selectionChanged(Selection *selection)
             text_sel_start = text_sel_end = layout->end();
         }
     } else {
+        if (auto const surface = _desktop->getInkscapeWindow()->get_surface()) {
+            if (creating) {
+                set_windows_ime_enabled(surface, true);
+                gtk_im_context_focus_in(imc);
+            } else {
+                set_windows_ime_enabled(surface, false);
+                gtk_im_context_focus_out(imc);
+            }
+        }
         text = nullptr;
     }
 
