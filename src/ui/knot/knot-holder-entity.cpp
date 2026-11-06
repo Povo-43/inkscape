@@ -85,7 +85,7 @@ void KnotHolderEntity::update_knot()
 
 Geom::Point KnotHolderEntity::snap_knot_position(Geom::Point const &p, unsigned state)
 {
-    if (state & GDK_SHIFT_MASK) { // Don't snap when shift-key is held
+    if (mod_move_no_snapping->active(state)) {
         return p;
     }
 
@@ -110,7 +110,7 @@ Geom::Point KnotHolderEntity::snap_knot_position(Geom::Point const &p, unsigned 
 
 Geom::Point KnotHolderEntity::snap_knot_position_constrained(Geom::Point const &p, Inkscape::Snapper::SnapConstraint const &constraint, unsigned state)
 {
-    if (state & GDK_SHIFT_MASK) { // Don't snap when shift-key is held
+    if (mod_move_no_snapping->active(state)) {
         return p;
     }
 
