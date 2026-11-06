@@ -18,7 +18,7 @@
     <child>
       <object class="gtkmm__CustomObject_InkSpinButton" id="stroke-width">
         <property name="icon">stroke-widths</property>
-        <property name="digits">5</property>
+        <property name="digits">3</property>
         <property name="max-value">1000000.000000</property>
         <property name="step-value">0.100000</property>
         <layout>
