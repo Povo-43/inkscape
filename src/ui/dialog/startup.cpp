@@ -320,10 +320,9 @@ StartScreen::enlist_recent_files()
     // Now sort the result by visited time
     store->set_sort_column(cols.col_dt, Gtk::SortType::DESCENDING);
 
-    // Open [other]
+    // Open [other]. col_id (the tooltip) is left unset: "" would show an empty tooltip.
     Gtk::TreeModel::Row first_row = *(store->append());
     first_row[cols.col_name] = _("Browse for other files...");
-    first_row[cols.col_id] = "";
     first_row[cols.col_dt] = std::numeric_limits<gint64>::max();
     recentfiles->get_selection()->select(store->get_path(first_row.get_iter()));
 
