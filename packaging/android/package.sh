@@ -22,6 +22,14 @@ if [ ! -d lib ]; then
 
     ln -s "$BUILDDIR/lib/libinkscape.so" lib/arm64-v8a
     ln -s "$ANDROID_HOME/ndk/$NDK_VERSION/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so" lib/arm64-v8a
+
+    # LD_PRELOAD shim (pthread_create EPERM workaround for Android 12). See
+    # packaging/android/pthread_fix.c. Bundle the shim and a wrap.sh that
+    # sets LD_PRELOAD before the app starts. Only honoured on debuggable builds.
+    if [ -f "$SCRIPTDIR/libpthread_fix.so" ]; then
+        cp "$SCRIPTDIR/libpthread_fix.so" lib/arm64-v8a
+        printf '#!/system/bin/sh\nHERE="$(cd "$(dirname "$0")" && pwd)"\nexport LD_PRELOAD="$HERE/libpthread_fix.so"\nexec "$@"\n' > lib/arm64-v8a/wrap.sh
+    fi
 fi
 
 # Install to temporary directory, then selectively copy in needed files.
@@ -42,6 +50,7 @@ if [ ! -f ../build/incremental.apk ]; then
     aapt package -v -f -I "$ANDROID_HOME/platforms/$PLATFORM_VERSION/android.jar" -M AndroidManifest.xml -S res -A assets -F ../build/incremental.apk
     aapt add ../build/incremental.apk classes.dex
     aapt add ../build/incremental.apk lib/arm64-v8a/!(lib2geom.so|libinkscape_base.so|libinkscape.so)
+    aapt add ../build/incremental.apk lib/arm64-v8a/wrap.sh 2>/dev/null || true
 fi
 
 # Also add the core libs.
