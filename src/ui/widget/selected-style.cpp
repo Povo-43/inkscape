@@ -16,6 +16,8 @@
 #include <gtkmm/adjustment.h>
 #include <gtkmm/droptarget.h>
 #include <gtkmm/gestureclick.h>
+#include <gtkmm/settings.h>
+#include <iostream>
 
 #include "colors/xml-color.h"
 #include "desktop-style.h"
@@ -723,7 +725,7 @@ void SelectedStyle::on_popup_preset(int i) {
     // FIXME: update dash patterns!
     sp_desktop_set_style (_desktop, css, true);
     sp_repr_css_attr_unref (css);
-    DocumentUndo::done(_desktop->getDocument(), RC_("Undo", "Change stroke width"), INKSCAPE_ICON("swatches"));
+    DocumentUndo::done(_desktop->getDocument(), RC_("Undo", "Adjust stroke width"), INKSCAPE_ICON("dialog-fill-and-stroke"));
 }
 
 void SelectedStyle::onDefocus()
@@ -1004,6 +1006,10 @@ RotateableSwatch::RotateableSwatch(SelectedStyle *parent, guint mode)
     , parent(parent)
 {
     set_name("RotatableSwatch");
+    // Stroke width log throttling
+    // Get double click time from Gtk::Settings as subsequent user interaction interval
+    // convert ms (GtkSettings) to s (DocumentUndo delay)
+    _log_timeout = Gtk::Settings::get_default()->property_gtk_double_click_time() / 1000.0;
 }
 
 RotateableSwatch::~RotateableSwatch() = default;
@@ -1089,8 +1095,8 @@ void RotateableSwatch::do_motion(double by, guint modifier)
 
 void RotateableSwatch::do_scroll(double by, guint modifier)
 {
-    do_motion(by/30.0, modifier);
-    do_release(by/30.0, modifier);
+    do_motion(by / 30.0, modifier);
+    do_release(by / 30.0, modifier);
 }
 
 void RotateableSwatch::do_release(double by, guint modifier)
@@ -1120,11 +1126,9 @@ void RotateableSwatch::do_release(double by, guint modifier)
         DocumentUndo::maybeDone(parent->getDesktop()->getDocument(), undokey, RC_("Undo", "Adjust hue"), INKSCAPE_ICON("dialog-fill-and-stroke"));
     }
 
-    if (!strcmp(undokey, "ssrot1")) {
-        undokey = "ssrot2";
-    } else {
-        undokey = "ssrot1";
-    }
+    // Set the expire timepot for the undo.
+    // The undos are if-elsed so it only needs to be run once here.
+    DocumentUndo::setKeyExpires(parent->getDesktop()->getDocument(), _log_timeout);
 
     parent->getDesktop()->getTool()->message_context->clear();
     startcolor.reset();
@@ -1135,9 +1139,12 @@ void RotateableSwatch::do_release(double by, guint modifier)
 RotateableStrokeWidth::RotateableStrokeWidth(SelectedStyle *parent) :
     parent(parent),
     startvalue(0),
-    startvalue_set(false),
-    undokey("swrot1")
+    startvalue_set(false)
 {
+    // Stroke width log throttling
+    // Get double click time from Gtk::Settings as subsequent user interaction interval
+    // convert ms (GtkSettings) to s (DocumentUndo delay)
+    _log_timeout = Gtk::Settings::get_default()->property_gtk_double_click_time() / 1000.0;
 }
 
 RotateableStrokeWidth::~RotateableStrokeWidth() = default;
@@ -1148,6 +1155,7 @@ RotateableStrokeWidth::value_adjust(double current, double by, guint /*modifier*
     double newval;
     // by is -1..1
     double max_f = 50;  // maximum width is (current * max_f), minimum - zero
+    // TODO make value_adjust linear
     newval = current * (std::exp(std::log(max_f-1) * (by+1)) - 1) / (max_f-2);
 
     SPCSSAttr *css = sp_repr_css_attr_new ();
@@ -1180,7 +1188,6 @@ void RotateableStrokeWidth::do_motion(double by, guint modifier)
     if (modifier == 3) { // Alt, do nothing
     } else {
         double diff = value_adjust(startvalue, by, modifier, false);
-        DocumentUndo::maybeDone(parent->getDesktop()->getDocument(), undokey, RC_("Undo", "Adjust stroke width"), INKSCAPE_ICON("dialog-fill-and-stroke"));
         parent->getDesktop()->getTool()->message_context->setF(Inkscape::IMMEDIATE_MESSAGE, _("Adjusting <b>stroke width</b>: was %.3g, now <b>%.3g</b> (diff %.3g)"), startvalue, startvalue + diff, diff);
     }
 }
@@ -1192,20 +1199,15 @@ void RotateableStrokeWidth::do_release(double by, guint modifier)
     } else {
         value_adjust(startvalue, by, modifier, true);
         startvalue_set = false;
-        DocumentUndo::maybeDone(parent->getDesktop()->getDocument(), undokey, RC_("Undo", "Adjust stroke width"), INKSCAPE_ICON("dialog-fill-and-stroke"));
     }
-
-    if (!strcmp(undokey, "swrot1")) {
-        undokey = "swrot2";
-    } else {
-        undokey = "swrot1";
-    }
+    DocumentUndo::maybeDone(parent->getDesktop()->getDocument(), undokey, RC_("Undo", "Adjust stroke width"), INKSCAPE_ICON("dialog-fill-and-stroke"));
+    DocumentUndo::setKeyExpires(parent->getDesktop()->getDocument(), _log_timeout);
     parent->getDesktop()->getTool()->message_context->clear();
 }
 
 void RotateableStrokeWidth::do_scroll(double by, guint modifier)
 {
-    do_motion(by/10.0, modifier);
+    do_motion(by / 10.0, modifier);
     do_release(by / 10.0, modifier);
     startvalue_set = false;
 }
