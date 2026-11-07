@@ -346,7 +346,7 @@
     </child>
     <child>
       <object class="GtkBox" id="letter_spacing_box">
-        <property name="tooltip-text" translatable="yes">Spacing between letters (px)</property>
+        <property name="tooltip-text" translatable="yes">Spacing between letters (user units)</property>
         <style>
             <class name="priority1"/>
         </style>
@@ -363,7 +363,7 @@
     </child>
     <child>
       <object class="GtkBox" id="word_spacing_box">
-        <property name="tooltip-text" translatable="yes">Spacing between words (px)</property>
+        <property name="tooltip-text" translatable="yes">Spacing between words (user units)</property>
         <style>
             <class name="priority1"/>
         </style>
@@ -380,7 +380,7 @@
     </child>
     <child>
       <object class="GtkBox" id="dx_box">
-        <property name="tooltip-text" translatable="yes">Horizontal kerning (px)</property>
+        <property name="tooltip-text" translatable="yes">Horizontal kerning (user units)</property>
         <style>
             <class name="priority1"/>
         </style>
@@ -397,7 +397,7 @@
     </child>
     <child>
       <object class="GtkBox" id="dy_box">
-        <property name="tooltip-text" translatable="yes">Vertical kerning (px)</property>
+        <property name="tooltip-text" translatable="yes">Vertical kerning (user units)</property>
         <style>
             <class name="priority1"/>
         </style>
