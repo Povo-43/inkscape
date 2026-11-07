@@ -58,11 +58,11 @@ void ExtensionList::init()
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     _watch_pref = prefs->createObserver("/dialogs/export/show_all_extensions", [this]() { setup(); });
-    // limit size of the combobox
+    // limit size of the combobox; ellipsize long names instead of wrapping them,
+    // wrapped rows make the combobox as tall as the longest name
     auto cell_renderer = dynamic_cast<Gtk::CellRendererText*>(get_first_cell());
     cell_renderer->set_fixed_size(125, -1);
-    cell_renderer->property_wrap_mode().set_value(Pango::WrapMode::WORD);
-    cell_renderer->property_wrap_width().set_value(5);
+    cell_renderer->property_ellipsize().set_value(Pango::EllipsizeMode::MIDDLE);
 }
 
 void ExtensionList::on_changed()
