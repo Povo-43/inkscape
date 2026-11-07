@@ -1,0 +1,468 @@
+{
+    "app-id": "org.inkscape.Inkscape",
+    "runtime": "org.gnome.Platform",
+    "runtime-version": "42",
+    "sdk": "org.gnome.Sdk",
+    "command": "inkscape",
+    "finish-args": [
+        "--share=ipc",
+        "--socket=x11",
+        "--socket=wayland",
+        "--filesystem=host",
+        "--filesystem=xdg-config/gtk-3.0",
+        "--filesystem=xdg-run/gvfs",
+        "--filesystem=xdg-run/gvfsd",
+        "--talk-name=org.gtk.vfs.*",
+        "--share=network"
+    ],
+    "cleanup": [
+        "/bin/poppler-glib-demo",
+        "/bin/gsl-*",
+        "/include",
+        "/lib/pkgconfig",
+        "/share/aclocal",
+        "/share/devhelp",
+        "/share/doc",
+        "/share/gc",
+        "/share/info",
+        "/share/man",
+        "/share/pkgconfig",
+        "*.la",
+        "*.a"
+    ],
+    "modules": [
+        {
+            "name": "boost",
+            "buildsystem": "simple",
+            "cleanup" : [
+                "/include",
+                "/lib/libboost_*.so",
+                "/lib/libboost_*.a"
+            ],
+            "build-commands" : [
+                "./bootstrap.sh --with-libraries=filesystem",
+                "./b2 install variant=release link=shared runtime-link=shared --prefix=/app -j $FLATPAK_BUILDER_N_JOBS"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2",
+                    "sha256": "8681f175d4bdb26c52222665793eef08490d7758529330f98d3b29dd0735bccc"
+                }
+            ]
+        },
+        {
+            "name": "mm-common",
+            "buildsystem": "meson",
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://download.gnome.org/sources/mm-common/1.0/mm-common-1.0.3.tar.xz",
+                    "sha256": "e81596625899aacf1d0bf27ccc2fcc7f373405ec48735ca1c7273c0fbcdc1ef5"
+                }
+            ],
+            "cleanup": [
+                "*"
+            ]
+        },
+        {
+            "name": "sigc++-2",
+            "config-opts": [
+                "--disable-documentation"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://download.gnome.org/sources/libsigc++/2.10/libsigc++-2.10.7.tar.xz",
+                    "sha256": "d082a2ce72c750f66b1a415abe3e852df2eae1e8af53010f4ac2ea261a478832"
+                }
+            ]
+        },
+        {
+            "name": "gsl",
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://ftp.gnu.org/gnu/gsl/gsl-2.7.tar.gz",
+                    "sha256": "efbbf3785da0e53038be7907500628b466152dbc3c173a87de1b5eba2e23602b"
+                }
+            ]
+        },
+        {
+            "name": "boehmgc",
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://github.com/ivmai/bdwgc/archive/v8.0.6.tar.gz",
+                    "sha256": "3de0e3d456103a8409927ac16aa45d7b7647dd613e1f212019deab27713445cb"
+                }
+            ],
+            "modules": [
+                {
+                    "name": "libatomic_ops",
+                    "config-opts": [
+                        "--enable-shared",
+                        "--disable-static"
+                    ],
+                    "sources": [
+                        {
+                            "type": "archive",
+                            "url": "https://github.com/ivmai/libatomic_ops/releases/download/v7.6.12/libatomic_ops-7.6.12.tar.gz",
+                            "sha256": "f0ab566e25fce08b560e1feab6a3db01db4a38e5bc687804334ef3920c549f3e"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "cairomm",
+            "config-opts": [
+                "--disable-documentation"
+            ],
+            "cleanup": [
+                "/lib/cairomm-1.0"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://www.cairographics.org/releases/cairomm-1.14.3.tar.xz",
+                    "sha256": "0d37e067c5c4ca7808b7ceddabfe1932c5bd2a750ad64fb321e1213536297e78"
+                }
+            ]
+        },
+        {
+            "name": "glibmm",
+            "cleanup": [
+                "/lib/glibmm-2.4"
+            ],
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Dbuild-documentation=false",
+                "-Dbuild-examples=false"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://download.gnome.org/sources/glibmm/2.66/glibmm-2.66.1.tar.xz",
+                    "sha256": "69bd6b5327716ca2f511ab580a969fd7bf0cd2c24ce15e1d0e530592d3ff209c"
+                }
+            ]
+        },
+        {
+            "name": "pangomm",
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Dbuild-documentation=false"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://download.gnome.org/sources/pangomm/2.46/pangomm-2.46.2.tar.xz",
+                    "sha256": "57442ab4dc043877bfe3839915731ab2d693fc6634a71614422fb530c9eaa6f4"
+                }
+            ]
+        },
+        {
+            "name": "atkmm",
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Dbuild-documentation=false"
+            ],
+            "cleanup": [
+                "/lib/atkmm-1.6"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://download.gnome.org/sources/atkmm/2.28/atkmm-2.28.2.tar.xz",
+                    "sha256": "a0bb49765ceccc293ab2c6735ba100431807d384ffa14c2ebd30e07993fd2fa4"
+                }
+            ]
+        },
+        {
+            "name" : "gtkmm",
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Dbuild-documentation=false"
+            ],
+            "cleanup": [
+                "/lib/gtkmm-3.0"
+            ],
+            "sources" : [
+                {
+                    "type" : "archive",
+                    "url" : "https://download.gnome.org/sources/gtkmm/3.24/gtkmm-3.24.5.tar.xz",
+                    "sha256" : "856333de86689f6a81c123f2db15d85db9addc438bc3574c36f15736aeae22e6"
+                }
+            ]
+        },
+        {
+            "name": "gdl",
+            "cleanup" : [
+                "/include",
+                "/lib/pkgconfig"
+            ],
+            "modules": [
+                "intltool-0.51.json"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://download.gnome.org/sources/gdl/3.40/gdl-3.40.0.tar.xz",
+                    "sha256": "3641d4fd669d1e1818aeff3cf9ffb7887fc5c367850b78c28c775eba4ab6a555"
+                }
+            ]
+        },
+        {
+            "name": "potrace",
+            "config-opts": ["--with-libpotrace"],
+            "build-options": {
+                "env": {
+                    "CC": "gcc"
+                }
+            },
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://downloads.sourceforge.net/project/potrace/1.16/potrace-1.16.tar.gz",
+                    "sha256": "be8248a17dedd6ccbaab2fcc45835bb0502d062e40fbded3bc56028ce5eb7acc"
+                }
+            ]
+        },
+        "python3-tkinter.yaml",
+        "python3-lxml.json",
+        "python3-scour.json",
+        "python3-requirements.json",
+        {
+            "name": "poppler-data",
+            "buildsystem": "cmake-ninja",
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://poppler.freedesktop.org/poppler-data-0.4.11.tar.gz",
+                    "sha256": "2cec05cd1bb03af98a8b06a1e22f6e6e1a65b1e2f3816cb3069bb0874825f08c"
+                }
+            ]
+        },
+        {
+            "name": "poppler",
+            "buildsystem": "cmake-ninja",
+            "config-opts": [
+                "-DENABLE_LIBOPENJPEG=none",
+                "-DENABLE_UNSTABLE_API_ABI_HEADERS=ON"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://poppler.freedesktop.org/poppler-21.09.0.tar.xz",
+                    "sha256": "5a47fef738c2b99471f9b459a8bf8b40aefb7eed92caa4861c3798b2e126d05b"
+                }
+            ]
+        },
+        {
+            "name": "ghostscript",
+            "config-opts": [
+              "--disable-cups",
+              "--disable-dbus",
+              "--disable-openjpeg",
+              "--disable-gtk"
+            ],
+            "make-args": [ "so" ],
+            "make-install-args": [ "soinstall" ],
+            "cleanup": [
+                "/share/man",
+                "/share/ghostscript/9.53/doc/",
+                "/share/ghostscript/9.53/examples"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs9533/ghostscript-9.53.3.tar.xz",
+                    "sha256": "9c9f5bc85b6c7eb08368c05b1e3339f7aaf9677ddca710c6283f872d55e2a234"
+                },
+                {
+                    "type": "shell",
+                    "commands": [
+                        "cp -p /usr/share/automake-*/config.{sub,guess} freetype/builds/unix/",
+                        "cp -p /usr/share/automake-*/config.{sub,guess} ijs/",
+                        "cp -p /usr/share/automake-*/config.{sub,guess} jpeg/",
+                        "cp -p /usr/share/automake-*/config.{sub,guess} libpng/",
+                        "cp -p /usr/share/automake-*/config.{sub,guess} lcms2mt/",
+                        "cp -p /usr/share/automake-*/config.{sub,guess} tiff/config/",
+                        "rm -rf libpng/pngread.c"
+                    ]
+                }
+            ]
+        },
+        "python3-numpy.json",
+        {
+            "name": "double-conversion",
+            "buildsystem": "cmake-ninja",
+            "config-opts": [
+                "-DBUILD_SHARED_LIBS=ON"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://github.com/google/double-conversion/archive/v3.1.5.tar.gz",
+                    "sha256": "a63ecb93182134ba4293fd5f22d6e08ca417caafa244afaa751cbfddf6415b13",
+                    "dest-filename": "double-conversion-3.1.5.tar.gz"
+                }
+            ]
+        },
+        {
+            "name": "librevenge",
+            "cleanup": [
+                "/include",
+                "/lib/pkgconfig"
+            ],
+            "config-opts": [
+                "--disable-tests",
+                "--disable-werror"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://downloads.sourceforge.net/project/libwpd/librevenge/librevenge-0.0.4/librevenge-0.0.4.tar.xz",
+                    "sha256" : "933f0729f04267cc354b9a02bc3e9afefa5512a3bdd0b45f159ee14a3e3347b2"
+                }
+            ]
+        },
+        {
+            "name": "libwpd",
+            "cleanup": [
+                "/include",
+                "/lib/pkgconfig",
+                "/bin/wpd*"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://downloads.sourceforge.net/project/libwpd/libwpd/libwpd-0.10.3/libwpd-0.10.3.tar.xz",
+                    "sha256" : "2465b0b662fdc5d4e3bebcdc9a79027713fb629ca2bff04a3c9251fdec42dd09"
+                },
+                {
+                    "type": "patch",
+                    "path": "libwpd-fix.patch"
+                }
+            ]
+        },
+        {
+            "name": "libwpg",
+            "cleanup": [
+                "/include",
+                "/lib/pkgconfig",
+                "/bin/wpg*"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://downloads.sourceforge.net/project/libwpg/libwpg/libwpg-0.3.3/libwpg-0.3.3.tar.xz",
+                    "sha256": "99b3f7f8832385748582ab8130fbb9e5607bd5179bebf9751ac1d51a53099d1c"
+                }
+            ]
+        },
+        {
+            "name": "libvisio",
+            "cleanup": [
+                "/include",
+                "/lib/pkgconfig",
+                "/bin/vsd*",
+                "/bin/vss*"
+            ],
+            "config-opts": [
+                "--disable-tests"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://dev-www.libreoffice.org/src/libvisio/libvisio-0.1.7.tar.xz",
+                    "sha256": "8faf8df870cb27b09a787a1959d6c646faa44d0d8ab151883df408b7166bea4c"
+                }
+            ]
+        },
+        {
+            "name": "libcdr",
+            "cleanup": [
+                "/include",
+                "/lib/pkgconfig",
+                "/bin/cmx*",
+                "/bin/cdr*"
+            ],
+            "config-opts": [
+                "--disable-tests"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://dev-www.libreoffice.org/src/libcdr/libcdr-0.1.7.tar.xz",
+                    "sha256": "5666249d613466b9aa1e987ea4109c04365866e9277d80f6cd9663e86b8ecdd4"
+                },
+                {
+                    "type" : "shell",
+                    "commands" : [
+                        "autoreconf -vfi"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "gspell",
+            "config-opts" : [
+                "--disable-vala",
+                "--disable-gtk-doc",
+                "--disable-gtk-doc-html"
+            ],
+            "cleanup" : [
+                "/bin",
+                "/include",
+                "/lib/pkgconfig",
+                "*.la",
+                "/share/gir-1.0",
+                "/share/gtk-doc",
+                "/share/vala"
+            ],
+            "sources" : [
+                {
+                    "type" : "archive",
+                    "url" : "https://download.gnome.org/sources/gspell/1.9/gspell-1.9.1.tar.xz",
+                    "sha256" : "dcbb769dfdde8e3c0a8ed3102ce7e661abbf7ddf85df08b29915e92cd723abdd"
+                }
+            ]
+        },
+	{
+            "name": "imagemagick",
+            "config-opts": [
+                "--disable-static"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://imagemagick.org/archive/releases/ImageMagick-6.9.12-23.tar.xz",
+                    "sha256": "69e91deaafd1065bfc8741f99078350961f95135cd57d2a30bbc7588cc81f331"
+                }
+            ]
+        },
+        {
+            "name": "inkscape",
+            "buildsystem": "cmake-ninja",
+            "config-opts": [
+                "-DBUILD_TESTING=OFF",
+                "-DWITH_INTERNAL_2GEOM=ON"
+            ],
+            "build-options": {
+                "cxxflags": "-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_66"
+            },
+            "post-install": [
+                "ln -sf /run/host/usr/share/color /app/share/color"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://inkscape.org/gallery/item/34673/inkscape-1.2.1.tar.xz",
+                    "sha256": "46ce7da0eba7ca4badc1db70e9cbb67e0adf9bb342687dc6e08b5ca21b8d4c1b"
+                }
+            ]
+        }
+    ]
+}
