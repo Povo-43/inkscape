@@ -4,9 +4,43 @@
 
 This page explains how to compile Inkscape on Windows. We use [**MSYS2**](http://www.msys2.org/), which provides all necessary build tools and dependencies.
 
-## Installing Build Dependencies Easily
+You have the choice between doing this automatically in one click or manually step-by-step.
 
-In the basic case, you can install all the needed tools with a one-click script. This is supported for Inkscape 1.5 or newer, running on standard 64bit Windows (not ARM). In other cases, please see below "Installing Build Dependencies Manually".
+## Automatic "One-Click Solution"
+
+To quickly set up a complete development environment and compile Inkscape, we offer a one-click script.
+
+This will automatically perform all steps explained in the following chapters, with the same result as if you followed them manually:
+
+- Install build dependencies
+- Obtain Inkscape sourcecode
+- Build Inkscape
+- Run Inkscape
+- Set up VSCode as editor
+
+
+1.  Get the buildtools folder from the Inkscape git repository. One way to do this is the following:
+    *   Download the following ZIP [https://gitlab.com/inkscape/inkscape/-/archive/master/inkscape-master.zip?path=buildtools](https://gitlab.com/inkscape/inkscape/-/archive/master/inkscape-master.zip?path=buildtools)
+    *   Unpack it
+2.  Double-click on `windows-installFullDevEnv-clickHere.bat`
+    *   If you get a warning "Windows protected your PC. Microsoft Defender prevented an unrecognized app from starting.", click on "More information" and "Run anyway".
+    *   Follow the instructions in the Terminal window. (Press Enter to confirm.)
+    *   Confirm Administrator rights if Windows asks you to
+3.  Wait many hours until the script says Done. During this time **please read the Chapter "Manually, Step-by-step" to understand what the script does and where you can find the output.
+
+### Development VM
+
+*Only for advanced developers:*
+
+If want a completely reproducible development environment that can be easily destroyed and re-created, you can also [automatically set up a virtual machine](../buildtools/windows-dev-vm/README.md).
+
+## Manually Step by Step
+
+For better understanding, you can do the parts step by step.
+
+### Installing Build Dependencies Easily
+
+In the basic case, you can install all the tools needed for compiling Inkscape with a one-click script. This is supported for Inkscape 1.5 or newer, running on standard 64bit Windows (not ARM). In other cases, please see below "Installing Build Dependencies Manually".
 
 1.  Get the buildtools folder from the Inkscape git repository. One way to do this is the following:
     *   Download the following ZIP [https://gitlab.com/inkscape/inkscape/-/archive/master/inkscape-master.zip?path=buildtools](https://gitlab.com/inkscape/inkscape/-/archive/master/inkscape-master.zip?path=buildtools)
@@ -17,7 +51,7 @@ In the basic case, you can install all the needed tools with a one-click script.
     *   Confirm Administrator rights if Windows asks you to
 3.  Wait a few hours until the script says Done. Then you can compile Inkscape as described below.
 
-## Obtaining Inkscape Source
+### Obtaining Inkscape Source
 
 As MSYS2 provides the version control software Git, you do not need to download it separately.
 
@@ -38,7 +72,7 @@ You can later update it with:
 git pull --recurse-submodules
 ```
 
-## Building Inkscape with MSYS2
+### Building Inkscape with MSYS2
 
 *   **Read carefully:** To compile Inkscape open the MSYS2 **UCRT64** (!!!) shell from the start menu (or launch C:\\msys64\\ucrt64.exe)
 *   ⚠️ _Warning:_ Using the right shell type is important so that the right type of Inkscape is built and the right dependencies are installed:
@@ -81,11 +115,13 @@ ninja install
 _**That's it!**_  
 Afterwards, you should have a complete binary distribution of Inkscape in the folder "build/install_dir/" that can be run on any machine running Windows 8.1 or later.
 
-## Running Inkscape
+### Running Inkscape
 
 Simply execute `inkscape.exe` from the "build/**install_dir**/bin" directory (not "build/bin") created in the previous step. (The `ninja install` command takes care of copying all required files into this directory.)
 
-## Packaging
+## Optional Steps
+
+### Packaging
 
 If you only want to run Inkscape, you do _not_ need to follow these instructions. See "Running Inkscape" above.
 
@@ -98,15 +134,21 @@ To package those files for distribution (to give it to other people, or make a s
 
 For some additional details which have not been incorporated into this page yet, see the previous instructions at https://wiki.inkscape.org/wiki/Compiling_Inkscape_on_Windows_32-bit#Creating_an_installer (mostly outdated).
 
-## Installing
+### Installing
 
 To install the self-built Inkscape, generate an EXE or MSI installer as described above and run it.
+
+## Setting up VSCode as Editor
+
+See [VSCode Configuration](../vscode/readme.md).
 
 ## See also
 - [Contributing and Developing](../../CONTRIBUTING.md)
 - [Advanced Information on Compiling Inkscape](doc/build/general_advanced.md)
 
 ## Troubleshooting
+
+☎ _If you can't solve your issue, please [ask in the chat](https://chat.inkscape.org/channel/team_devel) or [report a bug](https://inkscape.org/report)_.
 
 ### Issues with MSYS2
 
@@ -123,14 +165,15 @@ Try rebooting.
 
 ### Issues with building Inkscape
 
-The command \`ninja\` errors out after an MSYS2 update or after pulling new changes from the source reposiotry
+**The command \`ninja\` errors** out after an MSYS2 update or after pulling new changes from the source reposiotry
 
 Re-run CMake using `rm -rf CMakeCache.txt && cmake -G Ninja ..`.
 
 The first command will delete cached and potentially stale info from the previous run, the second command will run CMake again to update the ninja files.
 
-  
-☎ _If you can't solve your issue with the information above, please [ask in the chat](https://chat.inkscape.org/channel/team_devel) or [report a bug](https://inkscape.org/report)_.
+**Memory exhausted** when running `ninja`
+
+Ninja runs as many tasks in parallel as you have CPU cores. This can use up all RAM. Use `ninja -j1` instead of `ninja` so that only one (`1`) task is run at the same time.
 
 ## Installing Build Dependencies Manually
 

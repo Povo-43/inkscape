@@ -29,6 +29,6 @@ FOR %%I IN ("%CD%") DO SET "cdshortpath=%%~sI"
 
 echo "Starting part 2 with Administrator rights..."
 :: We don't use -Wait because sometimes, at the end of the powershell script, the PS window closes but the process doesn't exit.
-powershell -Command "Start-Process powershell -Verb runAs -ArgumentList '-ExecutionPolicy','bypass','-File','%cdshortpath%\windows-deps-part2.ps1'"
+powershell -Command "Start-Process powershell -Verb runAs -ArgumentList '-NoExit','-ExecutionPolicy','bypass','-File','%cdshortpath%\windows-deps-part2.ps1'"
 
 timeout 5

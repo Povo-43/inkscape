@@ -17,29 +17,19 @@ echo "Installing WiX v4 and DotNetSDK (for building MSI installer)"
 & .\windows-deps-install-wix4.ps1
 
 function RunInMsys {
-    # Run command in msys terminal window and wait for it to to finish
+    # Run command in msys shell
     param (
-		# MSYS architecture: MSYS2 / UCRT64 / MINGW64
-		$msysArch,
-		# shell command to be run
-		$cmd
+        # MSYS architecture: MSYS2 / UCRT64 / MINGW64
+        $MSYSVariant,
+        # shell command to be run
+        $Command
     )
-    # Ensure no mintty.exe is running -- otherwise the check later will be stuck
-    while (Get-Process mintty -ErrorAction SilentlyContinue) {
-        Start-Sleep 1
-        echo "Please close all open MSYS terminals so that this script can continue."
-    }
 
-    echo "Running in MSYS $msysArch terminal: $cmd"
-    
-    $cmd = $cmd + " && echo Ok. The window will close in 5 seconds. && sleep 5 || (echo Error. Press Enter to exit; read)"
-    &"C:\msys64\${msysArch}.exe" bash -c $cmd
-    # wait until mintty window has opened (dirty hack)
-    Start-Sleep 5
-    # Wait until mintty (terminal window) spawned by MSYS has finished
-    echo "Waiting until all MSYS tasks have finished..."
-    while (Get-Process mintty -ErrorAction SilentlyContinue) {
-        Start-Sleep 1
+    echo "Running in MSYS $MSYSVariant terminal: $Command"
+
+    & C:/msys64/usr/bin/env.exe CHERE_INVOKING=1 MSYSTEM=$MSYSVariant /usr/bin/bash -lc "$Command"
+    if (-Not $?) {
+       throw "Running command in MSYS $MSYSVariant shell failed: $Command"
     }
 }
 
@@ -59,11 +49,10 @@ Write-Host ""
 Write-Host ""
 Write-Host "Everything is installed that you need to compile Inkscape." -ForegroundColor Green
 Write-Host ""
-Write-Host "Done :-) Press Enter to exit." -ForegroundColor Green
+Write-Host "Done :-) Close the window to exit." -ForegroundColor Green
 
 # Print some empty lines because Windows sometimes places the PS window such that the bottom is hidden by the taskbar.
 For ($i=0; $i -lt 10; $i += 1)
 {
     echo ""
 }
-Read-Host
