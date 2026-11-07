@@ -524,9 +524,17 @@ void DocumentProperties::build_page()
             case PageProperties::Check::Shadow:
                 set_namedview_bool(_wr.desktop(), RC_("Undo", "Toggle page shadow"), SPAttr::SHOWPAGESHADOW, checked);
                 break;
-            case PageProperties::Check::AntiAlias:
-                set_namedview_bool(_wr.desktop(), RC_("Undo", "Toggle anti-aliasing"), SPAttr::INKSCAPE_ANTIALIAS_RENDERING, checked);
-                break;
+            case PageProperties::Check::AntiAlias: {
+                auto const desktop = _wr.desktop();
+                if (!desktop || !desktop->getDocument()) return;
+                auto const doc = desktop->getDocument();
+                auto const root = doc->getRoot();
+                const char* str_value = checked ? "auto" : "crispEdges";
+                root->setAttribute(sp_attribute_name(SPAttr::SHAPE_RENDERING) , str_value);
+
+                doc->setModifiedSinceSave();
+                DocumentUndo::done(doc, RC_("Undo", "Toggle anti-aliasing"), "");
+            }
             case PageProperties::Check::ClipToPage:
                 set_namedview_bool(_wr.desktop(), RC_("Undo", "Toggle clip to page mode"), SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING, checked);
                 break;
