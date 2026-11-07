@@ -70,6 +70,11 @@ Note 2: Interfaces (like `Gtk::Orientable`) or helper classes (like `CssNameClas
 Note 3: To change the name of `MyNewWidget` as seen by CSS, we can use 
 `CssNameClassInit` to provide a new one. For example `CssNameClassInit("my-new-widget")`.
 
+Note 4: The name passed to `Glib::ObjectBase` is the GType name (registered as `gtkmm__CustomObject_MyNewWidget`,
+the class used in ui files), not the widget name returned by `get_name()`. When a ui file creates the widget,
+its properties (including `name`) are applied before the C++ constructor and `construct()` run, so don't call
+`set_name()` unconditionally there. An unnamed widget's `get_name()` returns its GType name.
+
 ### Code file
 
 ```

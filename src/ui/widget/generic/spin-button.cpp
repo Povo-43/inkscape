@@ -57,7 +57,10 @@ constexpr int timeout_repeat = 50;
 constexpr int icon_margin = 2;
 
 void InkSpinButton::construct() {
-    set_name("InkSpinButton");
+    // Keep a name set in a .ui file, toolbars look spin buttons up by it (e.g. "eraser-width").
+    if (get_name() == G_OBJECT_TYPE_NAME(gobj())) {
+        set_name("InkSpinButton");
+    }
 
     set_overflow(Gtk::Overflow::HIDDEN);
 
