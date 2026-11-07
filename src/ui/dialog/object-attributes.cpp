@@ -362,9 +362,13 @@ details::AttributesPanel::AttributesPanel()
     _grid.set_indent(MARGIN);
     _widget = &_grid;
     _tracker = std::make_unique<UI::Widget::UnitTracker>(Inkscape::Util::UNIT_TYPE_LINEAR);
-    //todo: is this needed?
-    // auto init_units = desktop->getNamedView()->display_units;
-    // _tracker->setActiveUnit(init_units);
+    for (auto id : {"location-units", "size-units"}) {
+        get_widget<Gtk::Box>(_builder, id).append(*_tracker->create_unit_dropdown());
+    }
+
+    for (auto spin : {&_x, &_y, &_width, &_height}) {
+        _tracker->addAdjustment(spin->get_adjustment()->gobj());
+    }
 #if GTKMM_CHECK_VERSION(4, 18, 0)
     _lpe_menu.set_tab_behavior(Gtk::ListTabBehavior::ITEM);
 #endif
@@ -377,11 +381,10 @@ void details::AttributesPanel::add_fill_and_stroke(Parts parts) {
 }
 
 void details::AttributesPanel::transform() {
-    if (!_document || _update.pending()) return;
+    if (!_document || _update.pending() || _tracker->isUpdating()) return;
 
     auto scoped(_update.block());
-    // todo: expose the units?
-    auto unit = _document->getDisplayUnit();
+    auto unit = _tracker->getActiveUnit();
     auto prefs = Preferences::get();
     bool transform_stroke = prefs->getBool("/options/transform/stroke", true);
     bool preserve_transform = prefs->getBool("/options/preservetransform/value", false);
@@ -887,7 +890,7 @@ void details::AttributesPanel::update_size_location() {
     auto scoped(_update.block());
 
     auto use_visual_box = Preferences::get()->getInt("/tools/bounding_box") == 0;
-    auto rect = sp_selection_get_xywh(_desktop, _document->getDisplayUnit(), use_visual_box);
+    auto rect = sp_selection_get_xywh(_desktop, _tracker->getActiveUnit(), use_visual_box);
     _x.set_value(rect.min().x());
     _y.set_value(rect.min().y());
     _width.set_value(rect.width());

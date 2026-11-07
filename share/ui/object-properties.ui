@@ -9,7 +9,7 @@
     <child>
       <placeholder></placeholder>
     </child>
-    <!--dim: 5, 3-->
+    <!--dim: 6, 2-->
     <child>
       <object class="GtkLabel">
         <property name="label" translatable="yes">Title</property>
@@ -100,7 +100,7 @@
   <object class="GtkGrid" id="size-props">
     <property name="row-spacing">4</property>
     <property name="column-spacing">4</property>
-    <!--dim: 5, 3-->
+    <!--dim: 5, 2-->
     <child>
       <object class="GtkLabel">
         <property name="halign">start</property>
@@ -112,24 +112,44 @@
       </object>
     </child>
     <child>
-      <object class="gtkmm__CustomObject_InkSpinButton" id="obj-x">
-        <property name="max-value">1000000.000000</property>
-        <property name="min-value">-1000000.000000</property>
-        <property name="label" translatable="yes" context="Object&apos;s location X">X</property>
+      <object class="GtkGrid" id="location-controls">
+        <property name="column-spacing">4</property>
+        <child>
+          <object class="gtkmm__CustomObject_InkSpinButton" id="obj-x">
+            <property name="max-value">1000000.000000</property>
+            <property name="min-value">-1000000.000000</property>
+            <property name="label" translatable="yes" context="Object&apos;s location X">X</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="gtkmm__CustomObject_InkSpinButton" id="obj-y">
+            <property name="max-value">1000000.000000</property>
+            <property name="min-value">-1000000.000000</property>
+            <property name="label" translatable="yes" context="Object&apos;s location Y">Y</property>
+            <layout>
+              <property name="column">1</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="location-units">
+            <property name="halign">start</property>
+            <property name="valign">center</property>
+            <layout>
+              <property name="column">2</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
         <layout>
           <property name="column">2</property>
           <property name="row">0</property>
-        </layout>
-      </object>
-    </child>
-    <child>
-      <object class="gtkmm__CustomObject_InkSpinButton" id="obj-y">
-        <property name="max-value">1000000.000000</property>
-        <property name="min-value">-1000000.000000</property>
-        <property name="label" translatable="yes" context="Object&apos;s location Y">Y</property>
-        <layout>
-          <property name="column">3</property>
-          <property name="row">0</property>
+          <property name="column-span">2</property>
         </layout>
       </object>
     </child>
@@ -156,22 +176,42 @@
       </object>
     </child>
     <child>
-      <object class="gtkmm__CustomObject_InkSpinButton" id="obj-width">
-        <property name="max-value">1000000.000000</property>
-        <property name="label" translatable="yes" context="Width">W</property>
+      <object class="GtkGrid" id="size-controls">
+        <property name="column-spacing">4</property>
+        <child>
+          <object class="gtkmm__CustomObject_InkSpinButton" id="obj-width">
+            <property name="max-value">1000000.000000</property>
+            <property name="label" translatable="yes" context="Width">W</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="gtkmm__CustomObject_InkSpinButton" id="obj-height">
+            <property name="max-value">1000000.000000</property>
+            <property name="label" translatable="yes" context="Height">H</property>
+            <layout>
+              <property name="column">1</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="size-units">
+            <property name="halign">start</property>
+            <property name="valign">center</property>
+            <layout>
+              <property name="column">2</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
         <layout>
           <property name="column">2</property>
           <property name="row">1</property>
-        </layout>
-      </object>
-    </child>
-    <child>
-      <object class="gtkmm__CustomObject_InkSpinButton" id="obj-height">
-        <property name="max-value">1000000.000000</property>
-        <property name="label" translatable="yes" context="Height">H</property>
-        <layout>
-          <property name="column">3</property>
-          <property name="row">1</property>
+          <property name="column-span">2</property>
         </layout>
       </object>
     </child>
