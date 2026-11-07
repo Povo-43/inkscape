@@ -23,6 +23,7 @@
 #include <glibmm/i18n.h>
 #include <glibmm/miscutils.h>
 #include <gtkmm/box.h>
+#include <gtkmm/builder.h>
 #include <gtkmm/frame.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
@@ -42,6 +43,7 @@
 #include "prefdialog/widget.h"
 #include "timer.h"
 #include "ui/dialog-run.h"
+#include "ui/builder-utils.h"
 #include "ui/pack.h"
 #include "ui/util.h"
 #include "xml/node.h"
@@ -1066,7 +1068,18 @@ bool Extension::prefs()
 
     // Implimentation has it's own prefs GUI
     if (imp && imp->custom_gui()) {
-        // TODO: In the future we could load the GUI here
+        if (!_base_directory.empty()) {
+            auto ui_path = Glib::build_filename(_base_directory, "custom_gui.ui");
+            if (Glib::file_test(ui_path, Glib::FileTest::IS_REGULAR)) {
+                auto builder = Gtk::Builder::create_from_file(ui_path);
+                if (auto *root = builder->get_widget<Gtk::Widget>("dialog-root")) {
+                    auto dialog = PrefDialog(get_name(), root);
+                    Inkscape::UI::dialog_run(dialog);
+                }
+                return true;
+            }
+        }
+
         return true;
     }
 

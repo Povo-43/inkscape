@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+    <name>Extension Dialog</name>
+    <id>org.inkscape.dialog.extension</id>
+    <effect>
+        <object-type>all</object-type>
+        <effects-menu>
+            <submenu name="Dialog" />
+        </effects-menu>
+    </effect>
+    <plugin name="libdialog_extension" />
+</inkscape-extension>

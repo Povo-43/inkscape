@@ -304,7 +304,8 @@ if(NOT ANDROID)
   add_executable(inkscape ${main_SRC})
   add_executable(inkview ${view_SRC})
 else()
-  add_library(inkscape ${main_SRC})
+  add_library(inkscape ${main_SRC}
+          extension/plugins/dialog_extension/dialog-extension.cpp)
   add_library(inkview ${view_SRC})
 endif()
 
@@ -353,7 +354,6 @@ if(WIN32)
     set_target_properties(inkscape_com PROPERTIES INSTALL_RPATH "${BINS_INSTALL_RPATH}")
     set_target_properties(inkview_com PROPERTIES INSTALL_RPATH "${BINS_INSTALL_RPATH}")
 endif()
-
 
 
 #Define the installation
