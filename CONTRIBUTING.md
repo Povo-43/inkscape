@@ -111,7 +111,7 @@ on the local clone of your fork. Make your changes (the bugfix) and commit them.
 
 Find more information in the [GitLab documentation](https://docs.gitlab.com/topics/git/branch/).
 
-### Commiting changes
+### Committing changes
 
 Make the changes and `git commit` them.
 
