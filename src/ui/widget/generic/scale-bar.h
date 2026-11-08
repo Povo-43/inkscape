@@ -44,7 +44,7 @@ private:
     int _block_count = 0; // No blocks
 
     // height in pixels
-    int _block_height = 10;
+    int _block_height = 25;
     Glib::RefPtr<Gtk::Adjustment> _adjustment;
     sigc::scoped_connection _connection;
     Gdk::RGBA _selected;

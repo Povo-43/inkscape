@@ -143,7 +143,7 @@
        inkscape:connector-curvature="0"
        id="rect31330"
        d="m 165,981.36218 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <path
        inkscape:original-d="m 167.0175,987.34902 c 0.45703,1.70568 2.4897,4 6,4"
        inkscape:path-effect="#path-effect866;#path-effect864"

@@ -49,12 +49,6 @@ file_open(const Glib::VariantBase& value, InkscapeApplication *app)
 void
 file_open_with_window(const Glib::VariantBase& value, InkscapeApplication *app)
 {
-    auto window = app->get_active_window();
-    if (!window) {
-        show_output("You cannot run this action without an active window");
-        return;
-    }
-
     Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring>>(value);
     Glib::RefPtr<Gio::File> file = Gio::File::create_for_path(s.get());
     if (!file->query_exists()) {
@@ -156,7 +150,7 @@ add_actions_file(InkscapeApplication* app)
     gapp->add_action_with_parameter( "file-rebase",               Bool,   sigc::bind(sigc::ptr_fun(&file_rebase),             app));
     // clang-format on
 #else
-            show_output("add_actions: Some actions require Glibmm 2.52, compiled with: " << glib_major_version << "." << glib_minor_version);
+    show_output("add_actions: Some actions require Glibmm 2.52, compiled with: " << glib_major_version << "." << glib_minor_version);
 #endif
 
     app->get_action_extra_data().add_data(raw_data_file);

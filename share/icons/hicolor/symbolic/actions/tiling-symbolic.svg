@@ -72,7 +72,7 @@ Jabier Arraiza</dc:title>
     </rdf:RDF>
   </metadata>
   <g inkscape:label="copy" id="layercompo">
-    <path style="display:inline;opacity:0;fill:none" d="M 0,0 H 16 V 16 H 0 Z" id="rect22048" inkscape:connector-curvature="0"/>
+    <path opacity="0" d="M 0,0 H 16 V 16 H 0 Z" id="rect22048" inkscape:connector-curvature="0"/>
     <path style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.562686;stroke-opacity:1" id="path13925" width="2.9111536" class="warning" height="2.9438629" x="1.9927427" y="1.9951732" inkscape:path-effect="#path-effect13929" sodipodi:type="rect" d="m 4.9038962,2.2451732 -0.25,-0.25 v 2.9438629 l 0.25,-0.25 H 1.9927427 l 0.25,0.25 V 1.9951732 l -0.25,0.25 z M 1.7427427,5.1890361 H 5.1538962 V 1.7451732 H 1.7427427 Z"/>
     <path style="fill:#ff1990;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.562686;stroke-opacity:1" id="rect851" width="2.9111536" height="2.9438629" x="6.543407" y="1.9489149" inkscape:path-effect="#path-effect9238" d="m 9.4545605,2.1989149 -0.25,-0.25 v 2.9438629 l 0.25,-0.25 H 6.543407 l 0.25,0.25 V 1.9489149 l -0.25,0.25 z M 6.293407,5.1427778 H 9.7045605 V 1.6989149 H 6.293407 Z" sodipodi:type="rect"/>
     <path style="fill:#ff1990;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.562686;stroke-opacity:1" id="path13949" width="2.9111536" height="2.9438629" x="11.094071" y="1.9489149" inkscape:path-effect="#path-effect13953" d="m 14.005225,2.1989149 -0.25,-0.25 v 2.9438629 l 0.25,-0.25 h -2.911154 l 0.25,0.25 V 1.9489149 l -0.25,0.25 z m -3.161154,2.9438629 h 3.411154 V 1.6989149 h -3.411154 z" sodipodi:type="rect"/>

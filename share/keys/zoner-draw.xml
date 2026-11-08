@@ -40,11 +40,11 @@ See default.xml for more information.
 
 <!-- File actions -->
 
-  <bind gaction="win.document-new"                      keys="&lt;ctrl&gt;n, &lt;ctrl&gt;N" />
+  <bind gaction="app.document-new"                      keys="&lt;ctrl&gt;n, &lt;ctrl&gt;N" />
   
 <!--  New from Template... (Shift l+Ctrl+N) does not exist in Inkscape -->
 
-  <bind gaction="win.document-open"                     keys="&lt;ctrl&gt;o, &lt;ctrl&gt;O" />
+  <bind gaction="app.document-open"                     keys="&lt;ctrl&gt;o, &lt;ctrl&gt;O" />
   <bind gaction="win.document-save"                     keys="&lt;ctrl&gt;s, &lt;ctrl&gt;S" />
 
 <!--

@@ -5,7 +5,7 @@
     <inkscape:grid type="xygrid" id="grid"/>
   </sodipodi:namedview>
   <g transform="translate(-739,-589.36218)" id="draw-geometry-set-bounding-box" inkscape:label="00229">
-      <path inkscape:connector-curvature="0" id="rect14757" d="m 739,589.36218 h 16 v 16 h -16 z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect14757" d="m 739,589.36218 h 16 v 16 h -16 z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="rect14759" d="m 742,591.36218 h 1 v 1 h -1 z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect14761" d="m 742,593.36218 h 1 v 1 h -1 z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect14763" d="m 742,595.36218 h 1 v 1 h -1 z" style="opacity:1"/>

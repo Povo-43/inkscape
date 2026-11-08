@@ -80,7 +80,7 @@
      id="transform-skew-vertical"
      transform="matrix(1,0,0,-0.999999,-529,728.36165)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 529,712.36218 h 16 v 16 h -16 z"
        id="rect19383"
        inkscape:connector-curvature="0" />

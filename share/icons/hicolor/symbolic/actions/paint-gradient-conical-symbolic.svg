@@ -5,7 +5,7 @@
     <inkscape:grid type="xygrid" id="grid"/>
   </sodipodi:namedview>
   <g inkscape:label="00350" id="paint-gradient-conical">
-      <path inkscape:connector-curvature="0" id="rect36996" d="M 0,0 H 16 V 16 H 0 Z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect36996" d="M 0,0 H 16 V 16 H 0 Z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="path36998" d="M 0.5,7.9999974 A 7.5,7.5 0 0 1 8.0000001,0.5 L 8,8 Z" style="opacity:0.6"/>
       <path inkscape:connector-curvature="0" id="path37000" d="M 15.5,8 A 7.5,7.5 0 0 1 8.0000025,15.5 L 8,8 Z" style="opacity:0.6"/>
       <path inkscape:connector-curvature="0" id="circle37002" d="M 8,0 C 3.5876443,0 0,3.5876443 0,8 c 0,4.412356 3.5876443,8 8,8 4.412356,0 8,-3.587644 8,-8 C 16,3.5876443 12.412356,0 8,0 Z m 0,1 c 3.871916,0 7,3.1280844 7,7 0,3.871916 -3.128084,7 -7,7 C 4.1280844,15 1,11.871916 1,8 1,4.1280844 4.1280844,1 8,1 Z" style="opacity:1;stroke-linecap:butt"/>

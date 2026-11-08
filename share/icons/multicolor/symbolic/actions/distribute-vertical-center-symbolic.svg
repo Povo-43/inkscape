@@ -79,7 +79,7 @@
        xlink:href="#path5265" />
     <path
        transform="matrix(0,1,1,0,0,0)"
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 746.362,1082.001 h 24 v 24 h -24 z"
        id="rect18867"
        inkscape:connector-curvature="0" />
@@ -87,7 +87,7 @@
        id="g872"
        transform="translate(-0.277841,-0.81367018)">
       <path
-         style="opacity:0;fill:none"
+         opacity="0"
          d="m 1082.2783,771.17529 v -24 h 23.9995 v 24 z"
          id="rect18679"
          inkscape:connector-curvature="0" />

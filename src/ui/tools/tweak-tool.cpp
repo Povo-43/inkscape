@@ -599,23 +599,23 @@ static Color tweak_color(guint mode, Color const &color, Color const &goal, doub
 {
     // Tweak colors are entirely based on HSL values;
     if (auto hsl = color.converted(Colors::Space::Type::HSL)) {
-        unsigned int pin = (do_h * 1) + (do_s * 2) + (do_l * 4);
+        // Always pin alpha, this tool works on item opacity instead
+        unsigned int pin = (!do_h * 1) + (!do_s * 2) + (!do_l * 4) + 8;
         if (mode == TWEAK_MODE_COLORPAINT) {
             hsl->average(goal, force, pin);
         } else if (mode == TWEAK_MODE_COLORJITTER) {
             hsl->jitter(force, pin);
         }
-        if (auto copy = hsl->converted(color.getSpace()))
-            return *copy;
+        return *hsl;
     }
     return color; // Bad conversion
 }
 
 static void tweak_stop_color(guint mode, SPStop *stop, Color const &goal, double force, bool do_h, bool do_s, bool do_l)
 {
-    auto copy = stop->getColor();
-    tweak_color(mode, copy, goal, force, do_h, do_s, do_l);
-    stop->setColor(copy);
+    auto original = stop->getColor();
+    auto tweaked = tweak_color(mode, original, goal, force, do_h, do_s, do_l);
+    stop->setColor(tweaked);
 }
 
     static void
@@ -764,7 +764,7 @@ static void tweak_colors_in_gradient(SPItem *item, Inkscape::PaintTarget fill_or
                     }
 
                     if (offset_h >= pos_e && offset_h < pos_e + r) {
-                        tweak_stop_color(mode, prevStop, goal,
+                        tweak_stop_color(mode, stop, goal,
                             force * tweak_profile (fabs (pos_e - offset_h), r),
                             do_h, do_s, do_l);
                         stop->updateRepr();

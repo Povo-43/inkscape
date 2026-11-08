@@ -77,6 +77,7 @@ public:
     {
         auto const item = Gtk::make_managed<Widget::PopoverMenuItem>(label, true,
                                                                      icon_name, _icon_size);
+        item->set_has_tooltip(true);
         if (!customtooltip) {
             item->set_tooltip_markup(tooltip);
         }

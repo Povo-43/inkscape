@@ -78,9 +78,10 @@ void SPGroup::child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) 
     SPLPEItem::child_added(child, ref);
 
     SPObject *last_child = this->lastChild();
-    if (last_child && last_child->getRepr() == child) {
+    if (last_child && last_child->getRepr() == child || adding_children) {
         // optimization for the common special case where the child is being added at the end
-        auto item = cast<SPItem>(last_child);
+        // or if adding a set of contiguous children (we delay moving them).
+        auto item = cast<SPItem>(get_child_by_repr(child));
         if ( item ) {
             /* TODO: this should be moved into SPItem somehow */
             for (auto &v : views) {
@@ -107,6 +108,16 @@ void SPGroup::child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) 
     }
     this->requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
+
+// Move drawing items into correct place.
+void SPGroup::end_adding_children(unsigned count, unsigned position)
+{
+    for (auto &v : views) {
+        v.drawingitem->shiftFromEnd(count, position);
+    }
+    adding_children = false;
+}
+
 
 /* fixme: hide (Lauris) */
 
@@ -669,7 +680,7 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children)
     /* Step 2 - clear group */
     // remember the position of the group
     auto insert_after = group->getRepr()->prev();
-
+    unsigned position = group->pos_in_parent();
     // the group is leaving forever, no heir, clones should take note; its children however are going to reemerge
     group->deleteObject(true, false);
 
@@ -690,7 +701,9 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children)
     if (clip) { // if !maskonungroup is always null
         bbox_clip = bbox_on_rect_clip(clip);
     }
+
     /* Step 4 - add items */
+    dynamic_cast<SPGroup *>(pitem)->start_adding_children(); // Postpone shifting drawing items into correct place.
     std::vector<SPLPEItem *> lpeitems;
     for (auto *repr : items) {
         // add item
@@ -727,6 +740,7 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children)
             result_mask_set.add(item);
         }
     }
+    dynamic_cast<SPGroup *>(pitem)->end_adding_children(items.size(), position); // Shift drawing items into correct place.
 
     if (mask) {
         result_mask_set.add(mask);
@@ -821,7 +835,7 @@ void SPGroup::translateChildItems(Geom::Translate const &tr)
     if (hasChildren()) {
         for (auto &o: children) {
             if (auto item = cast<SPItem>(&o)) {
-                item->move_rel(tr);
+                item->move_rel(tr, false);
             }
         }
     }
@@ -1099,11 +1113,20 @@ sp_group_perform_patheffect(SPGroup *group, SPGroup *top_group, Inkscape::LivePa
 std::vector<guint32> default_highlights;
 
 /**
+ * Should we choose from the layer default highlight colors, or go with the base SPItem
+ * inheritance/default?
+ */
+bool SPGroup::_should_choose_layer_highlight() const
+{
+    // Parent must not be a layer (root, or similar) and this group must also be a layer
+    return !SP_IS_LAYER(parent) && isLayer() && !default_highlights.empty();
+}
+
+/**
  * Generate a highlight colour if one isn't set and return it.
  */
 Inkscape::Colors::Color SPGroup::highlight_color() const {
-    // Parent must not be a layer (root, or similar) and this group must also be a layer
-    if (!_highlightColor && !SP_IS_LAYER(parent) && this->_layer_mode == SPGroup::LAYER && !default_highlights.empty()) {
+    if (!isHighlightSet() && _should_choose_layer_highlight()) {
         char const * oid = defaultLabel();
         if (oid && *oid) {
             // Color based on the last few bits of the label or object id.
@@ -1111,6 +1134,31 @@ Inkscape::Colors::Color SPGroup::highlight_color() const {
         }
     }
     return SPItem::highlight_color();
+}
+
+/**
+ * Ensure that the current highlight color of the group is set (not defaulted) to its current
+ * color, so that any change to the group (like changing its layer mode, or renaming a layer)
+ * doesn't change the color by changing the default.
+ * @param group The group or layer to preserve the highlight for.
+ */
+void SPGroup::preserveGroupHighlight()
+{
+    if (!isHighlightSet()) {
+        setHighlight(highlight_color());
+    }
+}
+
+/**
+ * Same as preserveGroupHighlight, but only set the highlight if this is a layer, and not any other
+ * type of group.
+ * @param group The group or layer to preserve the highlight for.
+ */
+void SPGroup::preserveLayerHighlight()
+{
+    if (!isHighlightSet() && _should_choose_layer_highlight()) {
+        preserveGroupHighlight();
+    }
 }
 
 void set_default_highlight_colors(std::vector<guint32> colors) {

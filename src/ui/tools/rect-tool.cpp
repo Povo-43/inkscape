@@ -82,11 +82,6 @@ RectTool::~RectTool() {
 
     delete this->shape_editor;
     this->shape_editor = nullptr;
-
-    /* fixme: This is necessary because we do not grab */
-    if (this->rect) {
-        this->finishItem();
-    }
 }
 
 /**

@@ -1176,6 +1176,7 @@ LPETiling::doBeforeEffect (SPLPEItem const* lpeitem)
 {
     if (is_load) {
         legacy = lpeversion.param_getSVGValue() < "1.3.1";
+        prev_unit = unit.get_abbreviation();
     }
     auto transformorigin_str = lpeitem->getAttribute("transform");
     if (transformorigin_str) {

@@ -183,7 +183,7 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Raise selection one step</property>
+        <property name="tooltip-text" translatable="yes">Bring selection up one step</property>
         <property name="action-name">app.selection-raise</property>
         <property name="has-frame">False</property>
         <property name="icon-name">selection-raise</property>
@@ -197,7 +197,7 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Lower selection one step</property>
+        <property name="tooltip-text" translatable="yes">Bring selection down one step</property>
         <property name="action-name">app.selection-lower</property>
         <property name="has-frame">False</property>
         <property name="icon-name">selection-lower</property>

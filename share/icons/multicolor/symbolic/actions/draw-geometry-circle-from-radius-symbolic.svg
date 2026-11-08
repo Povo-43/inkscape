@@ -66,7 +66,7 @@
        inkscape:connector-curvature="0"
        id="rect25622"
        d="m 559,589.36218 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <path
        inkscape:connector-curvature="0"
        id="path25620"

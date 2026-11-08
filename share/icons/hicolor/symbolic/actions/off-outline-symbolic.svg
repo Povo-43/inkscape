@@ -54,7 +54,7 @@
      id="off-outline"
      transform="translate(-10.48884,-182.0497)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 10.48884,182.0497 h 16 v 16 h -16 z"
        id="rect23222-8"
        inkscape:connector-curvature="0" />

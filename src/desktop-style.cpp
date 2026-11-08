@@ -1334,6 +1334,49 @@ objects_query_fontfeaturesettings (const std::vector<SPItem*> &objects, SPStyle 
 }
 
 
+int
+objects_query_textdecoration (const std::vector<SPItem*> &objects, SPStyle *style_res)
+{
+    bool different = false;
+    int texts = 0;
+
+    style_res->text_decoration_line.clear();
+
+    for (auto obj : objects) {
+        if (!isTextualItem(obj)) {
+            continue;
+        }
+
+        SPStyle *style = obj->style;
+        if (!style) {
+            continue;
+        }
+
+        texts++;
+
+        if (style->text_decoration_line.set) {
+            if (!style->text_decoration_line.equals(style->text_decoration_line)) {
+                different = true;
+            }
+            style_res->text_decoration_line = style->text_decoration_line;
+            style_res->text_decoration_line.set = true;
+        }
+    }
+
+    if (texts == 0 || !style_res->text_decoration_line.set) {
+        return QUERY_STYLE_NOTHING;
+    } else if (texts > 1) {
+        if (different) {
+            return QUERY_STYLE_MULTIPLE_DIFFERENT;
+        } else {
+            return QUERY_STYLE_MULTIPLE_SAME;
+        }
+    } else {
+        return QUERY_STYLE_SINGLE;
+    }
+}
+
+
 /**
  * Write to style_res the baseline numbers.
  */
@@ -1741,6 +1784,8 @@ sp_desktop_query_style_from_list (const std::vector<SPItem*> &list, SPStyle *sty
         return objects_query_writing_modes (list, style);
     } else if (property == QUERY_STYLE_PROPERTY_BASELINES) {
         return objects_query_baselines (list, style);
+    } else if (property == QUERY_STYLE_PROPERTY_TEXTDECORATION) {
+        return objects_query_textdecoration (list, style);
 
     } else if (property == QUERY_STYLE_PROPERTY_BLEND) {
         return objects_query_blend (list, style);

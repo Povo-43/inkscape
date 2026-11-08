@@ -48,6 +48,11 @@ private:
 
     static void perform_document_update(SPDocument &document);
 
+    static void maybeDoneInternal(SPDocument *document, gchar const *keyconst,
+                                  Util::Internal::ContextString event_description, Glib::ustring const &undo_icon,
+                                  unsigned int object_modified_tag = 0, bool temporary = false);
+    static gboolean undoInternal(SPDocument *document, bool temporary = false);
+
 public:
     static void resetKey(SPDocument *document);
 

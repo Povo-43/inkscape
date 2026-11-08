@@ -272,7 +272,7 @@
          inkscape:label="bbox"
          inkscape:tile-x0="1856"
          inkscape:tile-y0="308"
-         class="bbox" />
+         opacity="0" />
       <g
          id="g284"
          transform="matrix(1,0,0,1.291386,-4134.9986,2220.3101)"

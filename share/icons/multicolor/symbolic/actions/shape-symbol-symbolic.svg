@@ -77,7 +77,7 @@
      id="symbols"
      transform="matrix(1,0,0,0.999973,0,4.3e-4)">
     <path
-       style="display:inline;opacity:0;fill:none"
+       opacity="0"
        d="M 0,0 H 16 V 16 H 0 Z"
        id="rect48467"
        inkscape:connector-curvature="0" />

@@ -140,21 +140,21 @@ Gtk::Widget *LPEBSpline::newWidget()
 void LPEBSpline::toDefaultWeight()
 {
     changeWeight(DEFAULT_START_POWER * 100);
-    sp_lpe_item_update_patheffect(sp_lpe_item, false, false);
+    sp_lpe_item_update_patheffect(sp_lpe_item, false, true);
     makeUndoDone(RC_("Undo", "Change to default weight"));
 }
 
 void LPEBSpline::toMakeCusp()
 {
     changeWeight(NO_POWER);
-    sp_lpe_item_update_patheffect(sp_lpe_item, false, false);
+    sp_lpe_item_update_patheffect(sp_lpe_item, false, true);
     makeUndoDone(RC_("Undo", "Change to 0 weight"));
 }
 
 void LPEBSpline::toWeight()
 {
     changeWeight(weight);
-    sp_lpe_item_update_patheffect(sp_lpe_item, false, false);
+    sp_lpe_item_update_patheffect(sp_lpe_item, false, true);
     makeUndoDone(RC_("Undo", "Change scalar parameter"));
 }
 

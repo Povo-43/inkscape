@@ -23,7 +23,7 @@ namespace Inkscape::UI::Widget {
 class PatternItem : public Glib::Object
 {
 public:
-    Cairo::RefPtr<Cairo::Surface> pix;
+    Cairo::RefPtr<Cairo::ImageSurface> pix;
     std::string id;
     std::string label;
     bool stock = false;

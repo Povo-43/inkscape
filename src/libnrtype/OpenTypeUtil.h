@@ -20,6 +20,11 @@
 #include <vector>
 
 #include <glibmm/ustring.h>
+#include <glibmm/refptr.h>
+
+namespace Gdk {
+class Pixbuf;
+} // Gdk
 
 /*
  * A set of utilities to extract data from OpenType fonts.
@@ -87,6 +92,9 @@ void readOpenTypeFvarNamedInstances (hb_font_t* hb_font, std::map<Glib::ustring,
 void readOpenTypeSVGTable  (hb_font_t* hb_font,
                             std::map<unsigned int, SVGGlyphEntry>& glyphs,
                             std::map<int, std::string>& svgs);
+
+void readOpenTypePNG       (hb_font_t* hb_font,
+                            std::vector<Glib::RefPtr<Gdk::Pixbuf>>& pixbufs);
 
 #endif /* !USE_PANGO_WIND32    */
 #endif /* !SEEN_OPENTYPEUTIL_H */

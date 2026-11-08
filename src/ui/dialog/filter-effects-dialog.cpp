@@ -2881,7 +2881,7 @@ void FilterEffectsDialog::add_effects(Inkscape::UI::Widget::CompletionPopup& pop
                                                [=, this]{ add_filter_primitive(type); });
         auto const id = static_cast<int>(type);
         menuitem->signal_query_tooltip().connect([=, this] (int x, int y, bool kbd, const Glib::RefPtr<Gtk::Tooltip>& tooltipw) {
-            return sp_query_custom_tooltip(this, x, y, kbd, tooltipw, id, effect.tooltip, effect.icon_name);
+            return sp_query_custom_tooltip(this, tooltipw, effect.tooltip, effect.icon_name);
         }, false); // before
         if (builder.new_section()) {
             builder.set_section(get_category_name(effect.category));
@@ -3126,6 +3126,11 @@ void FilterEffectsDialog::selectionModified(Inkscape::Selection *selection, guin
 void FilterEffectsDialog::set_attrs_locked(const bool l)
 {
     _locked = l;
+}
+
+void FilterEffectsDialog::select_filter(const SPFilter* filter)
+{
+    _filter_modifier.select_filter(filter);
 }
 
 void FilterEffectsDialog::init_settings_widgets()

@@ -12,7 +12,6 @@
  */
 
 #include "svg/path-string.h"
-#include "svg/stringstream.h"
 #include "svg/svg.h"
 #include "util/numeric/precision.h"
 #include "preferences.h"
@@ -113,16 +112,24 @@ void PathString::State::append(Geom::Point p) {
     appendNumber(p[Geom::Y], _precision, _minexp);
 }
 
-void PathString::State::append(Geom::Coord v, Geom::Coord& rv) {
+void PathString::State::append(Geom::Coord v, Geom::Coord &rv, Geom::Dim2 dim, bool set_current)
+{
     str += ' ';
     appendNumber(v, rv);
+    if (set_current) {
+        current_pos[dim] = rv;
+    }
 }
 
-void PathString::State::append(Geom::Point p, Geom::Point &rp) {
+void PathString::State::append(Geom::Point p, Geom::Point &rp, bool set_current)
+{
     str += ' ';
     appendNumber(p[Geom::X], rp[Geom::X]);
     str += ',';
     appendNumber(p[Geom::Y], rp[Geom::Y]);
+    if (set_current) {
+        current_pos = rp;
+    }
 }
 
 // NOTE: The following appendRelativeCoord function will not be exact if the total number of digits needed
@@ -131,47 +138,71 @@ void PathString::State::append(Geom::Point p, Geom::Point &rp) {
 // than the absolute value).
 
 // NOTE: This assumes v and r are already rounded (this includes flushing to zero if they are < 10^minexp)
-void PathString::State::appendRelativeCoord(Geom::Coord v, Geom::Coord r) {
+void PathString::State::appendRelativeCoord(Geom::Coord v, Geom::Dim2 dim, bool set_current)
+{
+    Geom::Coord r = current_pos[dim];
+
     int const minexp = _minexp - _precision + 1;
     int const digitsEnd = (int)floor(log10(std::min(fabs(v),fabs(r)))) - _precision; // Position just beyond the last significant digit of the smallest (in absolute sense) number
     double const roundeddiff = floor((v-r)*pow(10.,-digitsEnd-1)+.5);
     int const numDigits = (int)floor(log10(fabs(roundeddiff)))+1; // Number of digits in roundeddiff
-    if (r == 0) {
-        appendNumber(v, _precision, minexp);
-    } else if (v == 0) {
-        appendNumber(-r, _precision, minexp);
-    } else if (numDigits>0) {
-        appendNumber(v-r, numDigits, minexp);
+
+    double diff = 0;
+    if (r == 0 || v == 0) {
+        appendNumber(v - r, _precision, minexp, diff);
+    } else if (numDigits > 0) {
+        appendNumber(v - r, numDigits, minexp, diff);
     } else {
         // This assumes the input numbers are already rounded to 'precision' digits
         str += '0';
     }
+    if (set_current) {
+        current_pos[dim] += diff;
+    }
 }
 
-void PathString::State::appendRelative(Geom::Point p, Geom::Point r) {
+void PathString::State::appendRelative(Geom::Point p, bool set_current)
+{
     str += ' ';
-    appendRelativeCoord(p[Geom::X], r[Geom::X]);
+    appendRelativeCoord(p[Geom::X], Geom::X, set_current);
     str += ',';
-    appendRelativeCoord(p[Geom::Y], r[Geom::Y]);
+    appendRelativeCoord(p[Geom::Y], Geom::Y, set_current);
 }
 
-void PathString::State::appendRelative(Geom::Coord v, Geom::Coord r) {
+void PathString::State::closePath()
+{
+    current_pos = initial_point;
+}
+
+void PathString::State::setInitialPoint()
+{
+    initial_point = current_pos;
+}
+
+void PathString::State::appendRelative(Geom::Coord v, Geom::Dim2 d, bool set_current)
+{
     str += ' ';
-    appendRelativeCoord(v, r);
+    appendRelativeCoord(v, d, set_current);
 }
 
-void PathString::State::appendNumber(double v, int precision, int minexp) {
-
+void PathString::State::appendNumber(double v, int precision, int minexp)
+{
     str.append(sp_svg_number_write_de(v, precision, minexp));
 }
 
-void PathString::State::appendNumber(double v, double &rv) {
-    size_t const oldsize = str.size();
-    appendNumber(v, _precision, _minexp);
-    char* begin_of_num = const_cast<char*>(str.data()+oldsize); // Slightly evil, I know (but std::string should be storing its data in one big block of memory, so...)
-    sp_svg_number_read_d(begin_of_num, &rv);
+void PathString::State::appendNumber(double v, double &rv)
+{
+    appendNumber(v, _precision, _minexp, rv);
 }
 
+void PathString::State::appendNumber(double v, int precision, int minexp, double &result_out)
+{
+    size_t const oldsize = str.size();
+    appendNumber(v, precision, minexp);
+    auto begin_of_num = str.c_str() + oldsize; // Slightly evil, I know (but std::string should be storing its
+                                               // data in one big block of memory, so...)
+    sp_svg_number_read_d(begin_of_num, &result_out);
+}
 }}
 
 /*

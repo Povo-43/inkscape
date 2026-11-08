@@ -62,7 +62,7 @@
      id="draw-geometry-set-bounding-box"
      transform="translate(-739,-589.36218)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 739,589.36218 h 16 v 16 h -16 z"
        id="rect14757"
        inkscape:connector-curvature="0" />

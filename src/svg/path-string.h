@@ -71,8 +71,9 @@ public:
     PathString &moveTo(Geom::Point p) {
         _appendOp('M','m');
         _appendPoint(p, true);
+        _rel_state.setInitialPoint();
+        _abs_state.setInitialPoint();
 
-        _initial_point = _current_point;
         return *this;
     }
 
@@ -144,8 +145,9 @@ public:
 
         _abs_state.appendOp('Z');
         _rel_state.appendOp('z');
+        _abs_state.closePath();
+        _rel_state.closePath();
 
-        _current_point = _initial_point;
         return *this;
     }
 
@@ -170,23 +172,20 @@ private:
 
     void _appendX(Geom::Coord x, bool sc) {
         double rx;
-        _abs_state.append(x, rx);
-        _rel_state.appendRelative(rx, _current_point[Geom::X]);
-        if (sc) _current_point[Geom::X] = rx;
+        _abs_state.append(x, rx, Geom::X, sc);
+        _rel_state.appendRelative(rx, Geom::X, sc);
     }
 
     void _appendY(Geom::Coord y, bool sc) {
         double ry;
-        _abs_state.append(y, ry);
-        _rel_state.appendRelative(ry, _current_point[Geom::Y]);
-        if (sc) _current_point[Geom::Y] = ry;
+        _abs_state.append(y, ry, Geom::Y, sc);
+        _rel_state.appendRelative(ry, Geom::Y, sc);
     }
 
     void _appendPoint(Geom::Point p, bool sc) {
         Geom::Point rp;
-        _abs_state.append(p, rp);
-        _rel_state.appendRelative(rp, _current_point);
-        if (sc) _current_point = rp;
+        _abs_state.append(p, rp, sc);
+        _rel_state.appendRelative(rp, sc);
     }
 
     struct State {
@@ -208,10 +207,12 @@ private:
 
         void append(Geom::Coord v);
         void append(Geom::Point v);
-        void append(Geom::Coord v, Geom::Coord& rv);
-        void append(Geom::Point p, Geom::Point& rp);
-        void appendRelative(Geom::Coord v, Geom::Coord r);
-        void appendRelative(Geom::Point p, Geom::Point r);
+        void append(Geom::Coord v, Geom::Coord &rv, Geom::Dim2 dim, bool set_current);
+        void append(Geom::Point p, Geom::Point &rp, bool set_current);
+        void appendRelative(Geom::Coord v, Geom::Dim2 d, bool set_current);
+        void appendRelative(Geom::Point p, bool set_current);
+        void closePath();
+        void setInitialPoint();
 
         bool operator<=(const State& s) const {
             if ( str.size() < s.str.size() ) return true;
@@ -232,11 +233,12 @@ private:
     private:
         void appendNumber(double v, int precision, int minexp);
         void appendNumber(double v, double &rv);
-        void appendRelativeCoord(Geom::Coord v, Geom::Coord r);
-    } _abs_state, _rel_state; // State with the last operator being an absolute/relative operator
+        void appendNumber(double v, int precision, int minexp, double &result_out);
+        void appendRelativeCoord(Geom::Coord v, Geom::Dim2 dim, bool set_current);
 
-    Geom::Point _initial_point;
-    Geom::Point _current_point;
+        Geom::Point current_pos;
+        Geom::Point initial_point;
+    } _abs_state, _rel_state; // State with the last operator being an absolute/relative operator
 
     // If both states have a common prefix it is stored here.
     // Separating out the common prefix prevents repeated copying between the states

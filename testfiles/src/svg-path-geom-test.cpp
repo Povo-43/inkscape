@@ -489,24 +489,4 @@ TEST(PathVectorToBeziersTest, random)
     pathv_to_linear_and_cubic_beziers(pathv);
 }
 
-/*
- * Please do not change my prefs or put them back after :(
- * also, fails.
-
-TEST_F(SvgPathGeomTest, testMinexpPrecision)
-{
-    Geom::PathVector pv;
-    char *path_str;
-    // Default values
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    prefs->setBool("/options/svgoutput/allowrelativecoordinates", true);
-    prefs->setBool("/options/svgoutput/forcerepeatcommands", false);
-    prefs->setInt("/options/svgoutput/numericprecision", 10);
-    prefs->setInt("/options/svgoutput/minimumexponent", -8);
-    pv = sp_svg_read_pathv("M 123456781,1.23456781e-8 L 123456782,1.23456782e-8 L 123456785,1.23456785e-8 L
-10123456400,1.23456785e-8 L 123456789,1.23456789e-8 L 123456789,101.234564e-8 L 123456789,1.23456789e-8"); path_str =
-sp_svg_write_path(pv); ASSERT_FALSE(  strcmp("m 123456780,1.2345678e-8 0,0 10,1e-15 9999999210,0 -9999999210,0
-0,9.99999921e-7 0,-9.99999921e-7" , path_str )); g_free(path_str);
-}*/
-
 // vim: filetype=cpp:expandtab:shiftwidth=4:softtabstop=4:fileencoding=utf-8:textwidth=99 :

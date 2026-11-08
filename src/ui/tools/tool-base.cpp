@@ -385,6 +385,9 @@ bool ToolBase::root_handler(CanvasEvent const &event)
         dump_event(event, "ToolBase::root_handler");
     }
 
+    using Modifiers::Type;
+    using Modifiers::Triggers;
+
     static Geom::Point button_w;
     static unsigned int panning_cursor = 0;
     static unsigned int zoom_rb = 0;
@@ -404,6 +407,9 @@ bool ToolBase::root_handler(CanvasEvent const &event)
         return Geom::deg_from_rad(Geom::atan2(cursor - Geom::Point(_desktop->getCanvas()->get_dimensions()) / 2.0));
     };
 
+    static Geom::Point panZoomPoint = Geom::Point(); //Initial cursor point used for zooming when using a graphics tablet
+    static Geom::Point lastZoomPoint = Geom::Point(); //Used to determine the zoom direction and amount when using a graphics tablet
+
     inspect_event(event,
     [&] (ButtonPressEvent const &event) {
         if (event.num_press == 2) {
@@ -413,6 +419,10 @@ bool ToolBase::root_handler(CanvasEvent const &event)
                 ret = true;
             }
         } else if (event.num_press == 1) {
+            //Resetting the points used by zooming with Ctrl + MMB each time zooming starts
+            panZoomPoint = _desktop->point();
+            lastZoomPoint = _desktop->point();
+
             // save drag origin
             xyp = event.pos.floor();
             within_tolerance = true;
@@ -490,6 +500,42 @@ bool ToolBase::root_handler(CanvasEvent const &event)
     },
 
     [&] (MotionEvent const &event) {
+        //Zoom while holding Ctrl + Middle mouse and moving the cursor
+        if (Modifiers::Modifier::which( Triggers::CANVAS | Triggers::DRAG_MIDDLE_BUTTON, event.modifiers) == Type::CANVAS_DRAG_ZOOM && _button2on ) {
+            if( lastZoomPoint.y() == 0 ) //First time zooming starts
+                lastZoomPoint = panZoomPoint;
+
+            double zoomSpeed = 8; //Should be user configurable
+            double maxZoom = zoomSpeed / 10;
+
+            //Keeping canvas area relative to the amount it was zoomed in/out
+            auto worldHeight = _desktop->getCanvas()->get_area_world().height();
+            auto currentZoom = _desktop->current_zoom();
+
+            if( currentZoom && worldHeight )  {
+                double canvasHeight = worldHeight / currentZoom / zoomSpeed;
+                double positionDelta = _desktop->point().y() - lastZoomPoint.y();
+
+                if( positionDelta != 0 )  {
+                    double discreteZoomFactor = std::clamp( std::abs( positionDelta / canvasHeight ), .01, maxZoom );
+                    //Prevents zooming in too much when lastPosition doesn't get updated ( prb a missed button event )
+                    if( std::abs( positionDelta / canvasHeight ) <= maxZoom )  {
+                        double zoom = positionDelta > 0 ? 1 + discreteZoomFactor : 1 - discreteZoomFactor;
+                        _desktop->zoom_relative( panZoomPoint, zoom );
+                     }
+                 }
+             }
+
+            lastZoomPoint = _desktop->point();
+
+            //Updating these two so we won't also get a pan to where the mouse button gets released
+            xyp = event.pos.floor();
+            button_w = event.pos;
+            panning = PANNING_NONE;
+            ungrabCanvasEvents();
+            return;
+         }
+
         if (panning) {
             if (panning == 4 && !xyp.x() && !xyp.y()) {
                 // <Space> + mouse panning started, save location and grab canvas
@@ -600,7 +646,10 @@ bool ToolBase::root_handler(CanvasEvent const &event)
             ungrabCanvasEvents();
         }
 
-        if (middle_mouse_zoom && within_tolerance && (panning || zoom_rb)) {
+        if (middle_mouse_zoom && within_tolerance && (panning || zoom_rb) &&
+            Modifiers::Modifier::which(Triggers::CANVAS | Triggers::DRAG_MIDDLE_BUTTON, event.modifiers) !=
+
+            Modifiers::Type::CANVAS_DRAG_ZOOM) {
             zoom_rb = 0;
 
             if (panning) {
@@ -616,7 +665,9 @@ bool ToolBase::root_handler(CanvasEvent const &event)
 
             _desktop->zoom_relative(event_dt, zoom_invert ? 1 / zoom_inc : zoom_inc);
             ret = true;
-        } else if (panning == event.button) {
+        } else if (panning == event.button &&
+                   Modifiers::Modifier::which(Triggers::CANVAS | Triggers::DRAG_MIDDLE_BUTTON, event.modifiers) !=
+                   Modifiers::Type::CANVAS_DRAG_ZOOM) {
             panning = PANNING_NONE;
             ungrabCanvasEvents();
 
@@ -841,8 +892,6 @@ bool ToolBase::root_handler(CanvasEvent const &event)
         // Factor of 2 for legacy reasons: previously we did two wheel_scrolls for each mouse scroll.
         auto get_scroll_inc = [&] { return prefs->getIntLimited("/options/wheelscroll/value", 40, 0, 1000) * 2; };
 
-        using Modifiers::Type;
-        using Modifiers::Triggers;
         auto const action = Modifiers::Modifier::which(Triggers::CANVAS | Triggers::SCROLL, event.modifiers);
 
         if (action == Type::CANVAS_ROTATE) {
@@ -887,7 +936,7 @@ bool ToolBase::root_handler(CanvasEvent const &event)
             _desktop->scroll_relative({-delta_y, 0});
             ret = true;
 
-        } else if (action == Type::CANVAS_ZOOM) {
+        } else if (action == Type::CANVAS_ZOOM && ( action != Type::CANVAS_DRAG_ZOOM ) ) {
             // Zoom by the amount vertically scrolled.
 
             double const delta_y = event.delta.y();
@@ -1407,6 +1456,12 @@ unsigned get_latin_keyval_impl(unsigned const event_keyval, unsigned const event
                               &modifiers);
     if (consumed_modifiers) {
         *consumed_modifiers = modifiers;
+    }
+    // gdk_display_translate_key does not have information on whether numlock was active during the press.
+    // So if numlock is on, we'll get the wrong keyval as a result (which is not a latin layout difference, it's just
+    // how numlock & numpads work). So just skip translating numpad keys.
+    if (keyval >= GDK_KEY_KP_Space && keyval <= GDK_KEY_KP_9) {
+        keyval = event_keyval;
     }
 #ifndef __APPLE__
     // on macOS <option> key inserts special characters and below condition fires all the time

@@ -128,7 +128,7 @@ public:
     /******* Debug ********/
     void                  dump();
 
-    int get_number_of_windows() const;
+    int get_number_of_desktops() const;
 
 protected:
     Glib::RefPtr<Gio::Application> _gio_application;
@@ -185,7 +185,8 @@ protected:
     void shell(bool active_window = false);
 
     void _start_main_option_section(const Glib::ustring& section_name = "");
-    
+    void _desktopCountChanged();
+
 private:
     void init_extension_action_data();
     std::vector<Glib::RefPtr<Gio::SimpleAction>> _effect_actions;

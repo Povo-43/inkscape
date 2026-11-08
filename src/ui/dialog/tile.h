@@ -39,6 +39,8 @@ public:
     ArrangeDialog();
 
     void desktopReplaced() final;
+    void documentReplaced() final;
+    void selectionChanged(Inkscape::Selection *selection) final;
 
     void update_arrange_btn();
 

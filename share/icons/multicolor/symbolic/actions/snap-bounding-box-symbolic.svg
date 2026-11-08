@@ -62,7 +62,7 @@
      id="snap-bounding-box"
      transform="matrix(0.998054,0,0,0.99611,-587.82292,-503.39613)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 588.96881,505.36221 h 16 v 16 h -16 z"
        id="rect22420"
        inkscape:connector-curvature="0" />

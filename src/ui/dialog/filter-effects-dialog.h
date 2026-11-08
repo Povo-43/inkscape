@@ -74,6 +74,7 @@ public:
     ~FilterEffectsDialog() override;
 
     void set_attrs_locked(const bool);
+    void select_filter(const SPFilter* filter);
 
 private:
     void documentReplaced() override;

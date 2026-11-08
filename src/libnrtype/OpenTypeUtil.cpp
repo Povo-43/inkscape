@@ -10,16 +10,23 @@
 
 #include "OpenTypeUtil.h"
 
+//#define DEBUG_OPENTYPEUTIL
+#ifdef DEBUG_OPENTYPEUTIL
+#include <filesystem> // For debugging
+#include <fstream>    // For debugging
+#include <iomanip>    // For debugging
+#endif
 
-#include <iostream>  // For debugging
+#include <iostream> // errors
 #include <memory>
 #include <unordered_map>
+
+#include <glibmm/fileutils.h> // Glib::FileError
+#include <glibmm/regex.h>
 
 // Harfbuzz
 #include <harfbuzz/hb.h>
 #include <harfbuzz/hb-ot.h>
-
-#include <glibmm/regex.h>
 
 // SVG in OpenType
 #include "io/stream/gzipstream.h"
@@ -31,6 +38,7 @@
 
 using HbSet = std::unique_ptr<hb_set_t, Inkscape::Util::Deleter<hb_set_destroy>>;
 
+#ifdef DEBUG_OPENTYPEUTIL
 void dump_tag( guint32 *tag, Glib::ustring prefix = "", bool lf=true ) {
     std::cout << prefix
               << ((char)((*tag & 0xff000000)>>24))
@@ -41,6 +49,7 @@ void dump_tag( guint32 *tag, Glib::ustring prefix = "", bool lf=true ) {
         std::cout << std::endl;
     }
 }
+#endif
 
 Glib::ustring extract_tag( guint32 *tag ) {
     Glib::ustring tag_name;
@@ -60,6 +69,36 @@ Glib::ustring get_name_string(hb_face_t* hb_face, hb_ot_name_id_t name_id) {
     return Glib::ustring(buffer.data());
 }
 
+// Get font name from hb_face
+std::string font_name(hb_face_t* hb_face) {
+    const unsigned int MAX_NAME_CHAR = 100;
+    unsigned int max_name_char = MAX_NAME_CHAR;
+    char font_name_c[MAX_NAME_CHAR] = {};
+    hb_ot_name_get_utf8 (hb_face, HB_OT_NAME_ID_FONT_FAMILY, hb_language_get_default(), &max_name_char, font_name_c);
+    std::string font_name = "unknown";
+    if (font_name_c) {
+        font_name = font_name_c;
+    }
+    return font_name;
+}
+
+#ifdef DEBUG_OPENTYPEUTIL
+// Create and return a directory to dump a file file's SVGs or PNGs.
+std::string font_directory(hb_face_t* hb_face) {
+
+    const std::string font_directory = "font_dumps";
+    if (!std::filesystem::is_directory(font_directory) || !std::filesystem::exists(font_directory)) {
+        std::filesystem::create_directory(font_directory);
+    }
+
+    std::string font_name_directory = font_directory + "/" + font_name(hb_face);
+    if (!std::filesystem::is_directory(font_name_directory) || !std::filesystem::exists(font_name_directory)) {
+        std::filesystem::create_directory(font_name_directory);
+    }
+
+    return font_name_directory;
+}
+#endif
 
 void readOpenTypeTableList(hb_font_t* hb_font, std::unordered_set<std::string>& list) {
 
@@ -76,6 +115,8 @@ void readOpenTypeTableList(hb_font_t* hb_font, std::unordered_set<std::string>& 
         list.emplace(buf);
     }
 }
+
+// There is now hb_face_collect_glyph_mappings() (since 7.0) that could be used.
 
 // Later (see get_glyphs) we need to lookup the Unicode codepoint for a glyph
 // but there's no direct API for that. So, we need a way to iterate over all
@@ -432,7 +473,32 @@ void readOpenTypeSVGTable(hb_font_t* hb_font,
 
     hb_face_t* hb_face = hb_font_get_face (hb_font);
 
+#ifdef DEBUG_OPENTYPEUTIL
+    // Test use of hb_ot_color_glyph_reference_svg()
+    for (int i=0; i < hb_face_get_glyph_count(hb_face); ++i) {
+        hb_blob_t* svg_glyph_blob = hb_ot_color_glyph_reference_svg(hb_face, i);
+        if (svg_glyph_blob) {
+            // Note: The blob can contain glyphs after the desired glyph. One must use the 'length' argument to truncate the blob.
+            unsigned int length = 0;
+            const char* data = hb_blob_get_data(svg_glyph_blob, &length);
+            std::cout << "readOpenTypeSVGTable: " << font_name(hb_face) << " " << i <<  " length: " << length << std::endl;
+            if (data) {
+                std::ofstream output;
+                std::string filename = font_directory(hb_face) + "/glyph_x_" + std::to_string(i) + ".svg";
+                output.open (filename);
+                for (unsigned int j = 0; j < length; j++) {
+                    output << data[j];
+                }
+                output.close();
+            }
+            hb_blob_destroy(svg_glyph_blob);
+        }
+    }
+#endif
+
     // Harfbuzz has some support for SVG fonts but it is not exposed until version 2.1 (Oct 30, 2018).
+    // And, it turns out it is not very useful as it just returns the SVG that contains the glyph without
+    // processing picking the glyph out of the SVG which can contain hundreds or thousands of glyphs.
     // We do it the hard way!
     hb_blob_t *hb_blob = hb_face_reference_table (hb_face, HB_OT_TAG_SVG);
 
@@ -444,10 +510,12 @@ void readOpenTypeSVGTable(hb_font_t* hb_font,
     unsigned int svg_length = hb_blob_get_length (hb_blob);
     if (svg_length == 0) {
         // No SVG glyphs in table!
+        hb_blob_destroy(hb_blob);
         return;
     }
 
     const char* data = hb_blob_get_data(hb_blob, &svg_length);
+    hb_blob_destroy(hb_blob);
     if (!data) {
         std::cerr << "readOpenTypeSVGTable: Failed to get data! " << std::endl;
         return;
@@ -504,21 +572,110 @@ void readOpenTypeSVGTable(hb_font_t* hb_font,
         static auto regex = Glib::Regex::create("(id=\"\\s*glyph\\d+\\s*\")", Glib::Regex::CompileFlags::OPTIMIZE);
         svg = regex->replace(Glib::UStringView(svg), 0, "\\1 visibility=\"hidden\"", static_cast<Glib::Regex::MatchFlags>(0));
 
+#ifdef DEBUG_OPENTYPEUTIL
+        std::ofstream output;
+        std::string filename = font_directory(hb_face) + "/glyph_" + std::to_string(startGlyphID);
+        if (startGlyphID != endGlyphID) {
+            filename += "_" + std::to_string(endGlyphID);
+        }
+        filename += ".svg";
+        output.open (filename);
+        output << svg;
+        output.close();
+
+        std::cout << "Glyphs: " << startGlyphID << "-" << endGlyphID << " ";
+        auto length = svg.length();
+        if (length < 500) {
+            std::cout << svg << std::endl;
+        } else {
+            std::cout << "svg length: " << length << std::endl;
+        }
+#endif
         svgs[entry] = svg;
 
         for (unsigned int i = startGlyphID; i < endGlyphID+1; ++i) {
             glyphs[i].entry_index = entry;
         }
 
-        // for (auto const& glyph : glyphs) {
-        //     std::cout << "Glyph: " << glyph.first << std::endl;
-        //     auto length = svgs[glyph.second.entry_index].length();
-        //     if (length < 1000) {
-        //         std::cout << svgs[glyph.second.entry_index] << std::endl;
-        //     } else {
-        //         std::cout << "glyph svg string length: " << length << std::endl;
-        //     }
-        // }
+    }
+}
+
+// Get PNG glyphs out of an OpenType font.
+void readOpenTypePNG(hb_font_t* hb_font,
+                     std::vector<Glib::RefPtr<Gdk::Pixbuf>>& pixbufs) {
+
+    hb_face_t* hb_face = hb_font_get_face (hb_font);
+
+    if (!hb_ot_color_has_png(hb_face)) {
+        const unsigned int buffer_size = 64;
+        char font_family_c[buffer_size];
+        unsigned int buffer_size_io = buffer_size;
+        hb_language_t lang = hb_language_from_string("en", -1);
+        std::string font_family;
+        auto length = hb_ot_name_get_utf8(hb_face, HB_OT_NAME_ID_FONT_FAMILY, lang, &buffer_size_io, font_family_c);
+        if (length > 0) {
+            font_family = font_family_c;
+        }
+        std::cerr << "No PNG in font face! " << font_family << std::endl;
+        return;
+    }
+
+    auto glyph_count = hb_face_get_glyph_count(hb_face);
+
+    hb_set_t* hb_unicode_set = hb_set_create();
+    hb_face_collect_unicodes(hb_face, hb_unicode_set);
+
+    hb_map_t* hb_unicode_to_glyph_map = hb_map_create();
+    hb_face_collect_nominal_glyph_mapping(hb_face, hb_unicode_to_glyph_map, hb_unicode_set);
+
+    std::map<hb_codepoint_t, hb_codepoint_t> glyph_to_unicode_map;
+    hb_codepoint_t current_unicode = HB_SET_VALUE_INVALID;
+    while (hb_set_next(hb_unicode_set, &current_unicode)) {
+        glyph_to_unicode_map[hb_map_get(hb_unicode_to_glyph_map, current_unicode)] = current_unicode; 
+    }
+
+#ifdef DEBUG_OPENTYPEUTIL
+    std::cout << "readOpenTypePNG: glyph count: " << glyph_count << std::endl;
+#endif
+
+    for (unsigned int i = 0; i < glyph_count; ++i) {
+        hb_blob_t* png_data = hb_ot_color_glyph_reference_png(hb_font, i);
+
+#ifdef DEBUG_OPENTYPEUTIL
+        auto unicode = glyph_to_unicode_map[i];
+        if (i < 20) {
+            std::cout << " glyph: " << i << " unicode: " << unicode << std::endl;
+        }
+#endif
+
+        unsigned int length = 0;
+        auto data = hb_blob_get_data(png_data, &length);
+        hb_blob_destroy(png_data);
+        if (!data) {
+            std::cout << " No data! " << i << std::endl;
+            continue;
+        }
+
+#ifdef DEBUG_OPENTYPEUTIL
+        std::ofstream png_stream;
+        std::string filename = font_directory(hb_face) + "/glyph_" + std::to_string(unicode) + ".png";
+        png_stream.open(filename);
+        if (!png_stream) {
+            std::cerr << "Failed to open PNG stream" << std::endl;
+            break;
+        }
+        for (unsigned int j = 0; j < length; ++j) {
+            png_stream << data[j];
+        }
+        png_stream.close();
+
+        GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
+        if (gdk_pixbuf_loader_write(loader, (guchar*)data, length, nullptr)) {
+            gdk_pixbuf_loader_close(loader, nullptr);
+            GdkPixbuf *pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+        }
+        g_object_unref(loader);
+#endif
     }
 }
 

@@ -69,6 +69,7 @@
 #include "actions/actions-effect.h"
 #include "actions/actions-element-a.h"
 #include "actions/actions-element-image.h"
+#include "actions/actions-file-gui.h"
 #include "actions/actions-file.h"
 #include "actions/actions-helper.h"
 #include "actions/actions-helper-gui.h"
@@ -96,6 +97,7 @@
 #include "io/resource.h"            // TEMPLATE
 #include "object/sp-root.h"         // Inkscape version.
 #include "ui/desktop/document-check.h"    // Check for data loss on closing document window.
+#include "ui/desktop/menubar.h"
 #include "ui/dialog/dialog-manager.h"     // Save state
 #include "ui/dialog/dialog-window.h"
 #include "ui/dialog/font-substitution.h"  // Warn user about font substitution.
@@ -397,6 +399,7 @@ SPDesktop *InkscapeApplication::desktopOpen(SPDocument *document, bool new_windo
 
     auto const desktop = doc_it->second.emplace_back(std::make_unique<SPDesktop>(document->getNamedView())).get();
     INKSCAPE.add_desktop(desktop);
+    _desktopCountChanged();
 
     if (_active_window && !new_window) { // Divert all opened documents to new tabs unless asked not to.
         _active_window->get_desktop_widget()->addDesktop(desktop);
@@ -411,7 +414,7 @@ SPDesktop *InkscapeApplication::desktopOpen(SPDocument *document, bool new_windo
         win->present();
     }
 
-    document_fix(desktop); // May need flag to prevent this from being called more than once.
+    document_fix(desktop);
 
     return desktop;
 }
@@ -444,7 +447,7 @@ void InkscapeApplication::desktopClose(SPDesktop *desktop)
         return;
     }
 
-    if (get_number_of_windows() == 1) {
+    if (get_number_of_desktops() == 1) {
         // Persist layout of docked and floating dialogs before deleting the last window.
         Inkscape::UI::Dialog::DialogManager::singleton().save_dialogs_state(desktop->getDesktopWidget()->getDialogContainer());
     }
@@ -455,6 +458,7 @@ void InkscapeApplication::desktopClose(SPDesktop *desktop)
 
     INKSCAPE.remove_desktop(desktop); // clears selection and event_context
     doc_it->second.erase(dt_it); // Results in call to SPDesktop::destroy()
+    _desktopCountChanged();
 }
 
 // Closes active window (useful for scripting).
@@ -601,7 +605,8 @@ InkscapeApplication::InkscapeApplication()
     add_actions_effect(this);               // actions for Filters and Extensions
     add_actions_element_a(this);            // actions for the SVG a (anchor) element
     add_actions_element_image(this);        // actions for the SVG image element
-    add_actions_file(this);                 // actions for file handling
+    add_actions_file(this);                 // actions for file handling (non-GUI)
+    add_actions_file_app(this);             // actions for file handling (GUI)
     add_actions_hide_lock(this);            // actions for hiding/locking items.
     add_actions_object(this);               // actions for object manipulation
     add_actions_object_align(this);         // actions for object alignment
@@ -752,6 +757,7 @@ SPDesktop *InkscapeApplication::createDesktop(SPDocument *document, bool replace
 
     if (replace && old_document && desktop) {
         document_swap(desktop, document);
+        document_fix(desktop);
 
         // Delete old document if no longer attached to any window.
         auto it = _documents.find(old_document);
@@ -764,6 +770,7 @@ SPDesktop *InkscapeApplication::createDesktop(SPDocument *document, bool replace
         desktop = desktopOpen(document, new_window);
     }
 
+    desktop->getNamedView()->set_clip_to_page(desktop, desktop->getNamedView()->clip_to_page);
     return desktop;
 }
 
@@ -789,7 +796,6 @@ void InkscapeApplication::create_window(Glib::RefPtr<Gio::File> const &file)
             bool replace = old_document && old_document->getVirgin();
 
             desktop = createDesktop(document, replace);
-            document_fix(desktop);
         } else if (!cancelled) {
             std::cerr << "InkscapeApplication::create_window: Failed to load: "
                       << file->get_parse_name().raw() << std::endl;
@@ -842,13 +848,13 @@ bool InkscapeApplication::destroyDesktop(SPDesktop *desktop, bool keep_alive)
             }
         }
 
-        if (get_number_of_windows() == 1 && keep_alive) {
+        if (get_number_of_desktops() == 1 && keep_alive) {
             // Last desktop, replace with new document.
             auto new_document = document_new();
             document_swap(desktop, new_document);
         } else {
             desktopClose(desktop);
-            if (get_number_of_windows() == 0) {
+            if (get_number_of_desktops() == 0) {
                 // No Inkscape windows left, remove dialog windows.
                 for (auto const &window : gtk_app()->get_windows()) {
                     window->close();
@@ -923,9 +929,6 @@ void InkscapeApplication::process_document(SPDocument *document, std::string out
 
     if (_use_shell) {
         shell();
-    }
-    if (_with_gui && _active_window) {
-        document_fix(_active_desktop);
     }
     // Only if --export-filename, --export-type --export-overwrite, or --export-use-hints are used.
     if (_auto_export) {
@@ -1884,9 +1887,9 @@ void InkscapeApplication::print_input_type_list() const
 }
 
 /**
- * Return number of open Inkscape Windows (irrespective of number of documents)
+ * Return number of open Inkscape Desktops (irrespective of number of documents)
 .*/
-int InkscapeApplication::get_number_of_windows() const {
+int InkscapeApplication::get_number_of_desktops() const {
     if (_with_gui) {
         return std::accumulate(_documents.begin(), _documents.end(), 0,
           [&](int sum, auto& v){ return sum + static_cast<int>(v.second.size()); });
@@ -2020,6 +2023,15 @@ void InkscapeApplication::_closeStartScreen()
             break; // Should be unique. Safer to exit, as it prevents dangling win in further iterations.
         }
     }
+}
+
+void InkscapeApplication::_desktopCountChanged()
+{
+#ifdef __APPLE__
+    // On MacOS, we swap out the menu when the desktop count changes between zero and non-zero.
+    // So rebuild when the count changes.
+    build_menu();
+#endif
 }
 
 /*

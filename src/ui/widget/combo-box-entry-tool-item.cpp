@@ -30,6 +30,7 @@
 #include <gtkmm/eventcontrollerkey.h>
 
 #include "libnrtype/font-lister.h"
+#include "ui/defocus-target.h"
 #include "ui/icon-names.h"
 
 namespace Inkscape::UI::Widget {
@@ -74,13 +75,9 @@ ComboBoxEntryToolItem::ComboBoxEntryToolItem(Glib::ustring name,
         _cell->set_fixed_size(-1, 30);
         _combobox.clear();
         _combobox.pack_start(*_cell, true);
-        _combobox.set_cell_data_func(*_cell, [this] (auto &iter) { _cell_data_func(*_cell, iter, false); }); // without markup
-        g_signal_connect(_combobox.Glib::Object::gobj(), "popup", G_CALLBACK(+[] (GtkComboBox *, ComboBoxEntryToolItem *self) { // Fixme: Why is there no Gtkmm signal?
-            self->idle_conn = Glib::signal_idle().connect([self] {
-                self->_combobox.set_cell_data_func(*self->_cell, [self] (auto &iter) { self->_cell_data_func(*self->_cell, iter, true); }); // with markup
-                return false; // one-shot
-             });
-        }), this);
+        _combobox.property_popup_shown().signal_changed().connect(
+            sigc::mem_fun(*this, &ComboBoxEntryToolItem::combo_box_popup_cb));
+        set_cell_markup();
     }
 
     // Optionally widen the combobox width... which widens the drop-down list in list mode.
@@ -186,7 +183,7 @@ bool ComboBoxEntryToolItem::set_active_text(Glib::ustring text, int row)
         }
 
         if (!set && !_info.empty()) {
-            _entry->set_icon_from_icon_name(INKSCAPE_ICON("edit-select-all"), Gtk::Entry::IconPosition::SECONDARY);
+            _entry->set_icon_from_icon_name(_info_icon, Gtk::Entry::IconPosition::SECONDARY);
             _entry->set_icon_tooltip_text(_info, Gtk::Entry::IconPosition::SECONDARY);
 
             if (_info_cb) {
@@ -281,34 +278,26 @@ void ComboBoxEntryToolItem::set_tooltip(Glib::ustring const &tooltip)
     }
 }
 
-void ComboBoxEntryToolItem::set_info(Glib::ustring info)
+void ComboBoxEntryToolItem::set_info(std::string icon, Glib::ustring info, InfoCallback info_cb)
 {
     _info = std::move(info);
+    _info_icon = std::move(icon);
+    _info_cb = info_cb;
 
-    // Widget may not have been created....
     if (_entry) {
         _entry->set_icon_tooltip_text(_info, Gtk::Entry::IconPosition::SECONDARY);
+        _entry->set_icon_from_icon_name(_info_icon, Gtk::Entry::IconPosition::SECONDARY);
     }
 }
 
-void ComboBoxEntryToolItem::set_info_cb(InfoCallback info_cb)
-{
-    _info_cb = info_cb;
-}
-
-void ComboBoxEntryToolItem::set_warning(Glib::ustring warning)
+void ComboBoxEntryToolItem::set_warning(Glib::ustring warning, InfoCallback warning_cb)
 {
     _warning = std::move(warning);
+    _warning_cb = warning_cb;
 
-    // Widget may not have been created....
     if (_entry) {
         _entry->set_icon_tooltip_text(_warning, Gtk::Entry::IconPosition::SECONDARY);
     }
-}
-
-void ComboBoxEntryToolItem::set_warning_cb(InfoCallback warning_cb)
-{
-    _warning_cb = warning_cb;
 }
 
 // Internal ---------------------------------------------------
@@ -463,8 +452,9 @@ bool ComboBoxEntryToolItem::match_selected_cb(Gtk::TreeModel::iterator const &it
 
 void ComboBoxEntryToolItem::defocus()
 {
-    if (_focusWidget) {
-        _focusWidget->grab_focus();
+    // move focus away
+    if (_defocus_target) {
+        _defocus_target->onDefocus();
     }
 }
 
@@ -489,6 +479,23 @@ bool ComboBoxEntryToolItem::keypress_cb(unsigned keyval, unsigned, Gdk::Modifier
     }
 
     return false;
+}
+
+void ComboBoxEntryToolItem::combo_box_popup_cb()
+{
+    // Delay until *after* the popup has appeared
+    _idle_conn = Glib::signal_idle().connect(sigc::mem_fun(*this, &ComboBoxEntryToolItem::set_cell_markup));
+}
+
+bool ComboBoxEntryToolItem::set_cell_markup()
+{
+    // We want markup to be used after the popup has already been initialized, because it is expensive to compute the
+    // labels with full markup. By setting this cell data func after the fact, you see the full markup as you hover
+    // over each entry in the popup, but the initial popup is not super delayed.
+    // And when we popdown again, we revert to non-markup mode so that the next popup isn't delayed all over again.
+    auto markup = _combobox.property_popup_shown().get_value();
+    _combobox.set_cell_data_func(*_cell, [this, markup](auto &iter) { _cell_data_func(*_cell, iter, markup); });
+    return false; // one-shot
 }
 
 } // namespace Inkscape::UI::Widget

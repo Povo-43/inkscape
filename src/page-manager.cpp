@@ -65,6 +65,10 @@ PageManager::PageManager(SPDocument *document)
             }
         }
     });
+    // Watch the document for modifications, so that if its NamedView "origin-correction" attr changes, we pick it up
+    _doc_modified_conn = _document->connectModified([this](unsigned int) {
+        _selected_page_origin_changed_signal.emit();
+    });
 }
 
 PageManager::~PageManager()
@@ -92,6 +96,7 @@ void PageManager::addPage(SPPage *page)
     page->_updateTotalHRefCount(1);
     _pages.push_back(page);
     reorderPages();
+    selectPage(page); // Since this is called from namedview, select last page added.
     pagesChanged(page);
 }
 
@@ -366,9 +371,18 @@ Geom::Rect PageManager::getSelectedPageRect() const
     return _selected_page ? _selected_page->getDesktopRect() : *(_document->preferredBounds());
 }
 
-Geom::Affine PageManager::getSelectedPageAffine() const
+Geom::Point PageManager::getSelectedPageOrigin() const
 {
-    return _selected_page ? _selected_page->getDesktopAffine() : Geom::identity();
+    if (_document->get_origin_follows_page() && _selected_page) {
+        return _selected_page->getDesktopRect().min();
+    } else {
+        return {};
+    }
+}
+
+Geom::Translate PageManager::getSelectedPageOriginAffine() const
+{
+    return Geom::Translate(getSelectedPageOrigin());
 }
 
 /**
@@ -381,20 +395,19 @@ void PageManager::pagesChanged(SPPage *new_page)
         selectPage(nullptr);
     }
 
-    _pages_changed_signal.emit(new_page);
-
     if (!_selected_page) {
-        for (auto &page : _pages) {
-            selectPage(page);
-            break;
-        }
+        selectPage(new_page);
     }
+
+    _pages_changed_signal.emit(new_page);
 }
 
 /**
  * Set the given page as the selected page.
  *
  * @param page - The page to set as the selected page.
+ *
+ * @returns whether the selected page changed
  */
 bool PageManager::selectPage(SPPage *page)
 {
@@ -402,12 +415,17 @@ bool PageManager::selectPage(SPPage *page)
         if (_selected_page != page) {
             _selected_page = page;
             _page_selected_signal.emit(_selected_page);
+            _selected_page_origin_changed_signal.emit();
 
             // Modified signal for when the attributes themselves are modified.
             _page_modified_connection.disconnect();
             if (page) {
-                _page_modified_connection = page->connectModified([this](SPObject *, unsigned int) {
+                _page_modified_connection = page->connectModified([this](SPObject *, unsigned int flags) {
                     _page_modified_signal.emit(_selected_page);
+                    // Page rect might have changed, so notify for a possible origin change
+                    if (flags & SP_OBJECT_MODIFIED_FLAG) {
+                        _selected_page_origin_changed_signal.emit();
+                    }
                 });
             }
 
@@ -422,15 +440,43 @@ bool PageManager::selectPage(SPPage *page)
  *
  * If the item is between two pages and one of them is already selected
  * then don't change the selection.
+ *
+ * @returns whether the selected page changed
  */
-bool PageManager::selectPage(SPItem *item, bool contains)
+bool PageManager::selectBestPage(SPItem *item, bool contains)
 {
-    if (_selected_page && _selected_page->itemOnPage(item, contains)) {
-        return true;
+    return selectBestPage(std::vector{item}, contains);
+}
+
+/**
+ * Select the first page that all the given SPItems are within.
+ * If there is no such page, the selection will not be changed.
+ * If multiple pages are valid, the currently selected page (if a match) will be preferred.
+ *
+ * @returns whether the selected page changed
+ */
+bool PageManager::selectBestPage(std::vector<SPItem *> const &items, bool contains)
+{
+    if (items.empty()) {
+        return false;
     }
-    for (auto &page : getPagesFor(item, contains)) {
+
+    // Prefer currently selected page if that is a valid option
+    if (_selected_page) {
+        auto on_selected_page = [this, contains](SPItem *item) {
+            return _selected_page->itemOnPage(item, contains);
+        };
+        if (std::all_of(items.begin(), items.end(), on_selected_page)) {
+            return _selected_page;
+        }
+    }
+
+    // Choose the first page all the items are on, if any
+    // TODO: consider sorting by the amount of overlap with the pages
+    if (auto page = getPageFor(items, contains)) {
         return selectPage(page);
     }
+
     return false;
 }
 
@@ -503,6 +549,30 @@ SPPage *PageManager::getPageFor(SPItem *item, bool contains) const
         if (page->itemOnPage(item, contains))
             return page;
     }
+    return nullptr;
+}
+
+/**
+ * Return the first page that contains all the given items
+ */
+SPPage *PageManager::getPageFor(std::vector<SPItem *> const &items, bool contains) const
+{
+    if (items.empty()) {
+        return nullptr;
+    }
+
+    auto front = items.front();
+    auto second = std::next(items.begin());
+    auto end = items.end();
+    auto candidate_pages = getPagesFor(front, contains);
+
+    // Check each candidate page in order, to see if all other items are a match for that page too
+    for (auto page : candidate_pages) {
+        if (std::all_of(second, end, [page, contains](SPItem *item) { return page->itemOnPage(item, contains); })) {
+            return page;
+        }
+    }
+
     return nullptr;
 }
 

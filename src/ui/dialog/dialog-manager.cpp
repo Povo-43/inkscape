@@ -20,8 +20,8 @@ std::optional<window_position_t> dm_get_window_position(Gtk::Window &window)
 {
     std::optional<window_position_t> position = std::nullopt;
 
-    int width = window.get_width();
-    int height = window.get_height();
+    int width, height;
+    window.get_default_size(width, height);
 
     if (width > 0 && height > 0) {
         position = window_position_t{0, 0, width, height};

@@ -116,6 +116,9 @@ public:
      */
     template <typename InputIterator>
     void add(InputIterator from, InputIterator to) {
+        if (from == to) {
+            return;
+        }
         for(auto it = from; it != to; ++it) {
             _add(*it);
         }
@@ -132,6 +135,21 @@ public:
      * @return is success
      */
     bool remove(SPObject* object);
+
+    /**  Removes items from an STL iterator range from the selection.
+     *  \param from the begin iterator
+     *  \param to the end iterator
+     */
+    template <typename InputIterator>
+    void remove(InputIterator from, InputIterator to) {
+        if (from == to) {
+            return;
+        }
+        for(auto it = from; it != to; ++it) {
+            _remove(*it);
+        }
+        _emitChanged();
+   }
 
     /**
      * Returns true if the given object is selected.
@@ -503,6 +521,7 @@ protected:
     std::unordered_map<SPObject*, sigc::connection> _releaseConnections;
 
 private:
+    void _pathBoolOpIterative(BooleanOp bop, char const *icon_name, Inkscape::Util::Internal::ContextString description, bool skip_undo, bool silent);
     void _pathBoolOp(BooleanOp bop, char const *icon_name, Inkscape::Util::Internal::ContextString description, bool skip_undo, bool silent);
     void _pathBoolOp(BooleanOp bop);
 

@@ -5,7 +5,7 @@
     <inkscape:grid type="xygrid" id="grid"/>
   </sodipodi:namedview>
   <g transform="rotate(90,643.68112,115.68106)" inkscape:label="00246" id="object-rows">
-      <path inkscape:connector-curvature="0" id="rect23248" d="m 528.46967,743.36218 h 15.06066 c 0.2602,0 0.46967,0.20948 0.46967,0.46967 v 15.06066 c 0,0.2602 -0.20947,0.46967 -0.46967,0.46967 h -15.06066 c -0.2602,0 -0.46967,-0.20947 -0.46967,-0.46967 v -15.06066 c 0,-0.26019 0.20947,-0.46967 0.46967,-0.46967 z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect23248" d="m 528.46967,743.36218 h 15.06066 c 0.2602,0 0.46967,0.20948 0.46967,0.46967 v 15.06066 c 0,0.2602 -0.20947,0.46967 -0.46967,0.46967 h -15.06066 c -0.2602,0 -0.46967,-0.20947 -0.46967,-0.46967 v -15.06066 c 0,-0.26019 0.20947,-0.46967 0.46967,-0.46967 z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="rect23250" d="m 531,745.36218 h 2 v 12 h -2 z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect23252" d="m 535,745.36218 h 2 v 12 h -2 z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect23254" d="m 539,745.36218 h 2 v 12 h -2 z" style="opacity:1"/>

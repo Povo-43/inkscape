@@ -98,6 +98,6 @@
        inkscape:connector-curvature="0"
        id="rect19849"
        d="m 349,651.36218 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
   </g>
 </svg>

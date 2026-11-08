@@ -17,7 +17,7 @@ See default.xml for more information.
 
 <!-- File -->
 
-  <bind gaction="win.document-dialog-templates"   keys="&lt;primary&gt;&lt;shift&gt;n" />
+  <bind gaction="app.document-dialog-templates"   keys="&lt;primary&gt;&lt;shift&gt;n" />
 
   <!-- Revert -->
   <bind gaction="win.document-revert"             keys="&lt;primary&gt;&lt;alt&gt;z" />

@@ -273,6 +273,8 @@ void StarToolbar::magnitude_value_changed()
         }
     }
 
+    _updateLengthValue(_desktop->getSelection());
+
     if (!_batchundo) {
         DocumentUndo::maybeDone(_desktop->getDocument(), "star:numcorners", RC_("Undo", "Star: Change number of corners"), INKSCAPE_ICON("draw-polygon-star"));
     }
@@ -312,6 +314,8 @@ void StarToolbar::proportion_value_changed()
             item->updateRepr();
         }
     }
+
+    _updateLengthValue(_desktop->getSelection());
 
     if (!_batchundo) {
         DocumentUndo::maybeDone(_desktop->getDocument(), "star:spokeratio", RC_("Undo", "Star: Change spoke ratio"), INKSCAPE_ICON("draw-polygon-star"));
@@ -464,20 +468,25 @@ void StarToolbar::_selectionModified(Selection *selection)
 {
     if (!_blocker.pending()|| _tracker->isUpdating()) {
         auto guard = _blocker.block();
-        auto length_adj = _length_item.get_adjustment();
+        _updateLengthValue(selection);
+    }
+}
 
-        int n_selected = 0;
-        double lengths = 0;
-        for (auto item : selection->items()) {
-            if (auto star = cast<SPStar>(item)) {
-                n_selected++;
-                lengths += star->getSideLength();
-            }
+void StarToolbar::_updateLengthValue(Selection *selection)
+{
+    auto length_adj = _length_item.get_adjustment();
+
+    int n_selected = 0;
+    double lengths = 0;
+    for (auto item : selection->items()) {
+        if (auto star = cast<SPStar>(item)) {
+            n_selected++;
+            lengths += star->getSideLength();
         }
-        if (n_selected > 0) {
-            auto value = Util::Quantity::convert(lengths / n_selected, "px", _tracker->getActiveUnit());
-            length_adj->set_value(value);
-        }
+    }
+    if (n_selected > 0) {
+        auto value = Util::Quantity::convert(lengths / n_selected, "px", _tracker->getActiveUnit());
+        length_adj->set_value(value);
     }
 }
 
@@ -498,7 +507,6 @@ void StarToolbar::notifyAttributeChanged(XML::Node &, GQuark name_, Util::ptr_sh
     bool isFlatSided = Preferences::get()->getBool("/tools/shapes/star/isflatsided", false);
     auto mag_adj = _magnitude_item.get_adjustment();
     auto spoke_adj = _spoke_item.get_adjustment();
-    auto length_adj = _length_item.get_adjustment();
 
     if (!strcmp(name, "inkscape:randomized")) {
         double randomized = _repr->getAttributeDouble("inkscape:randomized", 0.0);
@@ -531,19 +539,7 @@ void StarToolbar::notifyAttributeChanged(XML::Node &, GQuark name_, Util::ptr_sh
         mag_adj->set_value(sides);
     }
 
-    double lengths = 0;
-    int n_selected = 0;
-    for (auto item : _desktop->getSelection()->items()) {
-        if (auto star = cast<SPStar>(item)) {
-            n_selected++;
-            lengths += star->getSideLength();
-        }
-    }
-
-    if (n_selected > 0) {
-        auto value = Util::Quantity::convert(lengths / n_selected, "px", _tracker->getActiveUnit());
-        length_adj->set_value(value);
-    }
+    _updateLengthValue(_desktop->getSelection());
 }
 
 } // namespace Inkscape::UI::Toolbar

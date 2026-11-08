@@ -45,7 +45,7 @@
      inkscape:connector-curvature="0"
      id="gtk-edit"
      d="M 0,4.058274e-4 H 16 V 16.00031 H 0 Z"
-     style="opacity:0;fill:none;stroke-width:0.999997" />
+     opacity="0" />
   <g
      id="g1389"
      transform="matrix(0.625581,0.22774992,-0.22774992,0.625581,6.6459276,2.9316306)"

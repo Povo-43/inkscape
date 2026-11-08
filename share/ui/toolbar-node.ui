@@ -23,19 +23,19 @@
     <section>
       <item>
         <attribute name="label" translatable="yes">Add node to Left</attribute>
-        <attribute name="action">node-toolbar.insert-leftmost</attribute>
+        <attribute name="action">win.node-nodes-insert-left</attribute>
       </item>
       <item>
         <attribute name="label" translatable="yes">Add node to Right</attribute>
-        <attribute name="action">node-toolbar.insert-rightmost</attribute>
+        <attribute name="action">win.node-nodes-insert-right</attribute>
       </item>
       <item>
         <attribute name="label" translatable="yes">Add node to Top</attribute>
-        <attribute name="action">node-toolbar.insert-topmost</attribute>
+        <attribute name="action">win.node-nodes-insert-top</attribute>
       </item>
       <item>
         <attribute name="label" translatable="yes">Add node to Bottom</attribute>
-        <attribute name="action">node-toolbar.insert-bottommost</attribute>
+        <attribute name="action">win.node-nodes-insert-bottom</attribute>
       </item>
     </section>
   </menu>
@@ -48,7 +48,7 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Insert new nodes into selected segments</property>
+        <property name="action-name">win.node-nodes-insert</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-add</property>
       </object>
@@ -69,7 +69,7 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Delete selected nodes</property>
+        <property name="action-name">win.node-nodes-delete</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-delete</property>
       </object>
@@ -83,9 +83,22 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Join selected nodes</property>
+        <property name="action-name">win.node-nodes-join</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-join</property>
+        <style>
+            <class name="priority2"/>
+        </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="simplify_btn">
+        <property name="valign">center</property>
+        <property name="focusable">True</property>
+        <property name="focus-on-click">False</property>
+        <property name="action-name">win.node-simplify</property>
+        <property name="has-frame">False</property>
+        <property name="icon-name">node-simplify</property>
         <style>
             <class name="priority2"/>
         </style>
@@ -96,7 +109,7 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Break path at selected nodes</property>
+        <property name="action-name">win.node-nodes-break</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-break</property>
         <style>
@@ -117,7 +130,7 @@
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
         <property name="receives-default">True</property>
-        <property name="tooltip-text" translatable="yes">Join selected endnodes with a new segment</property>
+        <property name="action-name">win.node-segments-join</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-join-segment</property>
         <style>
@@ -131,7 +144,7 @@
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
         <property name="receives-default">True</property>
-        <property name="tooltip-text" translatable="yes">Delete segment between two non-endpoint nodes</property>
+        <property name="action-name">win.node-segments-delete</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-delete-segment</property>
         <style>
@@ -151,7 +164,7 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Make selected nodes corner</property>
+        <property name="action-name">win.node-nodes-to-cusp</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-type-cusp</property>
         <style>
@@ -164,7 +177,7 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Make selected nodes smooth</property>
+        <property name="action-name">win.node-nodes-to-smooth</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-type-smooth</property>
         <style>
@@ -177,7 +190,7 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Make selected nodes symmetric</property>
+        <property name="action-name">win.node-nodes-to-symmetric</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-type-symmetric</property>
         <style>
@@ -190,7 +203,7 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Make selected nodes auto-smooth</property>
+        <property name="action-name">win.node-nodes-to-auto</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-type-auto-smooth</property>
         <style>
@@ -210,7 +223,7 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Straighten lines</property>
+        <property name="action-name">win.node-segments-to-lines</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-segment-line</property>
         <style>
@@ -223,7 +236,7 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Add curve handles</property>
+        <property name="action-name">win.node-segments-to-curves</property>
         <property name="has-frame">False</property>
         <property name="icon-name">node-segment-curve</property>
         <style>
@@ -243,7 +256,6 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Add corners live path effect</property>
         <property name="action-name">app.object-add-corners-lpe</property>
         <property name="has-frame">False</property>
         <property name="icon-name">corners</property>
@@ -264,7 +276,6 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Convert selected object to path</property>
         <property name="action-name">app.object-to-path</property>
         <property name="has-frame">False</property>
         <property name="icon-name">object-to-path</property>
@@ -278,7 +289,6 @@
         <property name="valign">center</property>
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
-        <property name="tooltip-text" translatable="yes">Convert selected object's stroke to paths</property>
         <property name="action-name">app.object-stroke-to-path</property>
         <property name="has-frame">False</property>
         <property name="icon-name">stroke-to-path</property>
@@ -356,7 +366,6 @@
         <property name="focusable">True</property>
         <property name="focus-on-click">False</property>
         <property name="receives-default">True</property>
-        <property name="tooltip-text" translatable="yes">Show next editable path effect parameter</property>
         <property name="action-name">win.path-effect-parameter-next</property>
         <property name="has-frame">False</property>
         <property name="icon-name">path-effect-parameter-next</property>

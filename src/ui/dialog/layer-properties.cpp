@@ -178,12 +178,11 @@ void LayerPropertiesDialog::_doRename()
         return;
     }
     LayerManager &layman = _desktop->layerManager();
-    
-    SPGroup *activeLayer = layman.currentLayer();
-    if (activeLayer && !activeLayer->isHighlightSet()) {
-        activeLayer->setHighlight(activeLayer->highlight_color());
+
+    if (SPGroup *activeLayer = layman.currentLayer()) {
+        activeLayer->preserveLayerHighlight();
     }
-    
+
     layman.renameLayer(layman.currentLayer(), name.c_str(), false);
 
     DocumentUndo::done(_desktop->getDocument(), RC_("Undo", "Rename layer"), INKSCAPE_ICON("layer-rename"));

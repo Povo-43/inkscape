@@ -148,7 +148,10 @@ void LPESimplify::doEffect(Geom::PathVector &curve)
 
     double size = Geom::L2(bbox->dimensions());
     if (simplify_individual_paths) {
-        size = Geom::L2(Geom::bounds_fast(original_pathv)->dimensions());
+        Geom::OptRect bounds = Geom::bounds_fast(original_pathv);
+        if (bounds) {
+            size = Geom::L2(bounds->dimensions());
+        }
     }
     size /= sp_lpe_item->i2doc_affine().descrim();
 

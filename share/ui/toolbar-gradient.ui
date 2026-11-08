@@ -180,7 +180,7 @@
         <property name="receives-default">True</property>
         <property name="tooltip-text" translatable="yes">Insert new stop</property>
         <property name="has-frame">False</property>
-        <property name="icon-name">node-add</property>
+        <property name="icon-name">gradient-add-stop</property>
         <style>
           <class name="priority1"></class>
         </style>
@@ -194,7 +194,7 @@
         <property name="receives-default">True</property>
         <property name="tooltip-text" translatable="yes">Delete stop</property>
         <property name="has-frame">False</property>
-        <property name="icon-name">node-delete</property>
+        <property name="icon-name">gradient-remove-stop</property>
         <style>
           <class name="priority1"></class>
         </style>

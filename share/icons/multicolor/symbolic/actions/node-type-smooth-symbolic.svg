@@ -61,7 +61,7 @@
      id="node-type-smooth"
      transform="matrix(0.998641,0,0,1,-588.17786,-558.36218)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 589,558.36218 h 16 v 16 h -16 z"
        id="rect3252"
        inkscape:connector-curvature="0" />

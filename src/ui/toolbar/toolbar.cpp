@@ -356,6 +356,17 @@ void Toolbar::onDefocus()
     }
 }
 
+void Toolbar::setDesktop(SPDesktop *desktop)
+{
+    _desktop = desktop;
+
+    _doc_replaced_conn.disconnect();
+    if (_desktop) {
+        _doc_replaced_conn = _desktop->connectDocumentReplaced([this](SPDesktop*, SPDocument*) { documentReplaced(); });
+    }
+    documentReplaced();
+}
+
 } // namespace Inkscape::UI::Toolbar
 
 /*

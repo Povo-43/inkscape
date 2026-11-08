@@ -982,7 +982,7 @@ Geom::OptRect SPItem::visualBounds(Geom::Affine const &transform, bool wfilter, 
     };
 
     auto apply_clip_or_mask_bbox = [&] (auto const *obj, bool contentunits) {
-        bbox.intersectWith(obj->geometricBounds(transform_with_units(contentunits)));
+        bbox.intersectWith(obj->visualBounds(transform_with_units(contentunits)));
     };
 
     if (auto clip = getClipObject(); clip && wclip) {
@@ -1955,11 +1955,11 @@ void SPItem::skew_rel(double skewX, double skewY)
     }
 }
 
-void SPItem::move_rel( Geom::Translate const &tr)
+void SPItem::move_rel(Geom::Translate const &tr, bool compensate)
 {
     set_i2d_affine(i2dt_affine() * tr);
 
-    doWriteTransform(transform);
+    doWriteTransform(transform, nullptr, compensate);
 }
 
 /*

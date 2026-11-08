@@ -5,7 +5,7 @@
     <inkscape:grid type="xygrid" id="grid"/>
   </sodipodi:namedview>
   <g transform="translate(-135,-607.36218)" inkscape:label="00059" id="object-ungroup">
-      <path inkscape:connector-curvature="0" id="rect12011" d="m 135,607.36218 h 16 v 16 h -16 z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect12011" d="m 135,607.36218 h 16 v 16 h -16 z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="rect12013" d="m 136,608.36218 h 2 v 2 h -2 z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect12015" d="m 148,610.36218 h 2 v 2 h -2 z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect12019" d="m 148,620.36218 h 2 v 2.00001 h -2 z" style="opacity:1"/>

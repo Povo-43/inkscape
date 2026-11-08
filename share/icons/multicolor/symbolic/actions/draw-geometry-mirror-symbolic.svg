@@ -62,7 +62,7 @@
      inkscape:label="00227"
      transform="matrix(0.99769,0,0,0.959973,-677.40752,-565.77071)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 679,589.36218 h 16 v 16 h -16 z"
        id="rect14666"
        inkscape:connector-curvature="0" />

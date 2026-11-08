@@ -15,7 +15,7 @@
   </sodipodi:namedview>
   <g transform="translate(-195,-931.3622)" inkscape:label="00104" id="grid-rectangular">
       <g transform="translate(120,204)" id="show-grid-0" inkscape:label="#g17424">
-        <path inkscape:connector-curvature="0" id="rect17376-9" d="m 75,215 h 16 v 16 H 75 Z" style="opacity:0;fill:none" transform="translate(0,512.3622)"/>
+        <path inkscape:connector-curvature="0" id="rect17376-9" d="m 75,215 h 16 v 16 H 75 Z" opacity="0" transform="translate(0,512.3622)"/>
         <path inkscape:connector-curvature="0" id="rect17397-4" d="m 75,215 h 1 v 16 h -1 z" style="opacity:1" transform="translate(0,512.3622)"/>
         <path inkscape:connector-curvature="0" id="rect17399-6" d="m 75,215 h 16 v 1 H 75 Z" style="opacity:1" transform="translate(0,512.3622)"/>
         <path inkscape:connector-curvature="0" id="rect17401-5" d="m 90,215 h 1 v 16 h -1 z" style="opacity:1" transform="translate(0,512.3622)"/>

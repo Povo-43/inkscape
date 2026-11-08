@@ -35,6 +35,7 @@
 #include "ui/builder-utils.h"
 #include "ui/dialog/choose-file-utils.h"
 #include "ui/dialog/choose-file.h"
+#include "ui/interface.h" // sp_ui_error_dialog
 #include "ui/shortcuts.h"
 #include "ui/themes.h"
 #include "ui/util.h"
@@ -422,9 +423,17 @@ StartScreen::load_document()
             }
 
             // Now we have file, open document.
-            app->create_window(file);
-            if (auto document = app->get_active_document()) {
+            auto [document, cancelled] = app->document_open(file);
+            if (document) {
                 _finish(document);
+            } else if (!cancelled) {
+                std::cerr << "StartScreen::load_document: Failed to load: " << file->get_parse_name().raw()
+                          << std::endl;
+
+                gchar *text =
+                    g_strdup_printf(_("Failed to load the requested file %s"), file->get_parse_name().c_str());
+                sp_ui_error_dialog(text);
+                g_free(text);
             }
         }
     }
@@ -635,37 +644,17 @@ StartScreen::canvas_changed()
     }
 }
 
-void
-StartScreen::filter_themes(Gtk::ComboBox *themes)
+// Enable themes which are available
+void StartScreen::filter_themes(Gtk::ComboBox *themes)
 {
     ThemeCols cols;
-    // We need to disable themes which aren't available.
     auto store = &dynamic_cast<Gtk::ListStore &>(*themes->get_model());
     auto available = INKSCAPE.themecontext->get_available_themes();
 
-    // Detect use of custom theme here, detect defaults used in many systems.
-    auto settings = Gtk::Settings::get_default();
-    Glib::ustring theme_name = settings->property_gtk_theme_name();
-    Glib::ustring icons_name = settings->property_gtk_icon_theme_name();
-
-    bool has_system_theme = false;
-    if (theme_name != "Adwaita" || icons_name != "hicolor") {
-        has_system_theme = true;
-        /* Enable if/when we want custom to be the default.
-        if (prefs->getString("/options/boot/theme").empty()) {
-            prefs->setString("/options/boot/theme", "system")
-            theme_changed();
-        }*/
-    }
-
     for(auto row : store->children()) {
-        Glib::ustring theme = row[cols.theme];
         if (!row[cols.enabled]) {
             // Available themes; We only "enable" them, we don't disable them.
-            row[cols.enabled] = available.find(theme) != available.end();
-        } else if(row[cols.id] == "system" && !has_system_theme) {
-            // Disable system theme option if not available.
-            row[cols.enabled] = false;
+            row[cols.enabled] = available.find(row[cols.theme]) != available.end();
         }
     }
 }

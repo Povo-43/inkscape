@@ -68,7 +68,7 @@
     <title
        id="title43138">document-revert</title>
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="M 0,0 H 16 V 16 H 0 Z"
        id="rect43140"
        inkscape:connector-curvature="0" />

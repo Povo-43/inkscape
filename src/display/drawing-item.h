@@ -27,6 +27,7 @@
 #include <2geom/rect.h>
 #include <sigc++/signal.h>
 #include <sigc++/connection.h>
+#include <glibmm/ustring.h>
 
 #include "colors/color.h"
 #include "style-enums.h"
@@ -158,6 +159,7 @@ public:
     void setFillPattern(DrawingPattern *pattern);
     void setStrokePattern(DrawingPattern *pattern);
     void setZOrder(unsigned zorder);
+    void shiftFromEnd(unsigned count, unsigned position);
     void setItemBounds(Geom::OptRect const &bounds);
     void setFilterRenderer(std::unique_ptr<Filters::Filter> renderer);
 
@@ -271,6 +273,7 @@ protected:
 
     bool _isolation : 1;
     SPBlendMode _blend_mode;
+    Glib::ustring _class_name{"Unknown"};
 
     template<typename F>
     void defer(F &&f)

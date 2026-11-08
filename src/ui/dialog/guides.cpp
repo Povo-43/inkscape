@@ -82,10 +82,7 @@ void GuidelinePropertiesDialog::_modeChanged()
         auto pos = _oldpos;
 
         // Adjust position by the page position
-        if (_guide->document->get_origin_follows_page()) {
-            auto &pm = _guide->document->getPageManager();
-            pos *= pm.getSelectedPageAffine().inverse();
-        }
+        pos *= _guide->document->getPageManager().getSelectedPageOriginAffine().inverse();
 
         _spin_button_x.setValueKeepUnit(pos[Geom::X], "px");
         _spin_button_y.setValueKeepUnit(pos[Geom::Y], "px");
@@ -125,9 +122,8 @@ void GuidelinePropertiesDialog::_onOKimpl()
     if (!_mode) {
         newpos += _oldpos;
     }
-    else if (_guide->document->get_origin_follows_page()) {
-        auto &pm = _guide->document->getPageManager();
-        newpos *= pm.getSelectedPageAffine();
+    else {
+        newpos *= _guide->document->getPageManager().getSelectedPageOriginAffine();
     }
 
     _guide->moveto(newpos, true);

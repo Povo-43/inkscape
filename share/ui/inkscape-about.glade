@@ -7,6 +7,12 @@
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="icon-name">org.inkscape.Inkscape</property>
+    <!-- Use a gtk header bar, to avoid maximize button being active on this non-resizable dialog -->
+    <property name="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="use-native-controls">true</property>
+      </object>
+    </property>
     <property name="child">
       <object class="GtkBox">
         <property name="orientation">vertical</property>

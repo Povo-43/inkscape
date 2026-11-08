@@ -89,6 +89,7 @@ enum
     PREFS_PAGE_BITMAPS,
     PREFS_PAGE_RENDERING,
     PREFS_PAGE_SPELLCHECK,
+    PREFS_PAGE_TEMPLATES,
     PREFS_PAGE_NOTFOUND
 };
 
@@ -194,6 +195,7 @@ protected:
     UI::Widget::DialogPage _page_system;
     UI::Widget::DialogPage _page_bitmaps;
     UI::Widget::DialogPage _page_spellcheck;
+    UI::Widget::DialogPage _page_templates;
 
     UI::Widget::DialogPage _page_keyshortcuts;
     Glib::RefPtr<Gtk::SizeGroup> _keyboard_sizegroup;
@@ -313,6 +315,7 @@ protected:
     UI::Widget::PrefCheckButton _win_hide_task;
     UI::Widget::PrefCheckButton _win_save_viewport;
     UI::Widget::PrefCheckButton _win_zoom_resize;
+    UI::Widget::PrefCheckButton _win_version_in_title;
 
     UI::Widget::PrefCheckButton _pencil_average_all_sketches;
 
@@ -382,6 +385,10 @@ protected:
     UI::Widget::PrefCheckButton _canvas_debug_disable_redraw;
     UI::Widget::PrefCheckButton _canvas_debug_sticky_decoupled;
     UI::Widget::PrefCheckButton _canvas_debug_animate;
+    UI::Widget::PrefCheckButton _canvas_debug_glyph_boxes;
+    UI::Widget::PrefCheckButton _canvas_debug_color_fonts;
+    UI::Widget::PrefCheckButton _canvas_debug_cairo_fonts;
+    std::unique_ptr<Preferences::PreferencesObserver> _debug_color_fonts;
 
     UI::Widget::PrefCheckButton _trans_scale_stroke;
     UI::Widget::PrefCheckButton _trans_scale_corner;
@@ -482,6 +489,9 @@ protected:
     UI::Widget::PrefCombo       _spell_language3;
     UI::Widget::PrefCheckButton _spell_ignorenumbers;
     UI::Widget::PrefCheckButton _spell_ignoreallcaps;
+
+    // Templates
+    Gtk::Button                 _templates_default;
 
     // Bitmaps
     UI::Widget::PrefCombo       _misc_overs_bitmap;
@@ -675,6 +685,7 @@ protected:
 
     void initPageRendering();
     void initPageSpellcheck();
+    void initPageTemplates();
     void initPageBitmaps();
     void initPageSystem();
     void initPageI18n(); // Do we still need it?

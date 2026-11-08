@@ -44,6 +44,9 @@ public:
     // The object's value is valid / exists in SVG.
     bool _set;
 
+    // If this was found through chaining hrefs (in gradients)
+    bool _found = false;
+
     // The unit of value.
     Unit unit;
 
@@ -74,6 +77,7 @@ public:
 
     operator bool() const { return _set; }
 
+    bool isZero(double epsilon = 0.001) const;
     bool read(char const *str);
     void readOrUnset(char const *str, Unit u = NONE, double v = 0, double c = 0);
     bool readAbsolute(char const *str);
@@ -89,6 +93,7 @@ public:
     void set(Unit u, double v); // Sets computed value based on u and v.
     void set(Unit u, double v, double c); // Sets all three values.
     void unset(Unit u = NONE, double v = 0, double c = 0);
+    void unset(SVGLength const &l);
     void scale(double scale); // Scales length (value, computed), leaving unit alone.
     void update(double em, double ex, double scale); // Updates computed value
 };

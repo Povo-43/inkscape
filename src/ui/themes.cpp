@@ -15,6 +15,7 @@
 #include "themes.h"
 
 #include <regex>
+#include <glibmm/miscutils.h>
 #include <glibmm/regex.h>
 #include <gtkmm/cssprovider.h>
 #include <gtkmm/settings.h>
@@ -39,6 +40,10 @@
 
 #ifdef __APPLE__
 #include <gdk/macos/gdkmacos.h>
+#endif
+
+#ifdef _WIN32
+#include <windows.h>
 #endif
 
 namespace Inkscape::UI {
@@ -91,7 +96,7 @@ ThemeContext::get_available_themes()
 
     gtkThemeList themes;
     Glib::ustring theme = "";
-    gchar *path;
+    std::string path;
     gchar **builtin_themes;
     guint i, j;
     const gchar *const *dirs;
@@ -102,6 +107,9 @@ ThemeContext::get_available_themes()
         if (g_str_has_suffix(builtin_themes[i], "/")) {
             theme = builtin_themes[i];
             theme.resize(theme.size() - 1);
+            if (theme == "Empty") {
+                continue; // this is a bogus test theme shipped inside gtk
+            }
             Glib::ustring theme_path = "/org/gtk/libgtk/theme";
             theme_path += "/" + theme;
             gchar **builtin_themes_files =
@@ -122,19 +130,16 @@ ThemeContext::get_available_themes()
 
     g_strfreev(builtin_themes);
 
-    path = g_build_filename(g_get_user_data_dir(), "themes", nullptr);
-    inkscape_fill_gtk(path, themes);
-    g_free(path);
+    path = Glib::build_filename(g_get_user_data_dir(), "themes", nullptr);
+    inkscape_fill_gtk(path.c_str(), themes);
   
-    path = g_build_filename(g_get_home_dir(), ".themes", nullptr);
-    inkscape_fill_gtk(path, themes);
-    g_free(path);
+    path = Glib::build_filename(g_get_home_dir(), ".themes", nullptr);
+    inkscape_fill_gtk(path.c_str(), themes);
   
     dirs = g_get_system_data_dirs();
     for (i = 0; dirs[i]; i++) {
-        path = g_build_filename(dirs[i], "themes", nullptr);
-        inkscape_fill_gtk(path, themes);
-        g_free(path);
+        path = Glib::build_filename(dirs[i], "themes", nullptr);
+        inkscape_fill_gtk(path.c_str(), themes);
     }
     return themes;
 }
@@ -262,6 +267,12 @@ void ThemeContext::add_gtk_css(bool only_providers, bool cached)
         g_object_get(settings, "gtk-icon-theme-name", &gtkIconThemeName, nullptr);
         g_object_get(settings, "gtk-theme-name", &gtkThemeName, nullptr);
         g_object_get(settings, "gtk-application-prefer-dark-theme", &gtkApplicationPreferDarkTheme, nullptr);
+
+        // Adwaita is a gtk alias for Default, let's keep things consistent internally
+        if (g_strcmp0(gtkThemeName, "Adwaita") == 0) {
+            gtkThemeName = g_strdup("Default");
+        }
+
         prefs->setBool("/theme/defaultPreferDarkTheme", gtkApplicationPreferDarkTheme);
         prefs->setString("/theme/defaultGtkTheme", Glib::ustring(gtkThemeName ? gtkThemeName : ""));
         prefs->setString("/theme/defaultIconTheme", Glib::ustring(gtkIconThemeName ? gtkIconThemeName : ""));
@@ -469,8 +480,8 @@ void ThemeContext::add_gtk_css(bool only_providers, bool cached)
             g_critical("CSSProviderError::load_from_path(): failed to load '%s'\n(%s)", style.c_str(),
                        ex.what());
         }
-        // increased priority to be able to override Inkscape style.css
-        Gtk::StyleProvider::add_provider_for_display(display, _userprovider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION + 20);
+        // increased priority to be able to override user's ~/.config/gtk-4.0/gtk.css
+        Gtk::StyleProvider::add_provider_for_display(display, _userprovider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
     }
 
 }
@@ -495,9 +506,10 @@ bool ThemeContext::isCurrentThemeDark(Gtk::Window * const window)
 #if GTKMM_CHECK_VERSION(4, 20, 0)
         settings->property_gtk_interface_color_scheme() =
             preferDarkTheme ? Gtk::InterfaceColorScheme::DARK : Gtk::InterfaceColorScheme::LIGHT;
-#else
-        settings->property_gtk_application_prefer_dark_theme() = preferDarkTheme;
 #endif
+        // This method is deprecated, but still has effect on older themes that don't use CSS media queries to find
+        // the current dark/light setting.
+        settings->property_gtk_application_prefer_dark_theme() = preferDarkTheme;
     }
 
     auto dark = current_theme.find(":dark") != std::string::npos;
@@ -597,13 +609,26 @@ std::vector<guint32> ThemeContext::getHighlightColors(Gtk::Window *window)
 }
 
 // That's what Gtk Inspector does to determine 100% scale, i.e. "normal" dpi
-static double get_dpi_ratio(Gdk::Display* display) {
+static double get_dpi_ratio(Gdk::Display *display)
+{
+    double dpi = 96.0;
 #ifdef __APPLE__
     if (GDK_IS_MACOS_DISPLAY(display ? display->gobj() : nullptr)) {
-        return 72.0 * 1024.0;
+        dpi = 72.0;
+    }
+#elifdef _WIN32
+    // test for the availability of the GetDpiForSystem function
+    // Based on the example at
+    // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress
+    auto dpiFn =
+        reinterpret_cast<UINT(__cdecl *)()>(GetProcAddress(GetModuleHandle(TEXT("User32.dll")), "GetDpiForSystem"));
+    if (dpiFn != nullptr) {
+        dpi = static_cast<double>(dpiFn());
+    } else {
+        g_warning("Could not get system DPI, falling back to 96");
     }
 #endif
-    return 96.0 * 1024.0;
+    return dpi * 1024.0;
 }
 
 void ThemeContext::adjustGlobalFontScale(double factor) {

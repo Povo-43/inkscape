@@ -20,7 +20,7 @@
  * Copyright (C) 2004 David Turner
  * Copyright (C) 2003 MenTaLguY
  * Copyright (C) 2001-2002 Ximian, Inc.
- * Copyright (C) 1999-2013 authors
+ * Copyright (C) 1999-2026 authors
  * Copyright (C) 2017 Tavmjong Bah
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
@@ -37,6 +37,8 @@
 #include "document-undo.h"
 #include "document.h"
 #include "inkscape.h"
+#include "inkscape-window.h"
+#include "actions/actions-text-attributes.h"
 #include "libnrtype/font-lister.h"
 #include "object/sp-flowdiv.h"
 #include "object/sp-flowtext.h"
@@ -91,46 +93,6 @@ void recursively_set_properties(SPObject *object, SPCSSAttr *css, bool unset_des
     sp_repr_css_attr_unref(css_unset);
 }
 
-
-// TODO: possibly share with font-selector by moving most code to font-lister (passing family name)
-void sp_text_toolbox_select_cb(Gtk::Entry const &entry)
-{
-    auto const family = entry.get_buffer()->get_text();
-    // std::cout << "text_toolbox_missing_font_cb: selecting: " << family << std::endl;
-
-    // Get all items with matching font-family set (not inherited!).
-    std::vector<SPItem *> selectList;
-
-    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
-    SPDocument *document = desktop->getDocument();
-    for (auto item : get_all_items(document->getRoot(), desktop, false, false, true) | std::views::reverse) {
-        auto style = item->style;
-        if (!style) {
-            continue;
-        }
-
-        Glib::ustring family_style;
-        if (style->font_family.set) {
-            family_style = style->font_family.value();
-            // std::cout << " family style from font_family: " << family_style << std::endl;
-        } else if (style->font_specification.set) {
-            family_style = style->font_specification.value();
-            // std::cout << " family style from font_spec: " << family_style << std::endl;
-        }
-
-        if (family_style.compare(family) == 0) {
-            // std::cout << "   found: " << item->getId() << std::endl;
-            selectList.push_back(item);
-        }
-    }
-
-    // Update selection
-    auto selection = desktop->getSelection();
-    selection->clear();
-    // std::cout << "   list length: " << selectList.size() << std::endl;
-    selection->setList(selectList);
-}
-
 } // namespace
 
 TextToolbar::TextToolbar()
@@ -141,6 +103,7 @@ TextToolbar::TextToolbar(Glib::RefPtr<Gtk::Builder> const &builder)
     : Toolbar{get_widget<Gtk::Box>(builder, "text-toolbar")}
     , _tracker{std::make_unique<UnitTracker>(Util::UNIT_TYPE_LINEAR)}
     , _font_collections_list{get_widget<Gtk::ListBox>(builder, "_font_collections_list")}
+    , _font_collections_popover{get_widget<Gtk::Popover>(builder, "font_collections_popover")}
     , _reset_button{get_widget<Gtk::Button>(builder, "reset_btn")}
     , _line_height_item{get_derived_widget<UI::Widget::SpinButton>(builder, "_line_height_item")}
     , _superscript_btn{get_widget<Gtk::ToggleButton>(builder, "_superscript_btn")}
@@ -153,6 +116,18 @@ TextToolbar::TextToolbar(Glib::RefPtr<Gtk::Builder> const &builder)
     , _font_size_item{get_widget<UI::Widget::FontSizeSelector>(builder, "font_size")}
 {
     auto prefs = Preferences::get();
+
+    // Configure mode buttons
+    int btn_index = 0;
+    for (auto &item : children(get_widget<Gtk::Box>(builder, "mode_buttons_box"))) {
+        auto &btn = dynamic_cast<Gtk::ToggleButton &>(item);
+        _mode_buttons.push_back(&btn);
+        btn.signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &TextToolbar::mode_changed), btn_index++));
+    }
+
+    // Shape in object and text on path are both one mode here
+    auto mode_one = Preferences::get()->getBool("/tools/text/text_on_path", false);
+    _mode_buttons[mode_one ? 1 : 0]->set_active();
 
     // Line height unit tracker.
     auto const &unit_table = Util::UnitTable::get();
@@ -204,12 +179,15 @@ TextToolbar::TextToolbar(Glib::RefPtr<Gtk::Builder> const &builder)
     configure_mode_buttons(_direction_buttons, get_widget<Gtk::Box>(builder, "direction_buttons_box"),
                            "direction_mode", &TextToolbar::direction_changed);
 
-    auto const fontlister = FontLister::get_instance();
+    _mode_menus = {
+        {&get_widget<Gtk::MenuButton>(builder, "horizontal_align_menu"), _alignment_buttons},
+        {&get_widget<Gtk::MenuButton>(builder, "writing_mode_menu"), _writing_buttons},
+        {&get_widget<Gtk::MenuButton>(builder, "orientation_menu"), _orientation_buttons},
+        {&get_widget<Gtk::MenuButton>(builder, "direction_menu"), _direction_buttons},
+    };
+    update_mode_menu_icons();
 
-    font_count_changed_connection = fontlister->connectUpdate([this] {
-        auto const [all_fonts, _] = FontLister::get_instance()->get_font_count_label();
-        _reset_button.set_sensitive(!all_fonts);
-    });
+    auto const fontlister = FontLister::get_instance();
 
     // Font family
     _font_family_item = Gtk::make_managed<UI::Widget::ComboBoxEntryToolItem>(
@@ -223,14 +201,23 @@ TextToolbar::TextToolbar(Glib::RefPtr<Gtk::Builder> const &builder)
         &font_lister_separator_func
     );
 
+    _font_collections_popover.set_parent(*_font_family_item);
+    font_count_changed_connection = fontlister->connectUpdate([this] {
+        auto const [all_fonts, _] = FontLister::get_instance()->get_font_count_label();
+        _reset_button.set_sensitive(!all_fonts);
+    });
+
     _font_family_item->popup_enable(); // Enable entry completion
-    _font_family_item->set_info(_("Select all text with this font-family")); // Show selection icon
-    _font_family_item->set_info_cb(&sp_text_toolbox_select_cb);
-    _font_family_item->set_warning(_("Font not found on system")); // Show icon w/ tooltip if font missing
-    _font_family_item->set_warning_cb(&sp_text_toolbox_select_cb);
+    _font_family_item->set_info(INKSCAPE_ICON("font_collections"), _("Select Font Collections"), [this](const Gtk::Entry &entry) {
+        UI::popup_at(_font_collections_popover, *_font_family_item);
+    });
+    _font_family_item->set_warning(_("Font not found on system"), [this](const Gtk::Entry &entry) {
+        // We still need access to the font collections when warning about fonts.
+        UI::popup_at(_font_collections_popover, *_font_family_item);
+    });
     _font_family_item->focus_on_click(false);
     _font_family_item->connectChanged([this] { fontfamily_value_changed(); });
-    _font_family_item->setDefocusWidget(this);
+    _font_family_item->setDefocusTarget(this);
 
     get_widget<Gtk::Box>(builder, "font_list_box").append(*_font_family_item);
 
@@ -248,7 +235,7 @@ TextToolbar::TextToolbar(Glib::RefPtr<Gtk::Builder> const &builder)
 
     _font_style_item->connectChanged([this] { fontstyle_value_changed(); });
     _font_style_item->focus_on_click(false);
-    _font_style_item->setDefocusWidget(this);
+    _font_style_item->setDefocusTarget(this);
 
     get_widget<Gtk::Box>(builder, "styles_list_box").append(*_font_style_item);
 
@@ -268,12 +255,17 @@ TextToolbar::TextToolbar(Glib::RefPtr<Gtk::Builder> const &builder)
     _subscript_btn.signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &TextToolbar::script_changed), 1));
     _subscript_btn.set_active(prefs->getBool("/tools/text/sub", false));
 
+    // Text decoration buttons
+    // See .ui file and actions-text-attributes.cpp
+
     // Font collections signals.
     auto const font_collections = FontCollections::get();
 
-    get_widget<Gtk::Popover>(builder, "font_collections_popover")
-        .signal_show()
-        .connect([this] { display_font_collections(); }, false);
+    _font_collections_popover.signal_show().connect([this] {
+        auto const [all_fonts, _] = FontLister::get_instance()->get_font_count_label();
+        _reset_button.set_sensitive(!all_fonts);
+        display_font_collections();
+    }, false);
 
     // This signal will keep both the Text and Font dialog and
     // TextToolbar popovers in sync with each other.
@@ -290,6 +282,9 @@ TextToolbar::TextToolbar(Glib::RefPtr<Gtk::Builder> const &builder)
     _reset_button.signal_clicked().connect([this]() { TextToolbar::on_reset_button_pressed(); });
 
     _initMenuBtns();
+
+    // Defocus font-size spinbutton on "Esc".
+    set_defocus_target(this, this);
 }
 
 TextToolbar::~TextToolbar() = default;
@@ -326,6 +321,12 @@ void TextToolbar::setDesktop(SPDesktop *desktop)
     }
 }
 
+void TextToolbar::mode_changed(int mode)
+{
+    Preferences::get()->setBool("/tools/text/text_on_path", mode == 1);
+    Preferences::get()->setBool("/tools/text/text_in_shape", mode == 1);
+}
+
 void TextToolbar::setup_derived_spin_button(UI::Widget::SpinButton &btn, Glib::ustring const &name,
                                             double default_value, ValueChangedMemFun value_changed_mem_fun)
 {
@@ -352,6 +353,28 @@ void TextToolbar::configure_mode_buttons(std::vector<Gtk::ToggleButton *> &butto
     auto const path = "/tools/text/" + name;
     int const active_button_index = Preferences::get()->getInt(path, 0);
     buttons[active_button_index < buttons.size() ? active_button_index : 0]->set_active(true);
+}
+
+void TextToolbar::update_mode_menu_icons()
+{
+    for (auto &menu : _mode_menus) {
+        if (!menu.button) continue;
+        for (auto option : menu.options) {
+            if (option && option->get_active()) {
+                menu.button->set_icon_name(option->get_icon_name());
+                menu.button->set_tooltip_text(option->get_tooltip_text());
+                break;
+            }
+        }
+    }
+}
+
+void TextToolbar::close_mode_menus()
+{
+    for (auto &menu : _mode_menus) {
+        if (menu.button) menu.button->popdown();
+    }
+    onDefocus();
 }
 
 void TextToolbar::text_outer_set_style(SPCSSAttr *css)
@@ -772,7 +795,7 @@ void TextToolbar::align_mode_changed(int align_mode)
         DocumentUndo::done(_desktop->getDocument(), RC_("Undo", "Text: Change alignment"), INKSCAPE_ICON("draw-text"));
     }
 
-    onDefocus();
+    close_mode_menus();
 
     _freeze = false;
 }
@@ -807,7 +830,7 @@ void TextToolbar::writing_mode_changed(int mode)
     }
     sp_repr_css_attr_unref(css);
 
-    onDefocus();
+    close_mode_menus();
 
     _freeze = false;
 }
@@ -841,7 +864,7 @@ void TextToolbar::orientation_changed(int mode)
         DocumentUndo::done(_desktop->getDocument(), RC_("Undo", "Text: Change orientation"), INKSCAPE_ICON("draw-text"));
     }
     sp_repr_css_attr_unref (css);
-    onDefocus();
+    close_mode_menus();
 
     _freeze = false;
 }
@@ -892,7 +915,7 @@ void TextToolbar::direction_changed(int mode)
     }
     sp_repr_css_attr_unref(css);
 
-    onDefocus();
+    close_mode_menus();
 
     _freeze = false;
 }
@@ -1421,6 +1444,7 @@ void TextToolbar::_selectionChanged(Selection *selection) // don't bother to upd
     int result_family = sp_desktop_query_style(desktop, &query, QUERY_STYLE_PROPERTY_FONTFAMILY);
     int result_style = sp_desktop_query_style(desktop, &query, QUERY_STYLE_PROPERTY_FONTSTYLE);
     int result_baseline = sp_desktop_query_style(desktop, &query, QUERY_STYLE_PROPERTY_BASELINES);
+    int result_decoration = sp_desktop_query_style(desktop, &query, QUERY_STYLE_PROPERTY_TEXTDECORATION);
     int result_wmode = sp_desktop_query_style(desktop, &query, QUERY_STYLE_PROPERTY_WRITINGMODES);
 
     // Calling sp_desktop_query_style will result in a call to TextTool::_styleQueried().
@@ -1528,6 +1552,15 @@ void TextToolbar::_selectionChanged(Selection *selection) // don't bother to upd
              query.baseline_shift.literal == SP_CSS_BASELINE_SHIFT_SUB );
 
         _subscript_btn.set_active(subscriptSet);
+
+        auto* window = dynamic_cast<InkscapeWindow*>(get_root());
+        if (window) {
+            if (result_decoration == QUERY_STYLE_SINGLE || result_decoration == QUERY_STYLE_MULTIPLE_SAME) {
+                text_decoration_line_set(window, &query);
+            }
+        } else {
+            std::cerr << "TextToolbar::_selectionChanged:: couldn't find InkscapeWindow!" << std::endl;
+        }
 
         // Alignment
 
@@ -1715,6 +1748,9 @@ void TextToolbar::_selectionChanged(Selection *selection) // don't bother to upd
     _dx_item.set_sensitive(!isFlow);
     _dy_item.set_sensitive(!isFlow);
     _rotation_item.set_sensitive(!isFlow);
+
+    // For popover menus
+    update_mode_menu_icons();
 
     if constexpr (DEBUG_TEXT) {
         std::cout << "sp_text_toolbox_selection_changed: exit " << count << std::endl;

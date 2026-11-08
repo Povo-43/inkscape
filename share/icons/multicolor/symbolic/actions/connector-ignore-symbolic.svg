@@ -69,7 +69,7 @@
        inkscape:connector-curvature="0" />
     <path
        transform="translate(0,512.3622)"
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 379,355 h 16 v 16 h -16 z"
        id="rect16079"
        inkscape:connector-curvature="0" />

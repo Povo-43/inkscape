@@ -51,6 +51,36 @@ void DrawContext::transform(Geom::Affine const &tr)
     }
 }
 
+// Some items cannot be drawn using pdf primitives alone.
+// If this returns true, we should render the item to an image and insert that into the pdf instead.
+bool DrawContext::should_rasterize(SPObject const &object, bool recursive)
+{
+    if (auto item = cast<SPItem>(&object)) {
+        if (_doc.get_filter_resolution() && item->isFiltered()) {
+            return true;
+        }
+
+        // Our rendering pipeline isn't set up to render something directly from defs.
+        // So if the mask would need rendering, we flag the base object itself for rendering (which includes its mask).
+        // Note that we don't also check the clip object, because clips don't support filters.
+        if (auto mask = item->getMaskObject()) {
+            if (should_rasterize(*mask, true)) {
+                return true;
+            }
+        }
+    }
+
+    if (recursive) {
+        for (auto &child : object.children) {
+            if (should_rasterize(child, true)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 GroupContext::GroupContext(Document &doc, Geom::OptRect const &clip, bool soft_mask)
     : DrawContext(doc,
                   doc.generator().new_transparency_group_context(
@@ -90,14 +120,14 @@ void DrawContext::paint_item(SPItem const *item, Geom::Affine const &tr, SPStyle
         : _doc.paint_memory().get_ifset(item->style);
 
     auto style_scope = _doc.paint_memory().remember(style_map);
-    auto resolution = item->isFiltered() ? _doc.get_filter_resolution() : 0;
+    auto rasterize = should_rasterize(*item);
 
     bool isolate = tr != Geom::identity() || !style_map.empty() || true; // has_pattern || has_opacity etc etc
     if (isolate) {
         // Isolate everything in the item
         _ctx.cmd_q();
 
-        if (!resolution) {
+        if (!rasterize) {
             transform(tr);
             // Set styles for cascading
             set_paint_style(style_map, item->style, context_style);
@@ -112,15 +142,15 @@ void DrawContext::paint_item(SPItem const *item, Geom::Affine const &tr, SPStyle
     }
 
     // These styles are never cascaded because of the complexity in PDF transparency groups.
-    if (!resolution && !is<SPGroup>(item) && !_soft_mask) {
+    if (!rasterize && !is<SPGroup>(item) && !_soft_mask) {
         if (auto gsid = _doc.get_shape_graphics_state(item->style)) {
             _ctx.cmd_gs(*gsid);
         }
     }
 
-    if (resolution) {
+    if (rasterize) {
         // Turn the item into a raster for the PDF
-        paint_item_to_raster(item, tr, resolution, true);
+        paint_item_to_raster(item, tr, _doc.get_filter_resolution(), true);
     } else if (auto shape = cast<SPShape>(item)) {
         if (shape->curve() && !shape->curve()->empty()) {
             paint_shape(shape, context_style);
@@ -130,7 +160,7 @@ void DrawContext::paint_item(SPItem const *item, Geom::Affine const &tr, SPStyle
     } else if (auto text = cast<SPText>(item)) {
         paint_text_layout(text->layout, context_style);
     } else if (auto flowtext = cast<SPFlowtext>(item)) {
-        // sp_flowtext_render(flowtext);
+        paint_text_layout(flowtext->layout, context_style);
     } else if (auto image = cast<SPImage>(item)) {
         paint_raster(image);
     } else if (auto group = cast<SPGroup>(item)) { // SPSymbol, SPRoot, SPMarker
@@ -166,8 +196,10 @@ void DrawContext::paint_item_group(SPGroup const *group, SPStyle const *context_
             // Calculate a soft mask
             // const cast because mask references are not created and tracked properly.
             std::optional<CapyPDF_TransparencyGroupId> mask_id;
-            if (auto ref = const_cast<SPItem *>(child_item)->getMaskRef().getObject()) {
-                mask_id = _doc.mask_to_transparency_group(ref, child_item->transform);
+            auto mask = child_item->getMaskObject();
+            // If the item needs to be rasterized, that process will handle masking for us, no need to do it ourselves
+            if (mask && !should_rasterize(*child_item)) {
+                mask_id = _doc.mask_to_transparency_group(mask, child_item->transform);
             }
 
             // Find out if this object is a source for a clone

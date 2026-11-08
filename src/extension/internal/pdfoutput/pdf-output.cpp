@@ -52,15 +52,12 @@ void PdfOutput::save(Inkscape::Extension::Output *mod, SPDocument *doc, char con
     if (char const *author = rdf_get_work_entity(doc, rdf_find_entity("creator"))) {
         opt.set_author(author);
     }
-    if (char const *subject = rdf_get_work_entity(doc, rdf_find_entity("description"))) {
-        // Nothing to set yet.
-    }
-    if (char const *keywords = rdf_get_work_entity(doc, rdf_find_entity("subject"))) {
-        // Nothing to set yet.
-    }
-    if (char const *copyright = rdf_get_work_entity(doc, rdf_find_entity("rights"))) {
-        // Nothing to set yet.
-    }
+    // Nothing to set yet.
+    // if (char const *subject = rdf_get_work_entity(doc, rdf_find_entity("description"))) {}
+    // Nothing to set yet.
+    // if (char const *keywords = rdf_get_work_entity(doc, rdf_find_entity("subject"))) {}
+    // Nothing to set yet.
+    // if (char const *copyright = rdf_get_work_entity(doc, rdf_find_entity("rights"))) {}
 
     auto creator =
         Glib::ustring::compose("Inkscape %1 (https://inkscape.org)", Inkscape::version_string_without_revision);

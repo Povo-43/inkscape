@@ -14,6 +14,7 @@
 
 class InkscapeWindow;
 
+bool get_widescreen_default();
 void add_actions_view_mode(InkscapeWindow* win);
 void view_set_gui(InkscapeWindow* win);
 

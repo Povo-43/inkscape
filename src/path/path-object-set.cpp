@@ -22,6 +22,7 @@
 #include "path-chemistry.h"     // copy_object_properties()
 #include "path-util.h"
 #include "preferences.h"
+#include "text-editing.h"
 
 #include "object/object-set.h"
 #include "object/sp-flowtext.h"
@@ -32,6 +33,11 @@
 #include "ui/icon-names.h"
 #include "xml/repr-sorting.h"
 #include "style.h"
+
+static bool item_has_curve(SPItem* item)
+{
+    return (is<SPShape>(item) || is<SPText>(item) || is<SPFlowtext>(item));
+}
 
 using Inkscape::ObjectSet;
 
@@ -47,7 +53,7 @@ void Inkscape::ObjectSet::pathIntersect(bool skip_undo, bool silent)
 
 void Inkscape::ObjectSet::pathDiff(bool skip_undo, bool silent)
 {
-    _pathBoolOp(bool_op_diff, INKSCAPE_ICON("path-difference"), RC_("Undo", "Difference"), skip_undo, silent);
+    _pathBoolOpIterative(bool_op_diff, INKSCAPE_ICON("path-difference"), RC_("Undo", "Difference"), skip_undo, silent);
 }
 
 void Inkscape::ObjectSet::pathSymDiff(bool skip_undo, bool silent)
@@ -57,12 +63,88 @@ void Inkscape::ObjectSet::pathSymDiff(bool skip_undo, bool silent)
 
 void Inkscape::ObjectSet::pathCut(bool skip_undo, bool silent)
 {
-    _pathBoolOp(bool_op_cut, INKSCAPE_ICON("path-division"), RC_("Undo", "Division"), skip_undo, silent);
+    _pathBoolOpIterative(bool_op_cut, INKSCAPE_ICON("path-division"), RC_("Undo", "Division"), skip_undo, silent);
 }
 
 void Inkscape::ObjectSet::pathSlice(bool skip_undo, bool silent)
 {
-    _pathBoolOp(bool_op_slice, INKSCAPE_ICON("path-cut"), RC_("Undo", "Cut path"), skip_undo, silent);
+    _pathBoolOpIterative(bool_op_slice, INKSCAPE_ICON("path-cut"), RC_("Undo", "Cut path"), skip_undo, silent);
+}
+
+// This allows Difference, Divsion, and Cut to work on more than two objects by repeatedly copying the
+// top object and applying the operation one-by-one on the objects beneath.
+void Inkscape::ObjectSet::_pathBoolOpIterative(BooleanOp bop, char const *icon_name, Inkscape::Util::Internal::ContextString description, bool skip_undo, bool silent)
+{
+    auto items = items_vector();
+
+    if (items.size() <= 2) {
+        // Short circuit all this nonsense
+        _pathBoolOp(bop, icon_name, description, skip_undo, silent);
+        return;
+    }
+
+    std::sort(items.begin(), items.end(), sp_object_compare_position_bool);
+
+    auto xml_doc = document()->getReprDoc();
+
+    auto top = items.back();
+
+    const char* msg = _("Top object must be a shape or text to perform boolean operations.");
+    if (!item_has_curve(top)) {
+        if (!silent) {
+            if (desktop()) {
+                desktop()->messageStack()->flash(ERROR_MESSAGE, msg);
+            } else {
+                g_printerr("%s\n", msg);
+            }
+        }
+        return;
+    }
+
+    auto top_repr = top->getRepr();
+    items.pop_back();
+
+    bool done = false;
+    while (!items.empty()) {
+        if (item_has_curve(items.back())) {
+
+            // Duplicate top element and insert it next to original
+            auto top_copy = top_repr->duplicate(xml_doc);
+            top_repr->parent()->addChild(top_copy, top_repr);
+            auto top_copy_item = document()->getObjectByRepr(top_copy);
+
+            // We need to set the curve before passing the new object to pathBoolOp().
+            if (auto shape = cast<SPShape>(top_copy_item)) {
+                shape->set_shape();
+            } else if (is<SPText>(top_copy_item) || is<SPFlowtext>(top_copy_item)) {
+                te_update_layout_now_recursive(cast<SPItem>(top_copy_item));
+            } else {
+                // Should never happen, we tested for curve above.
+                std::cerr << "Inkscape::ObjectSet::pathDiff: logic error!" << std::endl;
+                continue;
+            }
+
+            // Clear selection and add our two objects.
+            clear();
+            add(items.back()); // Add item
+            add(top_copy); // Add repr
+
+            _pathBoolOp(bop, icon_name, description, true, silent);
+
+            done = true;
+        }
+
+        // Move on to next item.
+        items.pop_back();
+    }
+
+    if (done) {
+        // _pathBoolOp always removed a copy, we need to remove original (if at least one bool up done).
+        top_repr->parent()->removeChild(top_repr);
+        if (!skip_undo) {
+            DocumentUndo::done(document(), description, icon_name);
+        }
+    }
 }
 
 void Inkscape::ObjectSet::_pathBoolOp(BooleanOp bop, char const *icon_name, Inkscape::Util::Internal::ContextString description, bool skip_undo, bool silent)
@@ -99,15 +181,11 @@ void Inkscape::ObjectSet::_pathBoolOp(BooleanOp bop)
             break;
         case bool_op_inters:
         case bool_op_symdiff:
-            if (il.size() < 2) {
-                throw _("Select <b>at least 2 paths</b> to perform an intersection or symmetric difference.");
-            }
-            break;
         case bool_op_diff:
         case bool_op_cut:
         case bool_op_slice:
-            if (il.size() != 2) {
-                throw _("Select <b>exactly 2 paths</b> to perform difference, division, or path cut.");
+            if (il.size() < 2) {
+                throw _("Select <b>at least 2 paths</b> to perform the boolean operation.");
             }
             break;
     }
@@ -158,10 +236,9 @@ void Inkscape::ObjectSet::_pathBoolOp(BooleanOp bop)
         }
     }
 
-    // first check if all the input objects have shapes
-    // otherwise bail out
+    // First check if all the input objects have curves, otherwise bail out.
     for (auto item : il) {
-        if (!is<SPShape>(item) && !is<SPText>(item) && !is<SPFlowtext>(item)) {
+        if (!item_has_curve(item)) {
             return;
         }
     }
@@ -208,9 +285,10 @@ void Inkscape::ObjectSet::_pathBoolOp(BooleanOp bop)
         // Get the pathvector.
         auto curve = curve_for_item(item);
         if (!curve) {
+            std::cerr << "Inkscape::ObjectSet::_pathBoolOp(BooleanOp bop): no curve: "
+                      << (item->getId() ? item->getId() : "no id") << std::endl;
             return;
         }
-
         operand.pathv = *curve * item->i2doc_affine();
     }
 
@@ -502,7 +580,6 @@ void Inkscape::ObjectSet::_pathBoolOp(BooleanOp bop)
 
             Inkscape::XML::Document *xml_doc = doc->getReprDoc();
             Inkscape::XML::Node *repr = xml_doc->createElement("svg:path");
-
             Inkscape::copy_object_properties(repr, repr_source);
 
             // Delete source on last iteration (after we don't need repr_source anymore). As a consequence, the last

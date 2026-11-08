@@ -35,8 +35,19 @@ public:
     Feature(Glib::ustring const &name, OTSubstitution const &glyphs, int options, Glib::ustring family, Gtk::Grid& grid, int &row, FontVariants* parent)
         : _name (name)
     {
+        auto label = "\"" + name + "\"";
+        // For some common features, provide a nicer name.
+        if (name == "case") {
+            label = _("Uppercase-aligned forms");
+        } else if (name[0] == 's' && name[1] == 's' && !(name[2] == 't')) {
+            auto number = name.substr(name[2] == '0' ? 3 : 2);
+            label = Glib::ustring::compose(_("Alternative glyph form %1"), number);
+        }
+
         auto const table_name = Gtk::make_managed<Gtk::Label>();
-        table_name->set_markup ("\"" + name + "\" ");
+        table_name->set_label(label);
+        table_name->set_wrap(true);
+        table_name->set_xalign(0);
 
         grid.attach (*table_name, 0, row, 1, 1);
 
@@ -67,6 +78,7 @@ public:
             } else {
                 button->set_group(*group);
             }
+            button->set_margin_start(12);
             button->signal_toggled().connect ( sigc::mem_fun(*parent, &FontVariants::feature_callback) );
             buttons.push_back (button);
 
@@ -78,10 +90,11 @@ public:
             label->set_wrap_mode( Pango::WrapMode::WORD_CHAR );
             label->set_ellipsize( Pango::EllipsizeMode::END );
             label->set_lines(3);
-            label->set_hexpand();
+            label->set_margin_start(4);
+            label->set_xalign(0);
 
             Glib::ustring markup;
-            markup += "<span font_family='";
+            markup += "<span size='120%' font_family='";
             markup += family;
             markup += "' font_features='";
             markup += name;
@@ -1102,6 +1115,11 @@ FontVariants::update_opentype (Glib::ustring& font_spec) {
             if (table.first == "case" ||
                 table.first == "hist" ||
                 (table.first[0] == 's' && table.first[1] == 's' && !(table.first[2] == 't'))) {
+
+                if (table.second.input.length() == 0) {
+                    // User has no way to compare the change / know what it would do. Skip it.
+                    continue;
+                }
 
                 if( (it = table_copy.find(table.first)) != table_copy.end() ) table_copy.erase( it );
 

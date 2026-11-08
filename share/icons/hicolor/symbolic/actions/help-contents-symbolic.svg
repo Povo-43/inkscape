@@ -6,7 +6,7 @@
   </sodipodi:namedview>
   <g transform="translate(-225.00001,-547.3622)" inkscape:label="00100" id="help-contents">
       <g transform="translate(-58.0002,352.3615)" id="g6848" inkscape:label="fedora-release-notes">
-        <path inkscape:connector-curvature="0" id="rect5524" d="m 283.00021,195.0007 h 16 v 16 h -16 z" style="opacity:0;fill:none"/>
+        <path inkscape:connector-curvature="0" id="rect5524" d="m 283.00021,195.0007 h 16 v 16 h -16 z" opacity="0"/>
         <path inkscape:connector-curvature="0" id="path6826" d="m 286.0002,200.0007 h 10 c -1.3521,-0.5314 -1.2574,-2.4326 0,-3 h -10 z" style="opacity:0.5"/>
         <path inkscape:connector-curvature="0" id="path6822" d="m 286.5627,196.0007 c -0.8569,0 -1.5625,0.7056 -1.5625,1.5625 v 9.8437 c 0,1.6083 1.4868,2.5283 2.3437,2.5313 l 9.6563,0.0312 v -9.9688 l -9.4375,-0.0312 c -1.9535,0.0312 -2.2202,-2.9375 0.0156,-2.9687 h 9.4219 c 0,0 0.125,-1.0312 -1,-1 z" style="opacity:1"/>
       </g>

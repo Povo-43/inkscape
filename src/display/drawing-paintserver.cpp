@@ -148,10 +148,8 @@ cairo_pattern_t *DrawingMeshGradient::create_pattern(cairo_t *, Geom::OptRect co
 
     auto pat = cairo_pattern_create_mesh();
 
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            auto &data = patchdata[i][j];
-
+    for (auto &row : patchdata) {
+        for (auto &data : row) {
             cairo_mesh_pattern_begin_patch(pat);
             cairo_mesh_pattern_move_to(pat, data.points[0][0].x(), data.points[0][0].y());
 

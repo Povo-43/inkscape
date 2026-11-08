@@ -15,10 +15,11 @@
 #include <gtkmm/entry.h>
 
 #include "colors/color-set.h"
+#include "ui/widget/generic/text-entry.h"
 
 namespace Inkscape::UI::Widget {
 
-class ColorEntry : public Gtk::Entry
+class ColorEntry : public TextEntry
 {
 public:
     ColorEntry(std::shared_ptr<Colors::ColorSet> color);

@@ -191,7 +191,6 @@ LivePathEffectEditor::LivePathEffectEditor()
 
 LivePathEffectEditor::~LivePathEffectEditor()
 {
-    sp_clear_custom_tooltip();
 }
 
 namespace {
@@ -292,7 +291,6 @@ void align(Gtk::Widget *top, int const spinbutton_width_chars)
 void
 LivePathEffectEditor::clearMenu()
 {
-    sp_clear_custom_tooltip();
     _reload_menu = true;
 }
 
@@ -361,11 +359,10 @@ void LivePathEffectEditor::add_lpes(Inkscape::UI::Widget::CompletionPopup &popup
         // build popup menu
         auto& lpe = *plpe;
         auto const type = lpe.type;
-        int const id = static_cast<int>(type);
         auto const menuitem = builder.add_item(lpe.label, lpe.category, lpe.tooltip, lpe.icon_name,
                                                lpe.sensitive, true, [=, this]{ onAdd(type); });
-        menuitem->signal_query_tooltip().connect([plpe, id, this](int x, int y, bool kbd, const Glib::RefPtr<Gtk::Tooltip>& tooltipw){
-            return sp_query_custom_tooltip(this, x, y, kbd, tooltipw, id, plpe->tooltip, plpe->icon_name);
+        menuitem->signal_query_tooltip().connect([plpe, this](int x, int y, bool kbd, const Glib::RefPtr<Gtk::Tooltip>& tooltipw){
+            return sp_query_custom_tooltip(this, tooltipw, plpe->tooltip, plpe->icon_name);
         }, false); // before
         if (builder.new_section()) {
             builder.set_section(get_category_name(lpe.category));
@@ -827,7 +824,6 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
         }
 
         auto const effectype = lpe->effectType();
-        int const id = static_cast<int>(effectype);
         auto const &untranslated_label = converter.get_label(effectype);
         auto const &icon = converter.get_icon(effectype);
         auto const tooltip = get_tooltip(effectype, untranslated_label);
@@ -843,7 +839,7 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
         LPEDrag->set_name(Glib::ustring::compose("drag_%1", counter));
 
         LPEExpanderBox->signal_query_tooltip().connect([=, this](int x, int y, bool kbd, const Glib::RefPtr<Gtk::Tooltip>& tooltipw){
-            return sp_query_custom_tooltip(this, x, y, kbd, tooltipw, id, tooltip, icon);
+            return sp_query_custom_tooltip(this, tooltipw, tooltip, icon);
         }, false); // before
 
         // Add actions used by LPEEffectMenuButton
@@ -1002,7 +998,7 @@ LivePathEffectEditor::lpeFlatten(PathEffectSharedPtr const &lperef)
     current_lpeitem = current_lpeitem->flattenCurrentPathEffect();
     _current_use = nullptr;
     auto selection = getSelection();
-    if (selection && selection->isEmpty() ) {
+    if (current_lpeitem && selection && selection->isEmpty() ) {
         selection->add(current_lpeitem);
     }
     DocumentUndo::done(getDocument(), RC_("Undo", "Flatten path effect(s)"), INKSCAPE_ICON("dialog-path-effects"));

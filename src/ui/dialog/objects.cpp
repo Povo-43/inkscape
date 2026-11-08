@@ -625,7 +625,7 @@ Gtk::TreeModel::iterator ObjectWatcher::getChildIter(Node *node) const
         }
     }
     // In layer mode, we will come here for all non-layers
-    return childrows.begin();
+    return childrows.end();
 }
 
 void ObjectWatcher::notifyChildAdded( Node &node, Node &child, Node *prev )
@@ -739,6 +739,9 @@ ObjectsPanel::ObjectsPanel()
     , _opacity_slider(get_widget<Gtk::Scale>(_builder, "opacity-slider"))
     , _setting_layers(get_derived_widget<PrefCheckButton, Glib::ustring, bool>(_builder, "setting-layers", "/dialogs/objects/layers_only", false))
     , _setting_track(get_derived_widget<PrefCheckButton, Glib::ustring, bool>(_builder, "setting-track", "/dialogs/objects/expand_to_layer", true))
+    , _setting_fade_never(get_derived_widget<PrefRadioButton, Glib::ustring, int, bool>(_builder, "setting-fade-never", "/options/translucency_groups/value", 0, false))
+    , _setting_fade_group(get_derived_widget<PrefRadioButton, Glib::ustring, int, bool>(_builder, "setting-fade-group", "/options/translucency_groups/value", 1, true))
+    , _setting_fade_layer(get_derived_widget<PrefRadioButton, Glib::ustring, int, bool>(_builder, "setting-fade-layer", "/options/translucency_groups/value", 2, false))
     , _tree{*Gtk::make_managed<TreeViewWithCssChanged>()}
 {
     _store = Gtk::TreeStore::create(*_model);
@@ -746,7 +749,6 @@ ObjectsPanel::ObjectsPanel()
     //Set up the tree
     _tree.set_model(_store);
     _tree.set_headers_visible(false);
-    _tree.set_reorderable(false); // Don't interfere with D&D via controllers!
     _tree.set_name("ObjectsTreeView");
 
     auto& header = get_widget<Gtk::Box>(_builder, "header");
@@ -1049,6 +1051,13 @@ ObjectsPanel::ObjectsPanel()
     drop->signal_motion().connect(sigc::mem_fun(*this, &ObjectsPanel::on_drag_motion), false); // before
     drop->signal_drop().connect(sigc::mem_fun(*this, &ObjectsPanel::on_drag_drop), false); // before
     _tree.add_controller(drop);
+
+    // Set the treeview up as a drag destination for some arbitrary format. This sets up enough
+    // internal gtk machinery such that rows get the correct css markings, but we don't actually
+    // use this format. Our drags are handled by the above controllers, because there's a lot of
+    // edge cases (including column drags on visibility or locks).
+    auto formats = Gdk::ContentFormats::create("application/x-inkscape-objects-panel-drag");
+    _tree.enable_model_drag_dest(formats, Gdk::DragAction::COPY);
 
     //Set up the label editing signals
     _text_renderer->signal_edited().connect(sigc::mem_fun(*this, &ObjectsPanel::_handleEdited));
@@ -1839,9 +1848,8 @@ void ObjectsPanel::_handleEdited(const Glib::ustring& path, const Glib::ustring&
     if (auto row = *_store->get_iter(path)) {
         if (auto item = getItem(row)) {
             if (!new_text.empty() && (!item->label() || new_text != item->label())) {
-                auto obj = cast<SPGroup>(item);
-                if (obj && obj->layerMode() == SPGroup::LAYER && !obj->isHighlightSet()) {
-                    obj->setHighlight(obj->highlight_color());
+                if (auto obj = cast<SPGroup>(item)) {
+                    obj->preserveLayerHighlight();
                 }
                 item->setLabel(new_text.c_str());
                 DocumentUndo::done(getDocument(), RC_("Undo", "Rename object"), "");
@@ -1922,6 +1930,9 @@ bool ObjectsPanel::cleanDummyChildren(Gtk::TreeModel::Row row)
  */
 Gdk::DragAction ObjectsPanel::on_drag_motion(double x, double y)
 {
+    // Clear dest row (will be set again at end, if we survive the guantlet of early exits)
+    _tree.set_drag_dest_row(Gtk::TreeModel::Path(), Gtk::TreeView::DropPosition::BEFORE);
+
     auto selection = getSelection();
     auto document = getDocument();
     if (!selection || !document) {
@@ -1962,6 +1973,7 @@ Gdk::DragAction ObjectsPanel::on_drag_motion(double x, double y)
         if (_tree.is_blank_at_pos(x, y)) {
             // Dropping on background.
             path = --_store->children().end();
+            pos = Gtk::TreeView::DropPosition::AFTER;
             auto item = getItem(*_store->get_iter(path));
             if (selection->includes(item)) {
                 // Don't drop after self.
@@ -1969,8 +1981,11 @@ Gdk::DragAction ObjectsPanel::on_drag_motion(double x, double y)
             }
         } else {
             std::cerr << "ObjectsPanel::on_drag_motion: invalid drop area!" << std::endl;
+            return Gdk::DragAction{}; // not supported
         }
     }
+
+    _tree.set_drag_dest_row(path, pos);
 
     // need to cater scenarios where we got no selection/empty bottom space
     return Gdk::DragAction::MOVE;
@@ -2085,6 +2100,7 @@ void ObjectsPanel::drag_end_impl()
     selection->unselect_all();
     selection->set_mode(Gtk::SelectionMode::NONE);
     current_item = nullptr;
+    _tree.set_drag_dest_row(Gtk::TreeModel::Path(), Gtk::TreeView::DropPosition::BEFORE);
 }
 
 void ObjectsPanel::on_drag_end(Glib::RefPtr<Gdk::Drag> const &/*drag*/, bool /*delete_data*/)
@@ -2103,17 +2119,20 @@ void ObjectsPanel::selectRange(Gtk::TreeModel::Path start, Gtk::TreeModel::Path 
     }
 
     auto selection = getSelection();
+    std::vector<SPObject*> _temp_range;
 
     if (!_start_new_range) {
         // Deselect previous selection of this range first and then proceed.
         for (auto const &obj : _prev_range) {
             if (obj) {
-                selection->remove(obj.get());
+                _temp_range.push_back(obj.get());
             }
         }
+        selection->remove(_temp_range.begin(), _temp_range.end());
     }
 
     _prev_range.clear();
+    _temp_range.clear();
 
     // Select everything between the initial selection and currently selected item.
     _store->foreach ([&](Gtk::TreeModel::Path const &p, Gtk::TreeModel::const_iterator const &it) {
@@ -2122,11 +2141,12 @@ void ObjectsPanel::selectRange(Gtk::TreeModel::Path start, Gtk::TreeModel::Path 
             auto obj = getItem(*it);
             if (obj) {
                 _prev_range.emplace_back(obj);
-                selection->add(obj, false);
+                _temp_range.push_back(obj);
             }
         }
         return false;
     });
+    selection->add(_temp_range.begin(), _temp_range.end());
 
     _start_new_range = false;
 }

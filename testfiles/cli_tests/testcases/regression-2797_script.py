@@ -11,7 +11,7 @@ tspan2s = tspan1.findall('{http://www.w3.org/2000/svg}tspan')
 
 assert len(tspan2s) == 0
 
-assert parent.attrib.get("style") == "font-size:4px;shape-inside:url(#theshape)"
+assert parent.attrib.get("style") == "font-size:4px;shape-inside:url(#theshape);display:inline"
 assert tspan1.attrib.get("style") is None
 assert tspan1.attrib.get("x") == "2"
 assert tspan1.attrib.get("y") is not None

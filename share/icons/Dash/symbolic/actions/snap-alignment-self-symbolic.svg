@@ -184,7 +184,6 @@
          style="display:inline;opacity:0.5;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1"
          d="m 1309.052,2140 a 5.9999999,5.9999999 0 0 0 -6,6 l 1,-1 0.1289,-0.1289 a 5,5 0 0 1 4.8711,-3.8711 5,5 0 0 1 4.8711,3.8711 l 0.1289,0.1289 1,1 a 5.9999999,5.9999999 0 0 0 -6,-6 z m -6,10 v 4 h 1 v -3 z m 12,0 -1,1 v 3 h 1 z" />
       <rect
-         style="display:inline;opacity:0;fill:none;fill-opacity:0;stroke:none"
          id="rect5745-9"
          width="16"
          height="16"
@@ -194,7 +193,7 @@
          inkscape:tile-x0="1856"
          inkscape:tile-y0="308"
          transform="translate(-1418.948,1831)"
-         class="bbox " />
+         opacity="0" />
       <path
          id="warning_30-0"
          d="m 1313.552,2148.5 h -9 l 0.5,-0.5 -0.5,-0.5 h 9 l -0.5,0.5 z"

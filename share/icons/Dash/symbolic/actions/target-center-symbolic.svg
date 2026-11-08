@@ -148,7 +148,6 @@
        style="display:inline"
        inkscape:label="target-center">
       <rect
-         style="display:inline;opacity:0;fill:none;fill-opacity:0;stroke:none"
          id="rect38"
          width="16"
          height="16"
@@ -158,7 +157,7 @@
          inkscape:tile-x0="1856"
          inkscape:tile-y0="308"
          transform="translate(-1418.948,1831)"
-         class="bbox " />
+         opacity="0" />
       <path
          id="rect39"
          style="display:inline;fill:url(#swatch127);fill-opacity:1;stroke:none;stroke-width:1"

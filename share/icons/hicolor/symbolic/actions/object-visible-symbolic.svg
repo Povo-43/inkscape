@@ -5,7 +5,7 @@
     <inkscape:grid type="xygrid" id="grid"/>
   </sodipodi:namedview>
   <g transform="matrix(1,0,0,0.969277,-165,-931.33457)" inkscape:label="00257" id="object-visible">
-      <path inkscape:connector-curvature="0" id="rect11899" d="m 165,961.36218 h 16 v 16 h -16 z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect11899" d="m 165,961.36218 h 16 v 16 h -16 z" opacity="0"/>
       <path style="opacity:1" d="m 173,966.3622 c -1.6569,0 -3,1.3431 -3,3 0,1.6568 1.3431,3 3,3 1.6568,0 3,-1.3432 3,-3 0,-1.6569 -1.3432,-3 -3,-3 z m -0.4931,0.8256 c 0.3741,0 0.6831,0.3108 0.6831,0.6979 0,0.3872 -0.309,0.7128 -0.6831,0.7128 -0.3741,0 -0.683,-0.3256 -0.683,-0.7128 0,-0.3871 0.3089,-0.6979 0.683,-0.6979 z" id="path11920" inkscape:connector-curvature="0"/>
       <path style="opacity:1" d="m 173,963.3622 c -4.4183,0 -8,6 -8,6 0,0 3.5817,6 8,6 4.4183,0 8,-6 8,-6 0,0 -3.5817,-6 -8,-6 z m 0,2 c 3.866,0 6,4 6,4 0,0 -2.134,4 -6,4 -3.866,0 -6,-4 -6,-4 0,0 2.134,-4 6,-4 z" id="path11928" inkscape:connector-curvature="0"/>
       <path inkscape:connector-curvature="0" id="path8543-5" d="m 165.99414,965.79492 a 0.50005,0.50005 0 0 0 -0.34766,0.85742 l 1,1 a 0.50005,0.50005 0 1 0 0.70704,-0.70703 l -1,-1 a 0.50005,0.50005 0 0 0 -0.35938,-0.15039 z" style="opacity:1;stroke-linecap:round"/>

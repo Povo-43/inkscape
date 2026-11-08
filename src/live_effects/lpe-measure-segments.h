@@ -102,7 +102,6 @@ private:
     Glib::ustring prevunit = "";
     double arrow_gap;
     guint pagenumber;
-    gchar const* locale_base;
     size_t prevsatellitecount = 0;
     bool prev_active_projection = false;
     SPObject *parent = nullptr;

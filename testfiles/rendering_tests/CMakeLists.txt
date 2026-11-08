@@ -14,6 +14,7 @@ endfunction()
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(HARFBUZZ REQUIRED harfbuzz)
+pkg_search_module(CAIRO REQUIRED cairo)
 
 # Add your test here (do not put the .svg extension)
 
@@ -75,5 +76,22 @@ if(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
     # .otf font with compressed SVG glyphs
     add_rendering_test(text-gzipped-svg-glyph FUZZ 0.03)
 endif()
+
 # custom .otf font with SVG glyphs for testing various edge cases
 add_rendering_test(text-svg-glyph-custom FUZZ 0.3)
+
+# Gradient that reference other gradients.
+add_rendering_test(test-gradient-reference FUZZ 0.1)
+
+# Cairo 1.18.4 and earlier have a deadlock issue.
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(CAIRO REQUIRED cairo)
+pkg_check_modules(HARFBUZZ_CAIRO IMPORTED_TARGET harfbuzz-cairo)
+if(CAIRO_VERSION VERSION_GREATER_EQUAL "1.18.5" AND HARFBUZZ_CAIRO_FOUND)
+  message(STATUS "Enabled color-font-test")
+  add_rendering_test(color-font-test FUZZ 0.1)
+else()
+  message(STATUS "Disabled color-font-test, need Cairo 1.18.5 or later")
+  message(STATUS "  Found cairo, version ${CAIRO_VERSION}")
+  message(STATUS "  Also needs 'harfbuzz-cairo'")
+endif()

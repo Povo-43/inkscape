@@ -6,7 +6,7 @@
   </sodipodi:namedview>
   <g transform="translate(-45,-647.3622)" inkscape:label="00015" id="selection-make-bitmap-copy">
       <g transform="translate(25,371.3622)" id="g11537" inkscape:label="camera-photo">
-        <path inkscape:connector-curvature="0" id="rect11539" d="m 20,276 h 16 v 16 H 20 Z" style="opacity:0;fill:none"/>
+        <path inkscape:connector-curvature="0" id="rect11539" d="m 20,276 h 16 v 16 H 20 Z" opacity="0"/>
         <path style="opacity:1" d="m 26,278 c -0.54996,0 -1,0.45 -1,1 v 1 h -3 c -0.55201,0 -1,0.45 -1,1 v 8 c 0,0.55 0.44799,1 1,1 h 12 c 0.55201,0 1,-0.45 1,-1 v -8 c 0,-0.55 -0.44799,-1 -1,-1 h -3 v -1 c 0,-0.55 -0.45004,-1 -1,-1 z m 2,3 c 2.20914,0 4,1.7909 4,4 0,2.2091 -1.79086,4 -4,4 -2.20914,0 -4,-1.7909 -4,-4 0,-2.2091 1.79086,-4 4,-4 z m 0,2 c -1.10457,0 -2,0.8954 -2,2 0,1.1046 0.89543,2 2,2 1.10457,0 2,-0.8954 2,-2 0,-1.1046 -0.89543,-2 -2,-2 z" id="rect5238" inkscape:connector-curvature="0"/>
       </g>
     </g>

@@ -79,8 +79,6 @@ struct SPGradientMesh
 {
     bool built;
 
-    int rows;
-    int cols;
     std::vector<std::vector<SPGradientPatch>> patches;
 };
 

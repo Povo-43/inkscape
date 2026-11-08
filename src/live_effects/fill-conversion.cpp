@@ -202,11 +202,10 @@ void lpe_shape_revert_stroke_and_fill(SPShape *shape, double width)
         } else {
             convert_fill_server(css, linked);
         }
-
-        linked->deleteObject();
     } else {
         sp_repr_css_set_property(css, "fill", "none");
     }
+
     Inkscape::CSSOStringStream os;
     os << fabs(width);
     sp_repr_css_set_property(css, "stroke-width", os.str().c_str());
@@ -221,6 +220,12 @@ void lpe_shape_revert_stroke_and_fill(SPShape *shape, double width)
     }
     sp_desktop_apply_css_recursive(shape, css, true);
     sp_repr_css_attr_unref(css);
+
+    if (linked) {
+        // Remove attr now to prevent this code path getting hit again when we delete the object
+        shape->removeAttribute("inkscape:linked-fill");
+        linked->deleteObject();
+    }
 }
 
 } // namespace Inkscape::LivePathEffect

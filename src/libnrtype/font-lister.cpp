@@ -295,7 +295,7 @@ void FontLister::ensureRowStyles(Gtk::TreeModel::iterator iter)
         return;
     }
 
-    if (row[font_list.pango_family]) {
+    if ((Glib::RefPtr<Pango::FontFamily>)row[font_list.pango_family]) {
         row[font_list.styles] = std::make_shared<Styles>(FontFactory::get().GetUIStyles(row[font_list.pango_family]));
     } else {
         row[font_list.styles] = default_styles;

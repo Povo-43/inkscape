@@ -28,6 +28,8 @@
 #include "ui/tools/node-tool.h"
 #include "ui/tools/text-tool.h"
 
+#include "actions/actions-svg-processing.h"
+
 namespace ActionsEdit {
 
 void

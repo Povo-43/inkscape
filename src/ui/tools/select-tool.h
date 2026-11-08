@@ -53,10 +53,17 @@ public:
     void updateDescriber(Selection *sel);
 
 private:
+
+    // aborts selection interaction
     bool sp_select_context_abort();
+
     void sp_select_context_cycle_through_items(Selection *selection, ScrollEvent const &scroll_event);
+
+    // resets the opacities of all selected items to their original values
     void sp_select_context_reset_opacities();
+
     static std::pair<Rubberband::Mode, CanvasItemCtrlType> get_default_rubberband_state();
+
     void _duplicate_drag(Geom::Point const &p);
     bool _duplicate_drag_state(unsigned int state) const;
     void _duplicate_drag_reset();

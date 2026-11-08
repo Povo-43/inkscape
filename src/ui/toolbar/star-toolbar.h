@@ -101,6 +101,7 @@ private:
     void _setDefaults();
     void _selectionChanged(Selection *selection);
     void _selectionModified(Selection *selection);
+    void _updateLengthValue(Selection *selection);
 
     void notifyAttributeChanged(XML::Node &node, GQuark name, Util::ptr_shared old_value, Util::ptr_shared new_value) override;
 };

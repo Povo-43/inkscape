@@ -49,6 +49,7 @@ public:
     void setBBox(unsigned key, Geom::OptRect const &bbox);
 
     Geom::OptRect geometricBounds(Geom::Affine const &transform) const;
+    Geom::OptRect visualBounds(Geom::Affine const &transform) const;
     Geom::PathVector getPathVector(Geom::Affine const &transform) const;
     SPText const *getTextObject() const;
     void transform_multiply(Geom::Affine postmul, bool set = true);

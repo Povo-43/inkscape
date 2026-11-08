@@ -78,36 +78,6 @@ NodeToolbar::NodeToolbar(Glib::RefPtr<Gtk::Builder> const &builder)
     auto unit_menu = _tracker->create_unit_dropdown();
     get_widget<Gtk::Box>(builder, "unit_menu_box").append(*unit_menu);
 
-    // Attach the signals.
-    struct ButtonMapping
-    {
-        char const *button_id;
-        void (NodeToolbar::*callback)();
-    };
-
-    static constexpr ButtonMapping button_mapping[] = {
-        {"insert_node_btn", &NodeToolbar::edit_add},
-        {"delete_btn", &NodeToolbar::edit_delete},
-        {"join_btn", &NodeToolbar::edit_join},
-        {"break_btn", &NodeToolbar::edit_break},
-        {"join_segment_btn", &NodeToolbar::edit_join_segment},
-        {"delete_segment_btn", &NodeToolbar::edit_delete_segment},
-        {"cusp_btn", &NodeToolbar::edit_cusp},
-        {"smooth_btn", &NodeToolbar::edit_smooth},
-        {"symmetric_btn", &NodeToolbar::edit_symmetrical},
-        {"auto_btn", &NodeToolbar::edit_auto},
-        {"line_btn", &NodeToolbar::edit_toline},
-        {"curve_btn", &NodeToolbar::edit_tocurve},
-    };
-
-    for (auto const &button_info : button_mapping) {
-        get_widget<Gtk::Button>(builder, button_info.button_id)
-            .signal_clicked()
-            .connect(sigc::mem_fun(*this, button_info.callback));
-    }
-
-    setup_insert_node_menu();
-
     _pusher_show_outline = std::make_unique<SimplePrefPusher>(_show_helper_path_btn, "/tools/nodes/show_outline");
     _show_helper_path_btn->signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &NodeToolbar::on_pref_toggled),
                                                                _show_helper_path_btn, "/tools/nodes/show_outline"));
@@ -156,6 +126,17 @@ void NodeToolbar::setDesktop(SPDesktop *desktop)
         });
 
         sel_changed(desktop->getSelection());
+    }
+}
+
+void NodeToolbar::documentReplaced()
+{
+    _page_origin_conn.disconnect();
+    if (_desktop) {
+        auto &pm = _desktop->getDocument()->getPageManager();
+        _page_origin_conn = pm.connectSelectedPageOriginChanged([this]{
+            coord_changed(get_node_tool()->_selected_nodes);
+        });
         coord_changed(get_node_tool()->_selected_nodes);
     }
 }
@@ -175,17 +156,6 @@ void NodeToolbar::setup_derived_spin_button(UI::Widget::SpinButton &btn, Glib::u
     btn.addUnitTracker(_tracker.get());
 
     btn.setDefocusTarget(this);
-}
-
-void NodeToolbar::setup_insert_node_menu()
-{
-    // insert_node_menu
-    auto const actions = Gio::SimpleActionGroup::create();
-    actions->add_action("insert-leftmost", sigc::mem_fun(*this, &NodeToolbar::edit_add_leftmost));
-    actions->add_action("insert-rightmost", sigc::mem_fun(*this, &NodeToolbar::edit_add_rightmost));
-    actions->add_action("insert-topmost", sigc::mem_fun(*this, &NodeToolbar::edit_add_topmost));
-    actions->add_action("insert-bottommost", sigc::mem_fun(*this, &NodeToolbar::edit_add_bottommost));
-    insert_action_group("node-toolbar", actions);
 }
 
 void NodeToolbar::value_changed(Glib::ustring const &name, Glib::RefPtr<Gtk::Adjustment> const &adj)
@@ -219,12 +189,10 @@ void NodeToolbar::value_changed(Glib::ustring const &name, Glib::RefPtr<Gtk::Adj
         auto d = name == "x" ? Geom::X : Geom::Y;
         double oldval = pwb->midpoint()[d];
 
-        // Adjust the coordinate to the current page, if needed
+        // Adjust the coordinate to the current page
         auto &pm = _desktop->getDocument()->getPageManager();
-        if (_desktop->getDocument()->get_origin_follows_page()) {
-            auto page = pm.getSelectedPageRect();
-            oldval -= page.corner(0)[d];
-        }
+        auto origin = pm.getSelectedPageOrigin();
+        oldval -= origin[d];
 
         Geom::Point delta;
         delta[d] = val - oldval;
@@ -281,10 +249,7 @@ void NodeToolbar::coord_changed(ControlPointSelection *selected_nodes)
         Geom::Point mid = selected_nodes->pointwiseBounds()->midpoint();
 
         // Adjust shown coordinate according to the selected page
-        if (_desktop->getDocument()->get_origin_follows_page()) {
-            auto &pm = _desktop->getDocument()->getPageManager();
-            mid *= pm.getSelectedPageAffine().inverse();
-        }
+        mid *= _desktop->getDocument()->getPageManager().getSelectedPageOriginAffine().inverse();
 
         if (oldx != mid.x()) {
             adj_x->set_value(Quantity::convert(mid.x(), "px", unit));
@@ -306,130 +271,6 @@ void NodeToolbar::coord_changed(ControlPointSelection *selected_nodes)
         }
     } else {
         _nodes_d_box.set_visible(false);
-    }
-}
-
-void NodeToolbar::edit_add()
-{
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->insertNodes();
-    }
-}
-
-/* add a node at the left-most point on selected path(s)*/
-void NodeToolbar::edit_add_leftmost()
-{
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->insertNodesAtExtrema(PointManipulator::EXTR_MIN_X);
-    }
-}
-
-/* add a node at the right-most point on selected path(s)*/
-void NodeToolbar::edit_add_rightmost()
-{
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->insertNodesAtExtrema(PointManipulator::EXTR_MAX_X);
-    }
-}
-
-/* add a node at the top-most point on selected path(s)*/
-void NodeToolbar::edit_add_topmost()
-{
-    const auto extrema = _desktop->yaxisdown()
-                         ? PointManipulator::EXTR_MIN_Y
-                         : PointManipulator::EXTR_MAX_Y;
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->insertNodesAtExtrema(extrema);
-    }
-}
-
-/* add a node at the bottom-most point on selected path(s)*/
-void NodeToolbar::edit_add_bottommost()
-{
-    const auto extrema = _desktop->yaxisdown()
-                         ? PointManipulator::EXTR_MAX_Y
-                         : PointManipulator::EXTR_MIN_Y;
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->insertNodesAtExtrema(extrema);
-    }
-}
-
-void NodeToolbar::edit_delete()
-{
-    if (auto nt = get_node_tool()) {
-        auto prefs = Preferences::get();
-        nt->_multipath->deleteNodes((NodeDeleteMode)prefs->getInt("/tools/node/delete-mode-default", (int)NodeDeleteMode::automatic));
-    }
-}
-
-void NodeToolbar::edit_join()
-{
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->joinNodes();
-    }
-}
-
-void NodeToolbar::edit_break()
-{
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->breakNodes();
-    }
-}
-
-void NodeToolbar::edit_delete_segment()
-{
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->deleteSegments();
-    }
-}
-
-void NodeToolbar::edit_join_segment()
-{
-
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->joinSegments();
-    }
-}
-
-void NodeToolbar::edit_cusp()
-{
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->setNodeType(NODE_CUSP);
-    }
-}
-
-void NodeToolbar::edit_smooth()
-{
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->setNodeType(NODE_SMOOTH);
-    }
-}
-
-void NodeToolbar::edit_symmetrical()
-{   
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->setNodeType(NODE_SYMMETRIC);
-    }
-}
-
-void NodeToolbar::edit_auto()
-{
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->setNodeType(NODE_AUTO);
-    }
-}
-
-void NodeToolbar::edit_toline()
-{
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->setSegmentType(SEGMENT_STRAIGHT);
-    }
-}
-
-void NodeToolbar::edit_tocurve()
-{
-    if (auto nt = get_node_tool()) {
-        nt->_multipath->setSegmentType(SEGMENT_CUBIC_BEZIER);
     }
 }
 

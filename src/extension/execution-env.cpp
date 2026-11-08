@@ -195,7 +195,6 @@ ExecutionEnv::run () {
         // Save selection state
         auto selectionState = selection->getState();
 
-        auto gtk_app = InkscapeApplication::instance()->gtk_app();
         if (_show_working) {
             createWorkingDialog();
             _desktop->setWaitingCursor();

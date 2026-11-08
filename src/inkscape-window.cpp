@@ -33,13 +33,15 @@
 #include "actions/actions-canvas-transform.h"
 #include "actions/actions-dialogs.h"
 #include "actions/actions-edit-window.h"
-#include "actions/actions-file-window.h"
+#include "actions/actions-file-gui.h"
 #include "actions/actions-help-url.h"
 #include "actions/actions-layer.h"
 #include "actions/actions-node-align.h" // Node alignment.
+#include "actions/actions-node-tool.h"
 #include "actions/actions-pages.h"
 #include "actions/actions-paths.h"  // TEMP
 #include "actions/actions-selection-window.h"
+#include "actions/actions-text-attributes.h"
 #include "actions/actions-tools.h"
 #include "actions/actions-transform.h"
 #include "actions/actions-view-mode.h"
@@ -84,9 +86,11 @@ InkscapeWindow::InkscapeWindow(SPDesktop *desktop)
     add_actions_help_url(this);             // Actions to help url.
     add_actions_layer(this);                // Actions for layer.
     add_actions_node_align(this);           // Actions to align and distribute nodes (requiring Node tool).
+    add_actions_node_tool(this);            // Actions to add, delete, etc. nodes (requiring Node tool).
     add_actions_page_tools(this);           // Actions specific to pages tool and toolbar
     add_actions_path(this);                 // Actions for paths. TEMP
     add_actions_select_window(this);        // Actions with desktop selection
+    add_actions_text_attributes(this);      // actions for Text attributes (underline, etc.)
     add_actions_tools(this);                // Actions to switch between tools.
     add_actions_transform(this);            // Actions for transforming against the screen zoom
     add_actions_view_mode(this);            // Actions to change how Inkscape canvas is displayed.
@@ -137,7 +141,7 @@ InkscapeWindow::InkscapeWindow(SPDesktop *desktop)
 
     // Show dialogs after the main window, otherwise dialogs may be associated as the main window of the program.
     // Restore short-lived floating dialogs state if this is the first window being opened
-    bool include_short_lived = _app->get_number_of_windows() == 1;
+    bool include_short_lived = _app->get_number_of_desktops() == 1;
     DialogManager::singleton().restore_dialogs_state(_desktop_widget->getDialogContainer(), include_short_lived);
 
     // ================= Menu icons/tooltips =================

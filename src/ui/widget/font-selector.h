@@ -5,7 +5,7 @@
  * The routines here create and manage a font selector widget with three parts,
  * one each for font-family, font-style, and font-size.
  *
- * It is used by the TextEdit  and Glyphs panel dialogs. The FontLister class is used
+ * It is used by the FontCollections and LegacyText dialogs. The FontLister class is used
  * to access the list of font-families and their associated styles for fonts either
  * on the system or in the document. The FontLister class is also used by the Text
  * toolbar. Fonts are kept track of by their "fontspecs"  which are the same as the
@@ -52,7 +52,7 @@ namespace Inkscape::UI::Widget {
 /**
  * A container of widgets for selecting font faces.
  *
- * It is used by the TextEdit and Glyphs panel dialogs. The FontSelector class utilizes the
+ * It is used by the FontCollections and LegacyText dialogs. The FontSelector class utilizes the
  * FontLister class to obtain a list of font-families and their associated styles for fonts either
  * on the system or in the document. The FontLister class is also used by the Text toolbar. Fonts
  * are kept track of by their "fontspecs" which are the same as the strings that Pango generates.
@@ -111,8 +111,7 @@ private:
     void on_variations_changed();
 
     // Signals
-    sigc::signal<void (Glib::ustring)> _signal_changed;
-    sigc::signal<void ()> _signal_apply;
+    sigc::signal<void ()> _signal_set_default;
     void changed_emit();
     bool signal_block;
 
@@ -136,8 +135,9 @@ private:
     double get_fontsize() const override { return size_selector.getSize(); };
     void set_current_font(const Glib::ustring& family, const Glib::ustring& face) override { update_font(); }
     void set_current_size(double size) override { size_selector.setSize(size); };
-    sigc::signal<void ()>& signal_changed() override { return dummy; }
-    sigc::signal<void ()>& signal_apply() override { return _signal_apply; }
+    sigc::signal<void ()>& signal_fontspec_changed() override { return dummy; }
+    sigc::signal<void ()>& signal_fontsize_changed() override { return dummy; }
+    sigc::signal<void ()>& signal_set_default() override { return _signal_set_default; }
     sigc::signal<void (const Glib::ustring&)>& signal_insert_text() override { return dummy2; }
     sigc::signal<void ()> dummy;
     sigc::signal<void (const Glib::ustring&)> dummy2;
@@ -159,14 +159,6 @@ public:
      * Get font size. Could be merged with fontspec.
      */
     double get_fontsize() { return size_selector.getSize(); };
-
-    /**
-     * Let others know that user has changed GUI settings.
-     * (Used to enable 'Apply' and 'Default' buttons.)
-     */
-    sigc::connection connectChanged(sigc::slot<void (Glib::ustring)> slot) {
-        return _signal_changed.connect(slot);
-    }
 };
 
 } // namespace Inkscape::UI::Widget

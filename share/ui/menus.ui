@@ -7,17 +7,17 @@
       <section>
         <item>
           <attribute name="label" translatable="yes">_New</attribute>
-          <attribute name="action">win.document-new</attribute>
+          <attribute name="action">app.document-new</attribute>
           <attribute name="icon">document-new</attribute>
         </item>
         <item>
           <attribute name="label" translatable="yes">New from _Template...</attribute>
-          <attribute name="action">win.document-dialog-templates</attribute>
+          <attribute name="action">app.document-dialog-templates</attribute>
           <attribute name="icon">dialog-templates</attribute>
         </item>
         <item>
           <attribute name="label" translatable="yes">_Open...</attribute>
-          <attribute name="action">win.document-open</attribute>
+          <attribute name="action">app.document-open</attribute>
           <attribute name="icon">document-open</attribute>
         </item>
       </section>
@@ -312,6 +312,10 @@
               <attribute name="label" translatable="yes">_Object Type</attribute>
               <attribute name="action">win.select-same-object-type</attribute>
               <attribute name="icon">edit-select-same-object-type</attribute>
+            </item>
+            <item>
+              <attribute name="label" translatable="yes">_Text Font Family</attribute>
+              <attribute name="action">app.text-select-by-font</attribute>
             </item>
           </section>
         </submenu>
@@ -1112,7 +1116,7 @@
     </submenu>
     <submenu id="text-menu">
       <attribute name="label" translatable="yes">_Text</attribute>
-      <section>
+      <section id="font-section">
         <item>
           <attribute name="label" translatable="yes">_Text and Font...</attribute>
           <attribute name="action">win.dialog-open</attribute>
@@ -1153,6 +1157,11 @@
           <attribute name="label" translatable="yes">_Unflow</attribute>
           <attribute name="action">app.text-unflow</attribute>
           <attribute name="icon">text-unflow</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_Unflow and Keep Shape</attribute>
+          <attribute name="action">app.text-unflow-and-keep-shape</attribute>
+          <attribute name="icon">text-unflow-and-keep-shape</attribute>
         </item>
         <item>
           <attribute name="label" translatable="yes">_Convert to Text</attribute>

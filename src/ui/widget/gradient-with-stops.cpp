@@ -263,12 +263,12 @@ std::optional<bool> GradientWithStops::focus(Gtk::DirectionType const direction)
             return false; // let focus go
         }
         // in range: next/prev stop
-        set_focused_stop(new_stop);
+        setFocusedStop(new_stop);
     } else {
         // didnʼt have focus: grab on 1st or last stop, relevant to direction
         grab_focus();
         if (n_stops > 0) { // …unless we have no stop, then just focus widget
-            set_focused_stop(backward ? n_stops - 1 : 0);
+            setFocusedStop(backward ? n_stops - 1 : 0);
         }
     }
 
@@ -300,6 +300,12 @@ bool GradientWithStops::on_key_pressed(unsigned keyval, unsigned /*keycode*/, Gd
         case GDK_KEY_Delete:
             _signal_delete_stop.emit(_focused_stop);
             return true;
+
+        case GDK_KEY_Return:
+        case GDK_KEY_KP_Enter:
+        case GDK_KEY_space:
+            setSelectedStop(_focused_stop);
+            return true;
     }
 
     return false;
@@ -321,11 +327,11 @@ void GradientWithStops::on_click_pressed(int n_press, double x, double y)
         auto const index = find_stop_at(x, y);
 
         if (index < 0) {
-            set_focused_stop(-1); // no stop
+            setSelectedStop(-1); // no stop
             return;
         }
 
-        set_focused_stop(index);
+        setSelectedStop(index);
 
         // check if clicked stop can be moved
         auto limits = get_stop_limits(index);
@@ -463,13 +469,14 @@ void GradientWithStops::draw_func(Cairo::RefPtr<Cairo::Context> const &ctx, int 
 
     for (size_t i = 0; i < _stops.size(); ++i) {
         const auto& stop = _stops[i];
+        const auto is_selected = _selected_stop == static_cast<int>(i);
+        const auto is_focused = _focused_stop == static_cast<int>(i);
 
         // stop handle shows stop color and opacity:
         _template.set_style(".color", "fill", stop.color.toString(false));
         _template.set_style(".opacity", "opacity", Util::format_number(stop.opacity));
 
         // show/hide selection indicator
-        const auto is_selected = _focused_stop == static_cast<int>(i);
         _template.set_style(".selected", "opacity", Util::format_number(is_selected ? 1 : 0));
 
         // render stop handle
@@ -482,8 +489,8 @@ void GradientWithStops::draw_func(Cairo::RefPtr<Cairo::Context> const &ctx, int 
 
         auto pos = get_stop_position(i, layout);
 
-        // selected handle sports a 'tip' to make it easily noticeable
-        if (is_selected && tip) {
+        // focused handle sports a 'tip' to make it easily noticeable
+        if (is_focused && tip) {
             ctx->save();
             // scale back to physical pixels
             ctx->scale(1 / scale, 1 / scale);
@@ -509,12 +516,22 @@ void GradientWithStops::draw_func(Cairo::RefPtr<Cairo::Context> const &ctx, int 
     }
 }
 
-// focused/selected stop indicator
-void GradientWithStops::set_focused_stop(int index) {
+// Sets selected stop indicator (and sets focus too)
+void GradientWithStops::setSelectedStop(int index) {
+    if (_selected_stop == index) return;
+
+    setFocusedStop(index);
+
+    _selected_stop = index;
+    _signal_stop_selected.emit(index);
+    update();
+}
+
+// Set focused stop indicator (does not change selection)
+void GradientWithStops::setFocusedStop(int index) {
     if (_focused_stop == index) return;
 
     _focused_stop = index;
-    _signal_stop_selected.emit(index);
     update();
 }
 

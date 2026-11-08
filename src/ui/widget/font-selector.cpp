@@ -446,8 +446,7 @@ FontSelector::on_variations_changed() {
 void
 FontSelector::changed_emit() {
     signal_block = true;
-    _signal_changed.emit (get_fontspec());
-    _signal_apply.emit();
+    _signal_set_default.emit();
     if (initial) {
         initial = false;
         family_treecolumn.unset_cell_data_func (family_cell);

@@ -5,7 +5,7 @@
     <inkscape:grid type="xygrid" id="grid"/>
   </sodipodi:namedview>
   <g transform="translate(-409,-651.36218)" inkscape:label="00172" id="draw-ellipse-arc">
-      <path inkscape:connector-curvature="0" id="rect19892" d="m 409,651.36218 h 16 v 16 h -16 z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect19892" d="m 409,651.36218 h 16 v 16 h -16 z" opacity="0"/>
       <path inkscape:connector-curvature="0" style="opacity:1" d="m 414,142 c -2.787,1.5809 -3.8061,5.0432 -2.3125,7.8437 1.5379,2.8838 5.1585,3.9798 8.0937,2.4688 2.9353,-1.511 4.0692,-5.0537 2.5313,-7.9375 l -1.75,0.875 c 0.9567,1.9403 0.2084,4.2716 -1.7188,5.2812 -1.9567,1.0253 -4.3497,0.2692 -5.375,-1.6875 -0.9857,-1.8811 -0.3224,-4.1636 1.4688,-5.25 z" transform="translate(0,512.3622)" id="path9873"/>
     </g>
     </svg>

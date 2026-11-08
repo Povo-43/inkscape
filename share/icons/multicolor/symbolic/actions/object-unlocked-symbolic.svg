@@ -83,7 +83,7 @@
        inkscape:connector-curvature="0"
        id="rect31373"
        d="m 195,449 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none"
+       opacity="0"
        transform="translate(0,512.3622)" />
     <path
        sodipodi:nodetypes="ccccc"

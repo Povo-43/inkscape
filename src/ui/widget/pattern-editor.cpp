@@ -349,7 +349,10 @@ void sort_patterns(std::vector<Glib::RefPtr<PatternItem>>& list) {
 Glib::RefPtr<PatternItem> create_pattern_item(PatternManager& manager, SPPaintServer* paint, int tile_size, double scale) {
     auto item = manager.get_item(paint);
     if (item && scale > 0) {
-        item->pix = manager.get_image(paint, tile_size, tile_size, scale);
+        // check if any existing cached image needs to be regenerated
+        if (!item->pix || tile_size != item->pix->get_width() || scale != item->pix->get_device_scale()) {
+            item->pix = manager.get_image(paint, tile_size, tile_size, scale);
+        }
     }
     return item;
 }

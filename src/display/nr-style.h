@@ -126,6 +126,8 @@ struct NRStyleData
     float underline_position; 
     float line_through_thickness;
     float line_through_position;
+    float overline_thickness;
+    float overline_position;
     float font_size;
 
     int   text_direction;

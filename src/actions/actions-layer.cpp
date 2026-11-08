@@ -408,6 +408,7 @@ layer_to_group (InkscapeWindow* win)
         return;
     }
 
+    layer->preserveLayerHighlight();
     layer->setLayerMode(SPGroup::GROUP);
     layer->updateRepr(SP_OBJECT_WRITE_NO_CHILDREN | SP_OBJECT_WRITE_EXT);
     dt->getSelection()->set(layer);
@@ -427,6 +428,7 @@ void layer_from_group(InkscapeWindow *win)
 
     if (auto group = cast<SPGroup>(obj)) {
         if (!group->isLayer()) {
+            group->preserveGroupHighlight();
             group->setLayerMode(SPGroup::LAYER);
             group->updateRepr(SP_OBJECT_WRITE_NO_CHILDREN | SP_OBJECT_WRITE_EXT);
             selection->set(group);

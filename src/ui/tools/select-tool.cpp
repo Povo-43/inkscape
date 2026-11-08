@@ -814,6 +814,7 @@ bool SelectTool::root_handler(CanvasEvent const &event)
                     if (mod_select_touch_path->active(event.modifiersAfter())) {
                         rubberband->setMode(Rubberband::Mode::TOUCHPATH);
                         rubberband->setHandle(CanvasItemCtrlType::RUBBERBAND_TOUCHPATH_SELECT);
+                        set_cursor("select-touch.svg");
                     }
                 } else {
                     // do not change the statusbar text when mousekey is down to move or transform the object,
@@ -827,9 +828,13 @@ bool SelectTool::root_handler(CanvasEvent const &event)
                                               Modifiers::Type::SELECT_CYCLE, Modifiers::Type::SELECT_FORCE_DRAG);
 
                 // if Alt and nonempty selection, show moving cursor ("move selected"):
-                if (alt && !selection->isEmpty() && !_desktop->isWaitingCursor()) {
-                    set_cursor("select-dragging.svg");
-                    _force_dragging = true;
+                if (alt && !_desktop->isWaitingCursor()) {
+                        if (!selection->isEmpty()) {
+                            set_cursor("select-dragging.svg");
+                            _force_dragging = true;
+                        } else {
+                           set_cursor("select-touch.svg");
+                        }
                     _default_cursor = "select.svg";
                 }
                 return;
@@ -986,6 +991,7 @@ bool SelectTool::root_handler(CanvasEvent const &event)
                     auto const [mode, handle] = get_default_rubberband_state();
                     rubberband->setMode(mode);
                     rubberband->setHandle(handle);
+                    set_cursor(_default_cursor);
                 }
                 // if Ctrl release then change rubberband operation to add
                 if (!mod_select_remove_from->active(event.modifiersAfter())) {
@@ -1004,7 +1010,7 @@ bool SelectTool::root_handler(CanvasEvent const &event)
             }
 
             // set cursor to default.
-            if (alt && !(grabbed || _seltrans->isGrabbed()) && !selection->isEmpty() && !_desktop->isWaitingCursor()) {
+            if (alt && !(grabbed || _seltrans->isGrabbed()) && !_desktop->isWaitingCursor()) {
                 set_cursor(_default_cursor);
                 _force_dragging = false;
             }

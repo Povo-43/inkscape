@@ -30,6 +30,7 @@
 #include "ui/operation-blocker.h"
 #include "ui/widget/paint-attribute.h"
 #include "ui/widget/unit-tracker.h"
+#include "ui/widget/drop-down-list.h"
 #include "xml/helper-observer.h"
 
 class SPAttributeTable;
@@ -86,6 +87,8 @@ protected:
     SPDesktop* _desktop = nullptr;
     SPDocument* _document = nullptr;
     SPObject* _current_object = nullptr;
+    sigc::scoped_connection _resource_changed;
+    sigc::scoped_connection _page_origin_changed;
     OperationBlocker _update;
     Glib::ustring _title;
     Gtk::Widget* _widget = nullptr;
@@ -97,7 +100,8 @@ private:
     void transform();
     void update_label(SPObject* object, Inkscape::Selection* selection);
     void update_size_location();
-    void update_filters(SPObject* object);
+    void update_filters(SPObject* object, bool update_menu = true);
+    void populate_filter_menu();
     void update_lpes(SPObject* object);
     void update_names(SPObject* object);
     void update_interactive_props(SPObject* object);
@@ -136,11 +140,13 @@ private:
     Widget::WidgetGroup _inter_group;
     std::unique_ptr<ObjectProperties> _obj_interactivity;
     Pref<bool> _inter_props_visibility = {dlg_pref_path + "/options/show_interactivity_props"};
-    Gtk::Entry& _filter_primitive;
     Widget::InkSpinButton& _blur;
     Gtk::Button& _clear_filters;
+    Gtk::Button& _clear_blur;
     Gtk::Button& _add_blur;
-    Gtk::Button& _edit_filter;
+    Gtk::Button& _add_filter;
+    Inkscape::UI::Widget::DropDownList _filter_dropdown;
+    std::vector<SPFilter*> _filter_list; 
     Gtk::ListBox& _lpe_menu;
     Gtk::ListBox& _lpe_list;
     Gtk::MenuButton& _add_lpe;

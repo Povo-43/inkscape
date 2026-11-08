@@ -229,9 +229,9 @@ bool FontFactory::hasFontFamily(const std::string &family)
     return getSubstituteFontName(family) == family;
 }
 
-std::map<std::string, PangoFontFamily *> FontFactory::GetUIFamilies()
+std::map<std::string, Glib::RefPtr<Pango::FontFamily>> FontFactory::GetUIFamilies()
 {
-    std::map<std::string, PangoFontFamily *> result;
+    std::map<std::string, Glib::RefPtr<Pango::FontFamily>> result;
 
     // Gather the family names as listed by Pango
     PangoFontFamily **families = nullptr;
@@ -251,7 +251,7 @@ std::map<std::string, PangoFontFamily *> FontFactory::GetUIFamilies()
             std::cerr << "Ignoring font '" << displayName << "'" << std::endl;
             continue;
         }
-        result.emplace(displayName, families[currentFamily]);
+        result.emplace(displayName, Glib::wrap(families[currentFamily], true));
     }
 
     g_free(families);
@@ -285,7 +285,7 @@ std::vector<Glib::RefPtr<Pango::FontFamily>> FontFactory::get_font_families() {
     return sorted;
 }
 
-std::vector<StyleNames> FontFactory::GetUIStyles(PangoFontFamily *in)
+std::vector<StyleNames> FontFactory::GetUIStyles(const Glib::RefPtr<Pango::FontFamily> &in)
 {
     if (!in) {
         std::cerr << "FontFactory::GetUIStyles(): PangoFontFamily is NULL" << std::endl;
@@ -295,7 +295,7 @@ std::vector<StyleNames> FontFactory::GetUIStyles(PangoFontFamily *in)
     // Gather the styles for this family
     PangoFontFace **faces = nullptr;
     int numFaces = 0;
-    pango_font_family_list_faces(in, &faces, &numFaces);
+    pango_font_family_list_faces(in->gobj(), &faces, &numFaces);
 
     std::vector<StyleNames> result;
 

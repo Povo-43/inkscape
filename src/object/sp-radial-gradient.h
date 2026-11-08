@@ -34,6 +34,14 @@ public:
     SVGLength fy;
     SVGLength fr; // Focus radius. Added in SVG 2
 
+    // Walk up the reference tree to find values.
+    SVGLength find_cx() const { return find_attr_length(this, &SPRadialGradient::cx); }
+    SVGLength find_cy() const { return find_attr_length(this, &SPRadialGradient::cy); }
+    SVGLength find_r()  const { return find_attr_length(this, &SPRadialGradient::r);  }
+    SVGLength find_fx() const { return find_attr_length(this, &SPRadialGradient::fx); }
+    SVGLength find_fy() const { return find_attr_length(this, &SPRadialGradient::fy); }
+    SVGLength find_fr() const { return find_attr_length(this, &SPRadialGradient::fr); }
+
     PaintServerType getPaintType() const override { return PaintServerType::RADIAL_GRADIENT; }
     std::vector<double> getGradientGeom() const override;
 

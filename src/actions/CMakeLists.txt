@@ -30,8 +30,8 @@ target_sources(inkscape_base PRIVATE
   actions-element-a.cpp
   actions-element-image.h
   actions-element-image.cpp
-  actions-file-window.h
-  actions-file-window.cpp
+  actions-file-gui.h
+  actions-file-gui.cpp
   actions-file.h
   actions-file.cpp
   actions-helper.h
@@ -46,6 +46,8 @@ target_sources(inkscape_base PRIVATE
   actions-layer.cpp
   actions-node-align.h
   actions-node-align.cpp
+  actions-node-tool.h
+  actions-node-tool.cpp
   actions-object.h
   actions-object.cpp
   actions-object-align.h
@@ -62,6 +64,8 @@ target_sources(inkscape_base PRIVATE
   actions-selection.cpp
   actions-text.h
   actions-text.cpp
+  actions-text-attributes.h
+  actions-text-attributes.cpp
   actions-tools.h
   actions-tools.cpp
   actions-tutorial.h

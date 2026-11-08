@@ -78,6 +78,7 @@ eval pacman -S $PACMAN_OPTIONS \
 $ARCH-enchant \
 $ARCH-graphicsmagick \
 $ARCH-gtksourceview5 \
+$ARCH-harfbuzz-cairo \
 $ARCH-libheif \
 $ARCH-libcdr \
 $ARCH-libjxl \

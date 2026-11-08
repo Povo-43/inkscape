@@ -16,6 +16,7 @@
 #include <unordered_set>
 
 #include <2geom/forward.h>
+#include <cairo/cairo.h>    // cairo_font_face_t
 #include <pango/pango-font.h>
 
 #include <ft2build.h>
@@ -65,11 +66,22 @@ public:
 
     // Various bounding boxes. Color fonts complicate this as some types don't have paths.
     Geom::Rect BBoxExact(unsigned int glyph_id); // Bounding box of glyph. From Harfbuzz.
-    Geom::Rect BBoxPick( unsigned int glyph_id); // For picking. (Height: embox, Width: glyph advance.)
-    Geom::Rect BBoxDraw( unsigned int glyph_id); // Contains all inked areas including possible text decorations.
+    Geom::Rect BBoxPick(unsigned int glyph_id);  // For picking. (Height: embox, Width: glyph advance.)
+    Geom::Rect BBoxDraw(unsigned int glyph_id);  // Contains all inked areas including possible text decorations.
+
+    // For drawing bitmap color fonts.
+    cairo_font_face_t *CairoFontFace() { return data->cairo_font_face; }
 
     // Return if font has various tables.
-    bool                  FontHasSVG() const { return has_svg; };
+    bool FontHasSVG()    const { return has_svg; };
+    bool FontHasPNG()    const { return has_png; }
+    bool FontHasLayers() const { return has_layers; } // COLORv0
+    bool FontHasPaint()  const { return has_paint; }  // COLORv1 HB 7.0.0
+    bool GlyphHasSVG(   unsigned int glyph_id);
+    bool GlyphHasPNG(   unsigned int glyph_id);
+    bool GlyphHasLayers(unsigned int glyph_id);  // COLORv0
+    bool GlyphHasPaint( unsigned int glyph_id);  // COLORv1 HB 7.0.0
+    std::string UnicodeName(unsigned int glyph_id);
 
     auto const &get_opentype_varaxes() const { return data->openTypeVarAxes; }
 
@@ -84,7 +96,7 @@ public:
     // Horizontal advance if 'vertical' is false, vertical advance if true.
     double Advance(unsigned int glyph_id, bool vertical);
 
-    // Return a shared pointer that will keep alive the pathvector and pixbuf data, but nothing else.
+    // Return a shared pointer that will keep alive the pathvector, pixbuf, cairo_font_face data, but nothing else.
     std::shared_ptr<void const> share_data() const { return data; }
 
     double        GetTypoAscent()  const { return _ascent; }
@@ -99,8 +111,9 @@ public:
 
     bool FontMetrics(double &ascent, double &descent, double &leading) const;
 
-    bool FontDecoration(double &underline_position, double &underline_thickness,
-                        double &linethrough_position, double &linethrough_thickness) const;
+    void FontDecoration(double &underline_position, double &underline_thickness,
+                        double &linethrough_position, double &linethrough_thickness,
+                        double &overline_position, double &overline_thickness) const;
 
     bool FontSlope(double &run, double &rise) const; // for generating slanted cursors for oblique fonts
 
@@ -151,7 +164,10 @@ private:
     // as long as p_font is valid, face is too.
     FT_Face face;
 
-    bool has_svg = false;   // SVG glyphs
+    bool has_svg    = false; // SVG glyphs
+    bool has_png    = false; // Color png glyphs (either CBDT or sbix tables)
+    bool has_layers = false; // Color vector glyphs (COLRv0 table)
+    bool has_paint  = false; // Color vector glyphs (COLRv1 table) (HB 7.0.0)
 
     /*
      * Metrics
@@ -168,6 +184,13 @@ private:
     bool _fixed_width = false; // monospaced font (if advertised as such)
     bool _oblique = false;  // oblique or italic font
     bool _has_vertical = false; // Has vertical metrics
+    double _underline_position;
+    double _underline_thickness;
+    double _linethrough_position;
+    double _linethrough_thickness;
+    double _overline_position;
+    double _overline_thickness;
+
     unsigned short _family_class = 0; // OS/2 sFamily class field
 
     // Baselines
@@ -178,6 +201,9 @@ private:
 
     struct Data
     {
+        // Used for color glyphs.
+        cairo_font_face_t *cairo_font_face;
+
         /*
          * Tables
          */
@@ -206,6 +232,9 @@ private:
     };
 
     std::shared_ptr<Data> data;
+
+public:
+    inline static bool debug_color_fonts = false;
 };
 
 #endif // LIBNRTYPE_FONT_INSTANCE_H

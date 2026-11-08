@@ -107,7 +107,7 @@
        inkscape:connector-curvature="0"
        id="rect11641"
        d="m 165,667.36218 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <g
        id="g15972">
       <path

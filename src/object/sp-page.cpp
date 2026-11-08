@@ -134,15 +134,6 @@ Geom::Rect SPPage::getDesktopRect() const
 }
 
 /**
- * Gets the page's position as a translation in desktop units.
- */
-Geom::Translate SPPage::getDesktopAffine() const
-{
-    auto box = getDesktopRect();
-    return Geom::Translate(box.left(), box.top());
-}
-
-/**
  * Get document rect, minus the margin amounts.
  */
 Geom::Rect SPPage::getDocumentMargin() const
@@ -499,6 +490,9 @@ bool SPPage::setPageIndex(int index, bool swap_page)
         if (sibling && swap_page) {
             swapPage(sibling, true);
         }
+
+        page_manager.selectPage(this);
+
         return true;
     }
     return false;

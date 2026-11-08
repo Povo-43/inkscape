@@ -329,7 +329,7 @@ public:
      * in all circumstances keep its angle. Otherwise the vector in origin_or_vector can be updated, meaning that the guide might take on the angle of a curve that
      * has been snapped too tangentially or perpendicularly
      */
-    void guideFreeSnap(Geom::Point &p, Geom::Point &origin_or_vector, bool origin, bool freeze_angle) const;
+    bool guideFreeSnap(Geom::Point &p, Geom::Point &origin_or_vector, bool origin, bool freeze_angle) const;
 
     /**
      * Wrapper method to make snapping of the guide origin a bit easier (i.e. simplifies the calling code).

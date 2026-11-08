@@ -73,7 +73,7 @@
      id="paint-gradient-conical"
      inkscape:label="paint-gradient-conical">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="M 0,0 H 16 V 16 H 0 Z"
        id="rect36996"
        inkscape:connector-curvature="0" />

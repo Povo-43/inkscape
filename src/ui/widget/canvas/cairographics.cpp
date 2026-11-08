@@ -157,7 +157,7 @@ void CairoGraphics::fast_snapshot_combine()
         cr->translate(1.0, 1.0);
         cr->clip();
         cr->set_source(from, stores.store().rect.left(), stores.store().rect.top());
-        Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::FAST);
+        Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::BILINEAR);
         cr->paint();
     };
 
@@ -191,7 +191,7 @@ void CairoGraphics::snapshot_combine(Fragment const &dest)
         cr->transform(geom_to_cairo(stores.snapshot().affine.inverse() * dest.affine));
         cr->rectangle(stores.snapshot().rect.left(), stores.snapshot().rect.top(), stores.snapshot().rect.width(), stores.snapshot().rect.height());
         cr->set_source(snapshot_from, stores.snapshot().rect.left(), stores.snapshot().rect.top());
-        Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::FAST);
+        Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::BILINEAR);
         cr->fill();
         cr->transform(geom_to_cairo(stores.store().affine.inverse() * stores.snapshot().affine));
         cr->translate(-1.0, -1.0);
@@ -199,7 +199,7 @@ void CairoGraphics::snapshot_combine(Fragment const &dest)
         cr->translate(1.0, 1.0);
         cr->clip();
         cr->set_source(store_from, stores.store().rect.left(), stores.store().rect.top());
-        Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::FAST);
+        Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::BILINEAR);
         cr->paint();
     };
 
@@ -280,7 +280,7 @@ void CairoGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo
             cr->transform(geom_to_cairo(stores.store().affine.inverse() * view.affine)); // Almost always the identity.
             cr->rectangle(r.left(), r.top(), r.width(), r.height());
             cr->set_source(store, r.left(), r.top());
-            Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::FAST);
+            Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::BILINEAR);
             cr->fill();
             cr->restore();
         } else {
@@ -299,7 +299,7 @@ void CairoGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo
             cr->rectangle(r.left(), r.top(), r.width(), r.height());
             cr->clip();
             cr->set_source(snapshot_store, r.left(), r.top());
-            Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::FAST);
+            Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::BILINEAR);
             cr->paint();
             if (prefs.debug_show_snapshot) {
                 cr->set_source_rgba(0, 0, 1, 0.2);
@@ -314,7 +314,7 @@ void CairoGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo
             cr->translate(-view.rect.left(), -view.rect.top());
             cr->transform(geom_to_cairo(stores.store().affine.inverse() * view.affine));
             cr->set_source(store, stores.store().rect.left(), stores.store().rect.top());
-            Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::FAST);
+            Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::SurfacePattern::Filter::BILINEAR);
             region_to_path(cr, stores.store().drawn);
             cr->fill();
             cr->restore();

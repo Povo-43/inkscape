@@ -5,12 +5,12 @@
     <inkscape:grid type="xygrid" id="grid"/>
   </sodipodi:namedview>
   <g transform="matrix(1.333111,0,0,1.333333,-1493.0845,-1204.4829)" inkscape:label="00300" id="object-stroke-style">
-      <path inkscape:connector-curvature="0" id="rect20574" d="m 1120,903.36218 h 12 v 12 h -12 z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect20574" d="m 1120,903.36218 h 12 v 12 h -12 z" opacity="0"/>
       <path style="opacity:1" d="m 1120,905.3622 h 8 v -2 l 4,2.5 -4,2.5 v -2 h -8 z" id="rect12874" inkscape:connector-curvature="0"/>
       <path inkscape:connector-curvature="0" id="path10529" d="m 1120,910.36133 v 1 h 0.5 1 0.5 v -1 h -0.5 -1 z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="use10533" d="m 1126,910.36133 v 1 h 0.5 1 0.5 v -1 h -0.5 -1 z" style="opacity:1"/>
-      <use style="opacity:0;fill:none;stroke:#000000" x="0" y="0" id="use10535" width="1250" height="1250" transform="translate(3)" xlink:href="#use10533"/>
+      <use opacity="0" x="0" y="0" id="use10535" width="1250" height="1250" transform="translate(3)" xlink:href="#use10533"/>
       <path inkscape:connector-curvature="0" id="path10541" d="m 1120,914.36133 v 1 h 0.5 11.002 0.5 v -1 h -0.5 -11.002 z" style="opacity:1"/>
-      <use style="opacity:0;fill:none;stroke:#000000" x="0" y="0" id="use4611" transform="translate(2.999996)" width="1250" height="1250" xlink:href="#path10529"/>
+      <use opacity="0" x="0" y="0" id="use4611" transform="translate(2.999996)" width="1250" height="1250" xlink:href="#path10529"/>
     </g>
     </svg>

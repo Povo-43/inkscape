@@ -52,11 +52,7 @@ TextpathPopover::TextpathPopover(SPText *text, SPTextPath *textpath, SPDesktop *
         }
 
         // Update the `startOffset` attribute of the textpath.
-        gint const precision = Util::get_default_numeric_precision();
-        std::stringstream offset_stream;
-        offset_stream << std::fixed << std::setprecision(precision) << start_adj->get_value() << '%';
-        auto const offset_str = offset_stream.str();
-        textpath->setStartOffset(offset_str.c_str());
+        textpath->setStartOffset(start_adj->get_value());
         text->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         text->updateRepr();
         DocumentUndo::maybeDone(_desktop->getDocument(), "textpath:startOffset", RC_("Undo", "Update textpath startOffset"), "");

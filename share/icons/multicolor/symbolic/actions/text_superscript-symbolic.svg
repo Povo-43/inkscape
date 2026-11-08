@@ -62,7 +62,7 @@
      id="text_superscript"
      transform="translate(-559,-836.36218)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 559,836.36218 h 16 v 16 h -16 z"
        id="rect15829"
        inkscape:connector-curvature="0" />

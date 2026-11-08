@@ -604,9 +604,7 @@ std::pair<Geom::Point, Geom::Point> SPGrid::getEffectiveOriginAndSpacing(int ind
         spacing *= scale;
     }
 
-    if (document->get_origin_follows_page()) {
-        origin *= document->getPageManager().getSelectedPageAffine();
-    }
+    origin *= document->getPageManager().getSelectedPageOriginAffine();
 
     return { origin, spacing };
 }

@@ -62,7 +62,7 @@
      id="object-tweak-blur"
      transform="translate(-255,-807.36218)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 255,807.36218 h 16 v 16 h -16 z"
        id="rect18300"
        inkscape:connector-curvature="0" />

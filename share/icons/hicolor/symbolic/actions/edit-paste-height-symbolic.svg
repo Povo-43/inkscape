@@ -57,7 +57,7 @@
        inkscape:connector-curvature="0"
        id="rect27708"
        d="m 45.070339,567.41998 h 16 v 15.93773 h -16 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <g
        style="stroke-width:1.6"
        transform="matrix(0.62499975,0,0,0.62499725,-170.05457,222.38729)"
@@ -79,7 +79,7 @@
          inkscape:connector-curvature="0"
          id="rect19206"
          d="m 349,46 h 16 v 16 h -16 z"
-         style="opacity:0;stroke-width:1.6"
+         opacity="0"
          transform="translate(0,512.3622)" />
     </g>
     <path

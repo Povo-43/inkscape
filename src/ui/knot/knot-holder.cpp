@@ -38,6 +38,29 @@
 #include "ui/shape-editor.h"
 #include "ui/tools/node-tool.h"
 
+Glib::ustring get_icon_name(SPObject *object) {
+
+    Glib::ustring icon_name{};
+
+    if (is<SPRect>(object)) {
+        icon_name = INKSCAPE_ICON("draw-rectangle");
+    } else if (is<SPBox3D>(object)) {
+        icon_name = INKSCAPE_ICON("draw-cuboid");
+    } else if (is<SPGenericEllipse>(object)) {
+        icon_name = INKSCAPE_ICON("draw-ellipse");
+    } else if (is<SPStar>(object)) {
+        icon_name = INKSCAPE_ICON("draw-polygon-star");
+    } else if (is<SPSpiral>(object)) {
+        icon_name = INKSCAPE_ICON("draw-spiral");
+    } else if (is<SPMarker>(object)) {
+        icon_name = INKSCAPE_ICON("tool-pointer");
+    } else if (auto offset = cast<SPOffset>(object)) {
+        icon_name = offset->sourceHref ? INKSCAPE_ICON("path-offset-linked") : INKSCAPE_ICON("path-offset-dynamic");
+    }
+
+    return icon_name;
+}
+
 using Inkscape::DocumentUndo;
 
 KnotHolder::KnotHolder(SPDesktop *desktop, SPItem *item)
@@ -156,43 +179,19 @@ KnotHolder::knot_clicked_handler(SPKnot *knot, guint state)
             e->knot_click(state);
     }
 
-    {
-        auto savedShape = cast<SPShape>(saved_item);
-        if (savedShape) {
-            savedShape->set_shape();
-        }
+    // Is this necessary, and if it is, why isn't item->updateRepr() called?
+    auto shape = cast<SPShape>(saved_item);
+    if (shape) {
+        shape->set_shape();
     }
 
     this->update_knots();
 
-    Glib::ustring icon_name;
+    auto icon_name = get_icon_name(saved_item);
 
-    // TODO extract duplicated blocks;
-    if (is<SPRect>(saved_item)) {
-        icon_name = INKSCAPE_ICON("draw-rectangle");
-    } else if (is<SPBox3D>(saved_item)) {
-        icon_name = INKSCAPE_ICON("draw-cuboid");
-    } else if (is<SPGenericEllipse>(saved_item)) {
-        icon_name = INKSCAPE_ICON("draw-ellipse");
-    } else if (is<SPStar>(saved_item)) {
-        icon_name = INKSCAPE_ICON("draw-polygon-star");
-    } else if (is<SPSpiral>(saved_item)) {
-        icon_name = INKSCAPE_ICON("draw-spiral");
-    } else if (is<SPMarker>(saved_item)) {
-        icon_name = INKSCAPE_ICON("tool-pointer");
-    } else {
-        auto offset = cast<SPOffset>(saved_item);
-        if (offset) {
-            if (offset->sourceHref) {
-                icon_name = INKSCAPE_ICON("path-offset-linked");
-            } else {
-                icon_name = INKSCAPE_ICON("path-offset-dynamic");
-            }
-        }
-    }
-
+    // Is this necessary? We're not changing the XML tree when clicking on a shape handle.
+    // Maybe it is left over from editting paths (which is not done here).
     // for drag, this is done by ungrabbed_handler, but for click we must do it here
-
     if (saved_item && saved_item->document) { // increasingly aggressive sanity checks
        DocumentUndo::done(saved_item->document, RC_("Undo", "Change handle"), icon_name);
     } else {
@@ -259,6 +258,12 @@ KnotHolder::knot_moved_handler(SPKnot *knot, Geom::Point const &p, guint state)
     }
 
     this->update_knots();
+
+    item->updateRepr();
+
+    // Keyboard move, may be many small moves.
+    auto icon_name = get_icon_name(item);
+    DocumentUndo::maybeDone(item->document, "move-handle", RC_("Undo", "Move handle"), icon_name);
 }
 
 void
@@ -297,24 +302,8 @@ KnotHolder::knot_ungrabbed_handler(SPKnot *knot, guint state)
     if (filter) {
         filter->updateRepr();
     }
-    Glib::ustring icon_name;
 
-    // TODO extract duplicated blocks;
-    if (is<SPRect>(object)) {
-        icon_name = INKSCAPE_ICON("draw-rectangle");
-    } else if (is<SPBox3D>(object)) {
-        icon_name = INKSCAPE_ICON("draw-cuboid");
-    } else if (is<SPGenericEllipse>(object)) {
-        icon_name = INKSCAPE_ICON("draw-ellipse");
-    } else if (is<SPStar>(object)) {
-        icon_name = INKSCAPE_ICON("draw-polygon-star");
-    } else if (is<SPSpiral>(object)) {
-        icon_name = INKSCAPE_ICON("draw-spiral");
-    } else if (is<SPMarker>(object)) {
-        icon_name = INKSCAPE_ICON("tool-pointer");
-    } else if (auto offset = cast<SPOffset>(object)) {
-        icon_name = offset->sourceHref ? INKSCAPE_ICON("path-offset-linked") : INKSCAPE_ICON("path-offset-dynamic");
-    }
+    auto icon_name = get_icon_name(object);
     DocumentUndo::done(object->document, RC_("Undo", "Move handle"), icon_name);
 }
 

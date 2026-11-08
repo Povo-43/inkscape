@@ -6,7 +6,7 @@
   </sodipodi:namedview>
   <g id="dialog-templates" inkscape:label="00008">
       <title id="title33388">folder-templates</title>
-      <path inkscape:connector-curvature="0" id="folder-templates" d="M 0,0 H 16 V 16 H 0 Z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="folder-templates" d="M 0,0 H 16 V 16 H 0 Z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="rect33392" d="m 3,9 h 1 v 1 H 3 Z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect33394" d="m 2,10 h 1 v 1 H 2 Z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect33396" d="m 3,11 h 1 v 1 H 3 Z" style="opacity:1"/>

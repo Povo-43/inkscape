@@ -60,6 +60,9 @@ public:
     Text::Layout::iterator text_sel_start;
     Text::Layout::iterator text_sel_end;
 
+    // This should be part of a text-selection manager, not the tool
+    SPStyle const *getSelectedStyle() const;
+
     std::vector<SPItem*> get_subselection(bool include_empty_selection_item);
 protected:
     bool root_handler(CanvasEvent const &event) override;

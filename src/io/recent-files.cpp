@@ -15,10 +15,29 @@
 #include <format>
 #include <glibmm/convert.h>
 #include <glibmm/miscutils.h>
+#include <gtk/gtk.h>
 
 #include "io/split-path.h"
 
 namespace Inkscape::IO {
+
+/**
+ * Return the default Gtk::RecentManager, or an empty RefPtr when GTK has not
+ * been initialized (e.g. running headless without a display).
+ *
+ * Calling Gtk::RecentManager::get_default() before GTK is initialized emits a
+ * spurious "Failed to wrap object of type 'GtkRecentManager'" warning, because
+ * the gtkmm wrappers are only registered once GTK is set up. The recent files
+ * list is a GUI-only concept, so there is nothing to do without a display.
+ * See https://gitlab.com/inkscape/inkscape/-/work_items/5419.
+ */
+Glib::RefPtr<Gtk::RecentManager> get_recent_manager()
+{
+    if (!gtk_is_initialized()) {
+        return {};
+    }
+    return Gtk::RecentManager::get_default();
+}
 
 #ifdef _WIN32
 constexpr size_t platform_index = 1;
@@ -40,7 +59,10 @@ std::vector<Glib::RefPtr<Gtk::RecentInfo>> getInkscapeRecentFiles(unsigned max_f
 {
     std::vector<std::pair<std::string, Glib::ustring>> output;
 
-    auto recent_manager = Gtk::RecentManager::get_default();
+    auto recent_manager = get_recent_manager();
+    if (!recent_manager) {
+        return {};
+    }
     // All recent files, not necessarily inkscape only (std::vector)
     auto recent_files = recent_manager->get_items();
 
@@ -94,7 +116,7 @@ std::vector<Glib::RefPtr<Gtk::RecentInfo>> getInkscapeRecentFiles(unsigned max_f
  */
 void addInkscapeRecentSvg(std::string const &filename, std::string const &name, std::vector<Glib::ustring> groups, std::optional<std::string> original)
 {
-    auto recentmanager = Gtk::RecentManager::get_default();
+    auto recentmanager = get_recent_manager();
     if (recentmanager && Glib::path_is_absolute(filename)) {
         Glib::ustring uri = Glib::filename_to_uri(filename);
         Glib::ustring original_uri = "";
@@ -118,7 +140,7 @@ void addInkscapeRecentSvg(std::string const &filename, std::string const &name, 
  */
 void removeInkscapeRecent(std::string const &filename)
 {
-    if (auto recentmanager = Gtk::RecentManager::get_default()) {
+    if (auto recentmanager = get_recent_manager()) {
         try {
             Glib::ustring uri = Glib::filename_to_uri(filename);
             recentmanager->remove_item(uri);
@@ -133,7 +155,7 @@ void removeInkscapeRecent(std::string const &filename)
  */
 void resetRecentInkscapeList()
 {
-    if (auto recentmanager = Gtk::RecentManager::get_default()) {
+    if (auto recentmanager = get_recent_manager()) {
         for (auto info : recentmanager->get_items()) {
             bool is_ink, is_other = false;
             for (auto &app : info->get_applications()) {
@@ -158,7 +180,7 @@ void resetRecentInkscapeList()
  */
 Glib::RefPtr<Gtk::RecentInfo> getInkscapeRecent(std::string const &filename)
 {
-    if (auto recentmanager = Gtk::RecentManager::get_default()) {
+    if (auto recentmanager = get_recent_manager()) {
         try {
             Glib::ustring uri = Glib::filename_to_uri(filename);
             return recentmanager->lookup_item(uri);
@@ -175,20 +197,27 @@ Glib::RefPtr<Gtk::RecentInfo> getInkscapeRecent(std::string const &filename)
  *
  * @returns - False optional if this isn't an auto save or crash, an empty string if is is
  *            but doesn't have an original filename because it was unsaved. Otherwise the
- *            original filename is provided.
+ *            original local filename is provided.
  */
 std::optional<std::string> openAsInkscapeRecentOriginalFile(std::string const &filename)
 {
     if (auto info = getInkscapeRecent(filename)) {
+        // Original filename is stored as a URI in the description, see addInkscapeRecentSvg above.
+        std::string original;
+        if (!info->get_description().empty()) {
+            try {
+                original = Glib::filename_from_uri(info->get_description());
+            } catch (Glib::ConvertError e) {
+                g_warning("Could not parse original file URI from recent file: %s", e.what());
+            }
+        }
         if (info->has_group("Auto")) {
-            // Original filename stored in description, see addInkscapeRecentSvg above.
-            return info->get_description();
+            return original;
         }
         if (info->has_group("Crash")) {
-            auto desc = info->get_description();
             // Crash files are removed from recent-files tracker on opening
             removeInkscapeRecent(filename);
-            return desc;
+            return original;
         }
     }
     return {};

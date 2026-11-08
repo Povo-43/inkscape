@@ -73,9 +73,9 @@ public:
     bool hasFontFamily(std::string const &family);
 
     // Helpfully returns all font families in a map.
-    std::map<std::string, PangoFontFamily *> GetUIFamilies();
+    std::map<std::string, Glib::RefPtr<Pango::FontFamily>> GetUIFamilies();
     // Retrieves style information about a font family.
-    std::vector<StyleNames> GetUIStyles(PangoFontFamily *in);
+    std::vector<StyleNames> GetUIStyles(const Glib::RefPtr<Pango::FontFamily> &in);
 
     std::vector<Glib::RefPtr<Pango::FontFamily>> get_font_families();
 

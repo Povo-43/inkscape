@@ -84,7 +84,7 @@ void ScaleBar::snapshot_vfunc(const Glib::RefPtr<Gtk::Snapshot>& snapshot) {
 
 void ScaleBar::css_changed(GtkCssStyleChange*) {
     _selected = get_color_with_class(*this, "theme_selected_bg_color");
-    _unselected = get_color_with_class(*this, "theme_fg_color");
+    _unselected = get_color_with_class(*this, "theme_base_color");
     _unselected.set_alpha(0.16f);
     queue_draw();
 }
@@ -97,8 +97,8 @@ bool ScaleBar::on_scroll(Gtk::EventControllerScroll& scroll, double dx, double d
 
     // growth direction: up or right
     auto delta = std::abs(dx) > std::abs(dy) ? -dx : dy;
-    //todo: adj speed based on modifiers
-    auto state = scroll.get_current_event_state();
+    // TODO: adj speed based on modifiers
+    // auto state = scroll.get_current_event_state();
     auto range = _adjustment->get_upper() - _adjustment->get_lower();
     if (range <= 0) return false;
     delta *= range / 100.0;

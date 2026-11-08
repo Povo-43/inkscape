@@ -68,6 +68,7 @@ SimpleFilterModifier::SimpleFilterModifier(int flags)
 
     _blur.set_adjustment_values(0, 100, 1, 0.1);
     _blur.set_digits(3);
+    _blur.set_icon("blur","Blur");
     // This blur is adjusted to be a percent of the bounding box size (below)
     _blur.set_suffix("%", false);
     _blur.set_scaling_factor(100.0);
@@ -77,6 +78,7 @@ SimpleFilterModifier::SimpleFilterModifier(int flags)
     _opacity.set_digits(3);
     _opacity.set_suffix("%", false);
     _opacity.set_scaling_factor(100.0);
+    _opacity.set_icon("opacity","Opacity");
 
     /* "More options" expander --------
     _extras.set_visible();

@@ -64,12 +64,12 @@
        inkscape:connector-curvature="0"
        id="rect22340"
        d="m 559,505.36209 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <path
        inkscape:connector-curvature="0"
        id="rect22342"
        d="m 559,505.3627 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <path
        class="success"
        inkscape:connector-curvature="0"

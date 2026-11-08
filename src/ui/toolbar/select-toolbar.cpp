@@ -97,9 +97,7 @@ SelectToolbar::SelectToolbar(Glib::RefPtr<Gtk::Builder> const &builder)
     toggle_lock();
 
     _box_observer = prefs->createObserver("/tools/bounding_box", [this](const Preferences::Entry& entry) {
-        if (_desktop) {
-            layout_widget_update(_desktop->getSelection());
-        }
+        layout_widget_update();
     });
 
     _initMenuBtns();
@@ -117,16 +115,25 @@ void SelectToolbar::setDesktop(SPDesktop *desktop)
     Toolbar::setDesktop(desktop);
 
     if (_desktop) {
-        auto sel = _desktop->getSelection();
-
         // Force update when selection changes.
+        auto sel = _desktop->getSelection();
         _selection_changed_conn = sel->connectChanged(sigc::mem_fun(*this, &SelectToolbar::_selectionChanged));
         _selection_modified_conn = sel->connectModified(sigc::mem_fun(*this, &SelectToolbar::_selectionModified));
 
-        // Update now.
-        layout_widget_update(sel);
         _sensitize();
     }
+}
+
+void SelectToolbar::documentReplaced()
+{
+    _page_origin_conn.disconnect();
+    if (_desktop) {
+        auto &pm = _desktop->getDocument()->getPageManager();
+        _page_origin_conn = pm.connectSelectedPageOriginChanged(
+            sigc::mem_fun(*this, &SelectToolbar::layout_widget_update));
+    }
+
+    layout_widget_update();
 }
 
 void SelectToolbar::setActiveUnit(Util::Unit const *unit)
@@ -172,11 +179,11 @@ void SelectToolbar::any_value_changed(Glib::RefPtr<Gtk::Adjustment> const &adj)
     auto prefs = Preferences::get();
     auto selection = _desktop->getSelection();
     auto document = _desktop->getDocument();
-    auto &pm = document->getPageManager();
-    auto page = pm.getSelectedPageRect();
-    auto page_correction = document->get_origin_follows_page();
 
     document->ensureUpToDate();
+
+    auto &pm = document->getPageManager();
+    auto origin = pm.getSelectedPageOrigin();
 
     Geom::OptRect bbox_vis = selection->visualBounds();
     Geom::OptRect bbox_geom = selection->geometricBounds();
@@ -207,11 +214,9 @@ void SelectToolbar::any_value_changed(Glib::RefPtr<Gtk::Adjustment> const &adj)
         double old_x = bbox_user->min()[Geom::X] + (old_w * selection->anchor.x());
         double old_y = bbox_user->min()[Geom::Y] + (old_h * selection->anchor.y());
 
-        // Adjust against selected page, so later correction isn't broken.
-        if (page_correction) {
-            old_x -= page.left();
-            old_y -= page.top();
-        }
+        // Adjust against selected page origin, so later correction isn't broken.
+        old_x -= origin.x();
+        old_y -= origin.y();
 
         new_x = old_x * (_adj_x->get_value() / 100 / unit->factor);
         new_y = old_y * (_adj_y->get_value() / 100 / unit->factor);
@@ -223,11 +228,9 @@ void SelectToolbar::any_value_changed(Glib::RefPtr<Gtk::Adjustment> const &adj)
     double x0 = (new_x - (old_w * selection->anchor.x())) - ((new_w - old_w) * selection->anchor.x());
     double y0 = (new_y - (old_h * selection->anchor.y())) - ((new_h - old_h) * selection->anchor.y());
 
-    // Adjust according to the selected page, if needed
-    if (page_correction) {
-        x0 += page.left();
-        y0 += page.top();
-    }
+    // Adjust according to the selected page origin
+    x0 += origin.x();
+    y0 += origin.y();
 
     double x1 = x0 + new_w;
     double xrel = new_w / old_w;
@@ -280,13 +283,14 @@ void SelectToolbar::any_value_changed(Glib::RefPtr<Gtk::Adjustment> const &adj)
     }
 }
 
-void SelectToolbar::layout_widget_update(Selection *sel)
+void SelectToolbar::layout_widget_update()
 {
-    if (_blocker.pending()) {
+    if (_blocker.pending() || !_desktop) {
         return;
     }
 
     auto guard = _blocker.block();
+    auto sel = _desktop->getSelection();
 
     if (sel && !sel->isEmpty()) {
         if (auto const bbox = sel->preferredBounds()) {
@@ -297,12 +301,10 @@ void SelectToolbar::layout_widget_update(Selection *sel)
             auto x = bbox->left() + width * sel->anchor.x();
             auto y = bbox->top() + height * sel->anchor.y();
 
-            if (_desktop->getDocument()->get_origin_follows_page()) {
-                auto &pm = _desktop->getDocument()->getPageManager();
-                auto page = pm.getSelectedPageRect();
-                x -= page.left();
-                y -= page.top();
-            }
+            auto &pm = _desktop->getDocument()->getPageManager();
+            auto origin = pm.getSelectedPageOrigin();
+            x -= origin.x();
+            y -= origin.y();
 
             auto _adj_x = _x_item.get_adjustment();
             auto _adj_y = _y_item.get_adjustment();
@@ -332,7 +334,7 @@ void SelectToolbar::layout_widget_update(Selection *sel)
 void SelectToolbar::_selectionChanged(Selection *selection)
 {
     assert(_desktop->getSelection() == selection);
-    layout_widget_update(selection);
+    layout_widget_update();
     _sensitize();
 }
 
@@ -343,7 +345,7 @@ void SelectToolbar::_selectionModified(Selection *selection, unsigned flags)
                  SP_OBJECT_PARENT_MODIFIED_FLAG |
                  SP_OBJECT_CHILD_MODIFIED_FLAG  ))
     {
-        layout_widget_update(selection);
+        layout_widget_update();
     }
 }
 

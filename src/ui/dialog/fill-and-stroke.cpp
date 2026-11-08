@@ -261,6 +261,45 @@ void FillAndStroke::_ConnectPaintSignals(UI::Widget::PaintSwitch *paint_switch, 
             INKSCAPE_ICON("dialog-fill-and-stroke"));
     });
 
+    paint_switch->get_inherit_mode_changed().connect([this, is_fill](auto mode) {
+        if (_ignore_updates || !getDesktop()) return;
+        auto doc = getDesktop()->getDocument();
+        auto items = getDesktop()->getSelection()->items_vector();
+        if (items.empty()) return;
+
+        auto property = is_fill ? "fill" : "stroke";
+        SPCSSAttr *css = sp_repr_css_attr_new();
+
+        switch (mode) {
+        case UI::Widget::PaintDerivedMode::Unset:
+            sp_repr_css_unset_property(css, property);
+            break;
+        case UI::Widget::PaintDerivedMode::Inherit:
+            sp_repr_css_set_property(css, property, "inherit");
+            break;
+        case UI::Widget::PaintDerivedMode::ContextFill:
+            sp_repr_css_set_property(css, property, "context-fill");
+            break;
+        case UI::Widget::PaintDerivedMode::ContextStroke:
+            sp_repr_css_set_property(css, property, "context-stroke");
+            break;
+        case UI::Widget::PaintDerivedMode::CurrentColor:
+            sp_repr_css_set_property(css, property, "currentColor");
+            break;
+        default:
+            g_warning("file %s: line %d: Unknown inherited paint mode", __FILE__, __LINE__);
+            sp_repr_css_attr_unref(css);
+            return;
+        }
+
+        sp_desktop_set_style(getDesktop(), css, true);
+        sp_repr_css_attr_unref(css);
+
+        DocumentUndo::done(doc,
+            (is_fill) ? RC_("Undo", "Inherit fill") : RC_("Undo", "Inherit stroke"),
+            INKSCAPE_ICON("dialog-fill-and-stroke"));
+    });
+
     paint_switch->get_signal_mode_changed().connect([this, is_fill](auto mode) {
         if (_ignore_updates || !getDesktop()) return;
         auto doc = getDesktop()->getDocument();

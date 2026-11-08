@@ -72,7 +72,7 @@
        inkscape:connector-curvature="0"
        id="rect36986"
        d="M 0,0 H 16 V 16 H 0 Z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <g
        transform="matrix(1.5405115,0,0,1.5405115,-11.024485,-11.021696)"
        inkscape:label="gradeint"

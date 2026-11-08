@@ -31,6 +31,8 @@ ModifierIdToTypeMap const &modifier_type_from_id()
         {"canvas-pan-drag", Type::CANVAS_PAN_DRAG},
         {"canvas-pan-x", Type::CANVAS_PAN_X},
         {"canvas-pan-y", Type::CANVAS_PAN_Y},
+        {"canvas-zoom", Type::CANVAS_ZOOM},
+        {"canvas-drag-zoom", Type::CANVAS_DRAG_ZOOM},
         {"canvas-rotate", Type::CANVAS_ROTATE},
         {"canvas-rotate-drag", Type::CANVAS_ROTATE_DRAG},
         {"canvas-rotate-reset", Type::CANVAS_ROTATE_RESET},
@@ -47,6 +49,7 @@ ModifierIdToTypeMap const &modifier_type_from_id()
         {"select-cycle", Type::SELECT_CYCLE},
         {"select-duplicate", Type::SELECT_DUPLICATE},
         {"select-remove-snap", Type::SELECT_REMOVE_SNAP},
+        {"arc-maintain-gap", Type::ARC_MAINTAIN_GAP},
         {"move-confine", Type::MOVE_CONFINE},
         {"move-increment", Type::MOVE_INCREMENT},
         {"move-snapping", Type::MOVE_NO_SNAPPING}, // name is move-snapping for historical reasons
@@ -59,6 +62,7 @@ ModifierIdToTypeMap const &modifier_type_from_id()
         {"freehand-dot-double", Type::FREEHAND_DOT_DOUBLE},
         {"freehand-dot-random", Type::FREEHAND_DOT_RANDOM},
         {"bool-shift", Type::BOOL_SHIFT},
+        {"box3d-change-knot-direction", Type::BOX3D_CHANGE_KNOT_DIRECTION},
         {"box3d-extrude-one", Type::BOX3D_EXTRUDE_ONE},
         {"box3d-extrude-two", Type::BOX3D_EXTRUDE_TWO},
         {"calligraphic-hatching", Type::CALLI_HATCHING},
@@ -88,12 +92,14 @@ ModifierIdToTypeMap const &modifier_type_from_id()
         {"node-preserve-length", Type::NODE_PRESERVE_LENGTH},
         {"node-remove-from", Type::NODE_REMOVE_FROM},
         {"node-retract-handle", Type::NODE_RETRACT_HANDLE},
+        {"node-sculpt", Type::NODE_SCULPT},
         {"node-straighten-segment", Type::NODE_STRAIGHTEN_SEGMENT},
         {"pen-cusp-node", Type::PEN_CUSP_NODE},
         {"pen-move-prev", Type::PEN_MOVE_PREV},
         {"pen-switch-axis", Type::PEN_SWITCH_AXIS},
         {"pencil-sketch", Type::PENCIL_SKETCH},
         {"tweak-invert", Type::TWEAK_INVERT},
+        {"text-clear-inline-size", Type::TEXT_CLEAR_INLINE_SIZE},
     };
     return static_id_to_type_map;
 }
@@ -132,6 +138,8 @@ Modifier::Container &Modifier::_modifiers()
         make_modifier("canvas-pan-drag", _("Drag pan"), _("Pan/Scroll by right click drag"), SHIFT | CTRL, CANVAS, DRAG),
         make_modifier("canvas-pan-x", _("Horizontal pan"), _("Pan/Scroll left and right"), SHIFT, CANVAS, SCROLL),
         make_modifier("canvas-pan-y", _("Vertical pan"), _("Pan/Scroll up and down"), ALWAYS, CANVAS, SCROLL),
+        make_modifier("canvas-zoom", _("Canvas zoom"), _("Zoom in and out with scroll wheel"), CTRL, CANVAS, SCROLL),
+        make_modifier("canvas-drag-zoom", _("Canvas zoom"), _("Zoom in and out with Ctrl + middle mouse button"), CTRL, CANVAS, DRAG_MIDDLE_BUTTON),
         make_modifier("canvas-rotate", _("Canvas rotate"), _("Rotate the canvas with scroll wheel"), SHIFT | CTRL, CANVAS, SCROLL),
         make_modifier("canvas-rotate-drag", _("Canvas rotate"), _("Rotate the canvas with middle click drag"), CTRL, CANVAS, DRAG),
         make_modifier("canvas-rotate-reset", _("Reset canvas rotation"), _("Reset the angle while rotating canvas"), SHIFT | CTRL, CANVAS, DRAG),
@@ -151,6 +159,12 @@ Modifier::Container &Modifier::_modifiers()
         make_modifier("select-duplicate", _("Duplicate selection on drag"), _("Duplicate selection when starting a drag"), NEVER, SELECT, DRAG),
         make_modifier("select-remove-snap", _("Remove snap target"), _("Remove snap target during a drag"), SHIFT | ALT, SELECT, DRAG),
 
+    // Arc tool modifier
+        make_modifier("arc-maintain-gap", _("Maintain gap"), _("Move both start and end knot of the arc"), SHIFT, ARC_TOOL, DRAG),
+
+    // Text tool modifier
+        make_modifier("text-clear-inline-size", _("Clear inline size"), _("Fit the text width for auto-wrapped text"), CTRL, TEXT_TOOL, CLICK),
+
     // Transform handle modifiers (applies to multiple tools)
         make_modifier("move-confine", _("Move one axis only"), _("When dragging items, confine to either x or y axis"), CTRL, MOVE, DRAG),
         make_modifier("move-increment", _("Move in increments"), _("Move the objects by increments of grid pitch when dragging"), NEVER, MOVE, DRAG),
@@ -169,6 +183,7 @@ Modifier::Container &Modifier::_modifiers()
 
         make_modifier("bool-shift", _("Switch mode"), _("Change shape builder mode temporarily by holding a modifier key"), SHIFT, BOOLEANS_TOOL, DRAG),
 
+        make_modifier("box3d-change-knot-direction", _("Change the axis or direction of the knot"), _("Move the knot against axis Z instead of X/Y direction or vice-versa"), SHIFT, BOX3D_TOOL, DRAG),
         make_modifier("box3d-extrude-one", _("Extrude along the Z axis"), _("Extend the 3D box in one dimension only"), SHIFT, BOX3D_TOOL, DRAG),
         make_modifier("box3d-extrude-two", _("Extrude along the Y and Z axes"), _("Extend the 3D box in two dimensions"), SHIFT | CTRL, BOX3D_TOOL, DRAG),
 
@@ -204,6 +219,7 @@ Modifier::Container &Modifier::_modifiers()
         make_modifier("node-preserve-length", _("Preserve handle length"), _("Keep the node handle length constant during a drag"), ALT, NODE_TOOL, DRAG),
         make_modifier("node-remove-from", _("Remove nodes from selection"), _("Remove selected nodes from the selection"), SHIFT | CTRL, NODE_TOOL, DRAG),
         make_modifier("node-retract-handle", _("Retract handle into node"), _("Remove handle when clicked"), ALT, NODE_TOOL, CLICK),
+        make_modifier("node-sculpt", _("Sculpt nodes"), _("Move a node and adjust other selected nodes along with it"), ALT, NODE_TOOL, DRAG),
         make_modifier("node-straighten-segment", _("Straighten segment"), _("Straighten segment when double-clicked"), ALT, NODE_TOOL, CLICK),
 
         make_modifier("pen-cusp-node", _("Create cusp node"), _("Create a cusp node when making a B-Spline curve"), SHIFT, PEN_TOOL, CLICK),
@@ -228,6 +244,8 @@ Modifier::CategoryNames const &Modifier::_category_names()
         {TRANSFORM, _("Transformations")},
         {NODE_TOOL, _("Node Tool")},
         {BOOLEANS_TOOL, _("Shape Builder")},
+        {ARC_TOOL, _("Ellipse/Arc Tool")},
+        {TEXT_TOOL, _("Text Tool")},
         {BOX3D_TOOL, _("3D Box Tool")},
         {CALLI_TOOL, _("Calligraphy Tool")},
         {DROPPER_TOOL, _("Dropper Tool")},

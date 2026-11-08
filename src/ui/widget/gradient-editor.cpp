@@ -13,6 +13,7 @@
 #include "gradient-editor.h"
 
 #include <glibmm/i18n.h>
+#include <giomm/simpleactiongroup.h>
 #include <gtkmm/expander.h>
 #include <gtkmm/menubutton.h>
 #include <gtkmm/togglebutton.h>
@@ -59,7 +60,12 @@ GradientEditor::GradientEditor(const char* prefs, Space::Type space, bool show_t
     _color_picker(ColorPickerPanel::create(space, get_plate_type_preference(prefs, ColorPickerPanel::None), _colors)),
     _linear_btn(get_widget<Gtk::ToggleButton>(_builder, "type-linear")),
     _radial_btn(get_widget<Gtk::ToggleButton>(_builder, "type-radial")),
-    _repeat_mode_btn(get_widget<Gtk::MenuButton>(_builder, "repeat-mode"))
+    _repeat_mode_btn(get_widget<Gtk::MenuButton>(_builder, "repeat-mode")),
+    _prev_stop_btn(get_widget<Gtk::Button>(_builder, "prevStopBtn")),
+    _next_stop_btn(get_widget<Gtk::Button>(_builder, "nextStopBtn")),
+    _add_stop_btn(get_widget<Gtk::Button>(_builder, "addStopBtn")),
+    _insert_stop_btn(get_widget<Gtk::MenuButton>(_builder, "insertStopBtn")),
+    _remove_stop_btn(get_widget<Gtk::Button>(_builder, "removeStopBtn"))
 {
     // gradient type buttons
     _linear_btn.set_active();
@@ -82,7 +88,6 @@ GradientEditor::GradientEditor(const char* prefs, Space::Type space, bool show_t
     // gradient stop selected in a gradient widget; sync list selection
     _gradient_image.signal_stop_selected().connect([this](size_t index) {
         select_stop(index);
-        fire_stop_selected(current_stop());
     });
     _gradient_image.signal_stop_offset_changed().connect([this](size_t index, double offset) {
         set_stop_offset(index, offset);
@@ -145,11 +150,19 @@ GradientEditor::GradientEditor(const char* prefs, Space::Type space, bool show_t
         }
     });
 
-    auto pattern = "99";
-    _angle_btn.set_min_size(pattern);
-    _offset_btn.set_min_size(pattern);
-    _color_picker->get_last_column_size()->add_widget(get_widget<Gtk::Box>(_builder, "offset-box"));
-    _color_picker->get_last_column_size()->add_widget(get_widget<Gtk::Box>(_builder, "angle-box"));
+    auto group = Gio::SimpleActionGroup::create();
+    _insert_stop_left = group->add_action("stop-insert-left",  sigc::mem_fun(*this, &GradientEditor::insertStopLeft));
+    _insert_stop_right = group->add_action("stop-insert-right", sigc::mem_fun(*this, &GradientEditor::insertStopRight));
+    insert_action_group("gradient-editor", std::move(group));
+
+    _prev_stop_btn.signal_clicked().connect([this]{ select_stop(_current_stop_index - 1); });
+    _next_stop_btn.signal_clicked().connect([this]{ select_stop(_current_stop_index + 1); });
+    _add_stop_btn.signal_clicked().connect([this]{ add_stop(_current_stop_index); });
+    _remove_stop_btn.signal_clicked().connect([this]{ delete_stop(_current_stop_index); });
+    signal_stop_selected().connect([this](SPStop*){ updateButtonSensitivity(); });
+
+    _color_picker->get_last_column_size()->add_widget(get_widget<Gtk::MenuButton>(_builder, "libraryBtn"));
+    _color_picker->get_last_column_size()->add_widget(get_widget<Gtk::MenuButton>(_builder, "repeat-mode"));
 
     append(_main_box);
 }
@@ -221,7 +234,7 @@ void GradientEditor::stop_selected() {
         _offset_btn.set_sensitive();
         _offset_btn.set_value(stop->offset * 100);
 
-        _gradient_image.set_focused_stop(current_stop_index().value_or(-1));
+        _gradient_image.setSelectedStop(current_stop_index().value_or(-1));
     }
     else {
         // no selection
@@ -237,13 +250,59 @@ void GradientEditor::insert_stop_at(double offset) {
         if (vector->hasStops()) {
             SPStop* stop = sp_gradient_add_stop_at(vector, offset);
             // select the next stop
-            auto pos = sp_number_of_stops_before_stop(vector, stop);
-            auto selected = select_stop(pos);
-            fire_stop_selected(stop);
-            if (!selected) {
-                select_stop(pos);
+            select_stop(sp_number_of_stops_before_stop(vector, stop));
+        }
+    }
+}
+
+// Returns -1 if inserting isn't valid
+int GradientEditor::getLeftStopInsertIndex()
+{
+    if (auto vector = get_gradient_vector()) {
+        if (gtk_get_locale_direction() == GTK_TEXT_DIR_RTL) {
+            if (_current_stop_index < vector->getStopCount() - 1) {
+                return _current_stop_index;
+            }
+        } else {
+            if (_current_stop_index > 0) {
+                return _current_stop_index - 1;
             }
         }
+    }
+
+    return -1;
+}
+
+
+// Returns -1 if inserting isn't valid
+int GradientEditor::getRightStopInsertIndex()
+{
+    if (auto vector = get_gradient_vector()) {
+        if (gtk_get_locale_direction() == GTK_TEXT_DIR_RTL) {
+            if (_current_stop_index > 0) {
+                return _current_stop_index - 1;
+            }
+        } else {
+            if (_current_stop_index < vector->getStopCount() - 1) {
+                return _current_stop_index;
+            }
+        }
+    }
+
+    return -1;
+}
+
+void GradientEditor::insertStopLeft() {
+    auto where = getLeftStopInsertIndex();
+    if (where >= 0) {
+        add_stop(where);
+    }
+}
+
+void GradientEditor::insertStopRight() {
+    auto where = getRightStopInsertIndex();
+    if (where >= 0) {
+        add_stop(where);
     }
 }
 
@@ -253,7 +312,6 @@ void GradientEditor::add_stop(int index) {
             SPStop* stop = sp_gradient_add_stop(vector, current);
             // select the next stop
             select_stop(sp_number_of_stops_before_stop(vector, stop));
-            fire_stop_selected(stop);
         }
     }
 }
@@ -262,7 +320,12 @@ void GradientEditor::delete_stop(int index) {
     if (SPGradient* vector = get_gradient_vector()) {
         if (SPStop* stop = sp_get_nth_stop(vector, index)) {
             // try deleting a stop if it can be
-            sp_gradient_delete_stop(vector, stop);
+            if (sp_gradient_delete_stop(vector, stop)) {
+                // Select last stop if our selection "fell off the end" of the stop list
+                if (_current_stop_index >= vector->getStopCount()) {
+                    select_stop(vector->getStopCount() - 1);
+                }
+            }
         }
     }
 }
@@ -399,6 +462,16 @@ SPGradientType GradientEditor::get_type() const {
     return _linear_btn.get_active() ? SP_GRADIENT_TYPE_LINEAR : SP_GRADIENT_TYPE_RADIAL;
 }
 
+void GradientEditor::updateButtonSensitivity()
+{
+    auto vector = get_gradient_vector();
+    _prev_stop_btn.set_sensitive(vector && _current_stop_index > 0);
+    _next_stop_btn.set_sensitive(vector && _current_stop_index < vector->getStopCount() - 1);
+    _insert_stop_left->set_enabled(getLeftStopInsertIndex() >= 0);
+    _insert_stop_right->set_enabled(getRightStopInsertIndex() >= 0);
+    _remove_stop_btn.set_sensitive(vector && vector->getStopCount() > 2);
+}
+
 void GradientEditor::set_gradient(SPGradient* gradient) {
     auto scoped(_update.block());
 
@@ -409,11 +482,21 @@ void GradientEditor::set_gradient(SPGradient* gradient) {
     }
 
     _gradient_image.set_gradient(vector);
+    _vector_modified_connection.disconnect();
 
     if (!vector || !vector->hasStops()) return;
 
     auto mode = gradient->isSpreadSet() ? gradient->getSpread() : SP_GRADIENT_SPREAD_PAD;
     set_repeat_icon(mode);
+
+    // Watch for changes to the number of stops, so we can set button sensitivity as needed.
+    // This is a little noisy. Is there a better way to watch for gradient stop removals/additions?
+    _vector_modified_connection = vector->connectModified([this](SPObject *obj, guint flags) {
+        if (flags & SP_OBJECT_MODIFIED_FLAG) {
+            updateButtonSensitivity();
+        }
+    });
+    updateButtonSensitivity();
 
     auto can_rotate = false;
     // only linear gradient can be rotated currently
@@ -459,6 +542,7 @@ bool GradientEditor::select_stop(int index) {
         _current_stop_index = index;
         // update related widgets
         stop_selected();
+        fire_stop_selected(current_stop());
         return true;
     }
      return false;

@@ -57,7 +57,7 @@
        id="g14507"
        transform="translate(99.94762,867.3622)">
       <path
-         style="opacity:0;fill:none"
+         opacity="0"
          d="m 35.045132,-19.9307 h 16 v 15.9999997 h -16 z"
          id="rect8585"
          inkscape:connector-curvature="0" />

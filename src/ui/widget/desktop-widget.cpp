@@ -31,10 +31,12 @@
 #include <gtkmm/paned.h>
 #include <gtkmm/popovermenu.h>
 
+#include "actions/actions-view-mode.h"
 #include "conn-avoid-ref.h"
 #include "document.h"
 #include "enums.h"
 #include "helper/mathfns.h"
+#include "inkscape-version.h"
 #include "inkscape-window.h"
 #include "inkscape.h"
 #include "object/sp-image.h"
@@ -43,7 +45,6 @@
 #include "ui/dialog/dialog-container.h"
 #include "ui/dialog/dialog-multipaned.h"
 #include "ui/dialog/swatches.h"
-#include "ui/monitor.h" // Monitor aspect ratio
 #include "ui/popup-menu.h"
 #include "ui/themes.h"
 #include "ui/toolbar/command-toolbar.h"
@@ -203,6 +204,10 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window)
     /* Canvas */
     _ds_sticky_zoom = prefs->createObserver("/options/stickyzoom/value", [this]() { sticky_zoom_updated(); });
     sticky_zoom_updated();
+
+    _version_in_title_observer = Preferences::get()->createObserver("/options/versionintitle/value", [this] {
+        _updateTitle();
+    });
 
     /* Dialog Container */
     _container = std::make_unique<DialogContainer>(inkscape_window);
@@ -398,6 +403,8 @@ SPDesktopWidget::~SPDesktopWidget() = default;
  */
 void SPDesktopWidget::_updateTitle()
 {
+    auto prefs = Preferences::get();
+
     if (_window) {
         auto const doc = _desktop->doc();
 
@@ -407,6 +414,10 @@ void SPDesktopWidget::_updateTitle()
         }
 
         Name += doc->getDocumentName();
+
+        if (doc->isTemplate()) {
+            Name += " (template)";
+        }
 
         if (auto const v = _desktop->viewNumber(); v > 1) {
             Name += ": ";
@@ -447,9 +458,10 @@ void SPDesktopWidget::_updateTitle()
 
         Name += " - Inkscape";
 
-        // Name += " (";
-        // Name += Inkscape::version_string;
-        // Name += ")";
+        if (prefs->getBool("/options/versionintitle/value", true)) {
+            Name += " ";
+            Name += Inkscape::version_string;
+        }
 
         _window->set_title(Name);
     }
@@ -458,6 +470,11 @@ void SPDesktopWidget::_updateTitle()
 DialogContainer *SPDesktopWidget::getDialogContainer()
 {
     return _container.get();
+}
+
+void SPDesktopWidget::showNotice(Glib::ustring const &msg)
+{
+    _canvas_grid->showNotice(msg);
 }
 
 void SPDesktopWidget::showNotice(Glib::ustring const &msg, int timeout)
@@ -629,11 +646,8 @@ void SPDesktopWidget::layoutWidgets()
 
     // Move command toolbar as required.
 
-    // If interface_mode unset, use screen aspect ratio. Needs to be synced with "canvas-interface-mode" action.
-    Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_primary();
-    double const width  = monitor_geometry.get_width();
-    double const height = monitor_geometry.get_height();
-    bool widescreen = (height > 0 && width/height > 1.65);
+    // If interface_mode is unset, use the same screen-aspect-ratio default as the action.
+    bool widescreen = get_widescreen_default();
     widescreen = prefs->getBool(pref_root + "interface_mode", widescreen);
 
     // Unlink command toolbar.

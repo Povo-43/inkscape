@@ -117,7 +117,7 @@ private:
     Gtk::Image _icon;
     class FadeOut : public Gtk::Widget {
     public:
-        FadeOut() {}
+        FadeOut() { set_name("FadeOut"); }
         void snapshot_vfunc(const Glib::RefPtr<Gtk::Snapshot>& snapshot) override;
     };
     FadeOut _mask; // value fade-out mask
@@ -127,10 +127,6 @@ private:
     Glib::RefPtr<Gtk::EventControllerMotion> _motion;
     void on_motion_enter(double x, double y);
     void on_motion_leave();
-
-    Glib::RefPtr<Gtk::EventControllerMotion> _motion_value;
-    void on_motion_enter_value(double x, double y);
-    void on_motion_leave_value();
 
     Glib::RefPtr<Gtk::GestureDrag> _drag_value;
     Gtk::EventSequenceState on_drag_begin_value(Gdk::EventSequence* sequence);
@@ -169,7 +165,6 @@ private:
     void cancel_editing();
     bool defocus();
     void show_arrows(bool on = true);
-    void show_label_icon(bool on = true);
     bool commit_entry();
     void change_value(double inc, Gdk::ModifierType state, bool page = false);
     double wrap_around(double value);
@@ -180,7 +175,6 @@ private:
     void set_width_chars(int width);
 
     // ---------------- DATA ------------------
-    double _initial_value = 0.0; // Value of adjustment at the start of drag.
     double _drag_full_travel = 300.0; // dragging sensitivity in pixels
     struct DragInfo { double x, y; bool started = false; bool horizontal; } _drag;
     double _scroll_counter = 0; // Counter to control incrementing/decrementing rate

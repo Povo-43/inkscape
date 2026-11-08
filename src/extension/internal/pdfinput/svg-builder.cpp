@@ -1938,7 +1938,7 @@ void SvgBuilder::addChar(GfxState *state,
                          double dx, double dy,
                          double ax, double ay,
                          double originX, double originY,
-                         CharCode code, int /*nBytes*/, Unicode const *u, int uLen)
+                         CharCode code, int nBytes, Unicode const *u, int uLen)
 {
     assert (state);
 
@@ -2027,6 +2027,12 @@ void SvgBuilder::addChar(GfxState *state,
               << "  state: " << (void*)new_glyph.state
               << std::endl;
         );
+
+    // ligatures without unicode mapping (e.g. "ti" in Calibri) may be represented in PDF as multiple characters.
+    // Cairo handles this when drawing glyphs, but we need to append the characters individually otherwise.
+    if (uLen > 1 && !_cairo_font) {
+        addChar(state, x, y, dx, dy, ax, ay, originX, originY, code, nBytes, u + 1, uLen - 1);
+    }
 }
 
 /**

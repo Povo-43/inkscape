@@ -16,6 +16,7 @@
 #include <array>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -84,6 +85,7 @@ FontList getPdfFonts(std::shared_ptr<PDFDoc> pdf_doc);
 std::string getNameWithoutSubsetTag(std::string name);
 std::string getDictString(Dict *dict, const char *key);
 std::string getString(const std::string &value);
+std::string getString(const std::optional<std::string> &value);
 std::string getString(const std::unique_ptr<GooString> &value);
 std::string getString(const GooString *value);
 std::string getString(const GooString &value);

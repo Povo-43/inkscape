@@ -238,7 +238,7 @@
          inkscape:label="bbox"
          inkscape:tile-x0="1856"
          inkscape:tile-y0="308"
-         class="bbox" />
+         opacity="0" />
       <g
          id="g547-6"
          clip-path="url(#clip167_3684_20032-1-5-3)"
@@ -255,7 +255,7 @@
            inkscape:label="bbox"
            inkscape:tile-x0="1856"
            inkscape:tile-y0="308"
-           class="bbox" />
+           opacity="0" />
         <g
            id="g520-6"
            inkscape:label="Colors"

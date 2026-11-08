@@ -159,7 +159,9 @@ public:
     void setCoordinateStatus(Geom::Point p);
     void onFocus(bool has_focus);
     Inkscape::UI::Dialog::DialogContainer *getDialogContainer();
-    void showNotice(Glib::ustring const &msg, int timeout = 0);
+
+    void showNotice(Glib::ustring const &msg);
+    void showNotice(Glib::ustring const &msg, int timeout);
 
     void desktopChangedDocument(SPDesktop *desktop);
     void desktopChangedTitle(SPDesktop *desktop);
@@ -186,6 +188,7 @@ private:
     Inkscape::PrefObserver _tb_icon_sizes2;
     Inkscape::PrefObserver _tb_visible_buttons;
     Inkscape::PrefObserver _ds_sticky_zoom;
+    Inkscape::PrefObserver _version_in_title_observer;
 
     void _updateUnit();
     void _updateNamedview();

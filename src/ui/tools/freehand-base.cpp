@@ -573,8 +573,8 @@ void FreehandBase::_attachSelection()
 
         // Anchor list
         for (auto const &c : white_curves) {
-            g_return_if_fail(c->curveCount() > 0);
             if (!is_closed(*c)) {
+                g_return_if_fail(c->curveCount() > 0);
                 white_anchors.emplace_back(std::make_unique<SPDrawAnchor>(this, c, true , c->initialPoint()));
                 white_anchors.emplace_back(std::make_unique<SPDrawAnchor>(this, c, false, c->finalPoint()));
             }

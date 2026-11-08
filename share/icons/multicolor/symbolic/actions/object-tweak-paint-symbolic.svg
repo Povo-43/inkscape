@@ -62,7 +62,7 @@
      id="object-tweak-paint"
      transform="translate(-255,-647.36218)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 255,647.36218 h 16 v 16 h -16 z"
        id="rect4527"
        inkscape:connector-curvature="0" />

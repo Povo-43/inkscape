@@ -53,6 +53,11 @@ protected:
     float          _pl;             // phase length
 
     double design_units;
+    cairo_font_face_t *cairo_font_face = nullptr; // Cairo font face for color glyphs.
+    bool has_svg    = false;
+    bool has_png    = false;
+    bool has_layers = false; // COLRv0
+    bool has_paint  = false; // COLRv1 HB 7.0.0
     Geom::PathVector const *pathvec = nullptr; // pathvector of glyph.
     Inkscape::Pixbuf const *pixbuf = nullptr;  // pixbuf, if SVG font
     Geom::Rect              bbox_exact;        // Exact bounding box of glyph.

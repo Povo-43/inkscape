@@ -211,6 +211,9 @@ private:
 
     UI::Widget::PrefCheckButton& _setting_layers;
     UI::Widget::PrefCheckButton& _setting_track;
+    UI::Widget::PrefRadioButton& _setting_fade_never;
+    UI::Widget::PrefRadioButton& _setting_fade_group;
+    UI::Widget::PrefRadioButton& _setting_fade_layer;
     bool _drag_flip;
 
     bool _selectionChanged();

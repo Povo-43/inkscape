@@ -118,7 +118,7 @@ Jabier Arraiza</dc:title>
     <path
        id="rect22048"
        d="M 0,0 H 16 V 16 H 0 Z"
-       style="opacity:0;fill:none"
+       opacity="0"
        inkscape:connector-curvature="0" />
     <path
        d="M 1,4 V 6 H 5.265625 C 7.8922039,6 10,8.1077961 10,10.734375 V 15 h 2 V 10.734375 C 12,7.0269169 8.9730831,4 5.265625,4 Z"

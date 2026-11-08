@@ -58,7 +58,7 @@ namespace Inkscape::UI::Dialog {
 class TextEdit final : public DialogBase
 {
 public:
-    TextEdit();
+    TextEdit(bool use_legacy); // use_legacy turns on the old version of this dialog, for dev testing
     ~TextEdit() final;
 
     void documentReplaced() final;
@@ -66,6 +66,12 @@ public:
     void selectionModified(Selection *selection, guint flags) final;
 
 protected:
+    enum Flags {
+        SPEC     = 1 << 0,
+        SIZE     = 1 << 1,
+        FEATURES = 1 << 2
+    };
+
     /**
      * Callback for pressing the default button.
      */
@@ -117,15 +123,6 @@ protected:
     void on_fcm_button_clicked();
 
     /**
-     * Callback invoked when the user modifies the font through the dialog or the tools control bar.
-     *
-     * onFontChange updates the dialog UI. The subfunction setPreviewText updates the preview label.
-     *
-     * @param fontspec for the text to be previewed. (Parameter currently not used)
-     */
-    void onFontChange (Glib::ustring const &fontspec);
-
-    /**
      * Get the selected text off the main canvas.
      *
      * @return SPItem pointer to the selected text object
@@ -148,10 +145,10 @@ protected:
                          Glib::ustring const &phrase);
 
     void updateObjectText ( SPItem *text );
-    SPCSSAttr *fillTextStyle ();
+    SPCSSAttr *fillTextStyle(guint flags);
 
 private:
-    void apply_changes(bool continuous);
+    void apply_changes(guint flags, bool continuous);
     Glib::RefPtr<Gtk::Builder> builder;
 
     /*
@@ -186,7 +183,7 @@ private:
     Gtk::Button &setasdefault_button;
     Gtk::Button &apply_button;
     Gtk::Box& _apply_box;
-    bool _use_browser = false;
+    bool _use_legacy = false;
 
     // Signals
     sigc::scoped_connection selectChangedConn;
@@ -197,7 +194,8 @@ private:
     sigc::scoped_connection fontCollectionsChangedSelection;
     sigc::scoped_connection fontCollectionsUpdate;
     sigc::scoped_connection _apply_font;
-    sigc::scoped_connection _font_changed;
+    sigc::scoped_connection _fontspec_changed;
+    sigc::scoped_connection _fontsize_changed;
     sigc::scoped_connection _insert_text;
 
     // Other

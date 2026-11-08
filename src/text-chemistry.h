@@ -20,7 +20,10 @@
 #include <glibmm/ustring.h>
 
 class SPDocument;
+class SPObject;
+class SPItem;
 
+SPItem *text_or_flowtext_in_selection(Inkscape::Selection *selection);
 void text_put_on_path();
 void text_remove_from_path();
 void text_remove_all_kerns();
@@ -36,6 +39,7 @@ text_refs_t text_categorize_refs(SPDocument *doc, InIter begin, InIter end, text
 template<typename InIterOrig, typename InIterCopy>
 void text_relink_refs(text_refs_t const &refs,
         InIterOrig origBegin, InIterOrig origEnd, InIterCopy copyBegin);
+void text_select_by_font(Glib::ustring const &family, SPObject *parent);
 
 #include "text-chemistry-impl.h"
 

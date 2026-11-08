@@ -13,7 +13,7 @@
       modifiers <primary>, <shift>, and/or <alt>. As this is an XML file, '<' and '>' must be
       replaced by &lt; and &gt;, respectively. The first entry will be listed in menus.
     
-    - The "gaction" atribute contains the full action name, including the map name (typically
+    - The "gaction" attribute contains the full action name, including the map name (typically
       'app' or 'win').
     
     =========== Notes ===========
@@ -104,9 +104,9 @@
     <!-- ROUGHLY IN MENU ORDER -->
 
     <!-- File -->
-    <bind gaction="win.document-new"                       keys="&lt;Primary&gt;n" />
-    <bind gaction="win.document-dialog-templates"          keys="&lt;Primary&gt;&lt;Shift&gt;n" />
-    <bind gaction="win.document-open"                      keys="&lt;Primary&gt;o" />
+    <bind gaction="app.document-new"                       keys="&lt;Primary&gt;n" />
+    <bind gaction="app.document-dialog-templates"          keys="&lt;Primary&gt;&lt;Shift&gt;n" />
+    <bind gaction="app.document-open"                      keys="&lt;Primary&gt;o" />
     <bind gaction="win.document-revert" 			 keys="F12"/>
     <bind gaction="win.document-save"                      keys="&lt;Primary&gt;s" />
     <bind gaction="win.document-save-as"                   keys="&lt;Primary&gt;&lt;Shift&gt;s" />

@@ -21,7 +21,7 @@
     <inkscape:grid id="grid" type="xygrid" />
   </sodipodi:namedview>
   <g id="text-flow-into-frame" inkscape:label="00094" transform="translate(-195,-587.3622)">
-    <path transform="translate(0,512.3622)" style="opacity:0;fill:none" d="m 195,75 h 16 v 16 h -16 z" id="rect11841" inkscape:connector-curvature="0" />
+    <path transform="translate(0,512.3622)" opacity="0" d="m 195,75 h 16 v 16 h -16 z" id="rect11841" inkscape:connector-curvature="0" />
     <path id="rect12613" transform="translate(0,512.3622)" d="m 195,75 v 16 h 16 V 75 Z m 1,1 h 14 v 14 h -14 z" style="opacity:1" inkscape:connector-curvature="0" />
     <path inkscape:connector-curvature="0" id="path12635" d="m 197,589.3622 v 3 l 1,-1 h 2 v 5 l -1,1 h 4 l -1,-1 v -5 h 2 l 1,1 v -3 z" style="opacity:1" />
     <path class="warning" inkscape:connector-curvature="0" id="path12649" d="m 209,597.3622 v 2 h -4 v 2 l -2.9883,-3 2.9883,-3 v 2 z" style="opacity:1" />

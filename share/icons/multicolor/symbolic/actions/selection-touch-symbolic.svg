@@ -99,7 +99,7 @@ Jabier Arraiza</dc:title>
      id="layercompo"
      inkscape:groupmode="layer">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="M 0,0 H 16 V 16 H 0 Z"
        id="rect22048" />
     <path
@@ -109,7 +109,7 @@ Jabier Arraiza</dc:title>
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" />
     <path
-       style="opacity:0;fill:none;stroke-width:0.66666698"
+       opacity="0"
        d="M -15.767012,-0.42960155 H 0.232996 V 15.570406 H -15.767012 Z"
        id="rect22036"
        inkscape:connector-curvature="0" />

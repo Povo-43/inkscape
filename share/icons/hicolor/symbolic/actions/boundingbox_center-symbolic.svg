@@ -6,7 +6,7 @@
   </sodipodi:namedview>
   <g id="boundingbox_center" inkscape:label="00359">
       <title id="title40580">boundingbox_center</title>
-      <path inkscape:connector-curvature="0" id="rect40582" d="M 0,0 H 16 V 16 H 0 Z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect40582" d="M 0,0 H 16 V 16 H 0 Z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="circle40584" d="M 8,3 C 5.2444986,3 3,5.2444986 3,8 c 0,2.755501 2.2444986,5 5,5 2.755501,0 5,-2.244499 5,-5 C 13,5.2444986 10.755501,3 8,3 Z m 0,1 c 2.215061,0 4,1.7849387 4,4 0,2.215061 -1.784939,4 -4,4 C 5.7849387,12 4,10.215061 4,8 4,5.7849387 5.7849387,4 8,4 Z" style="opacity:0.75;stroke-linecap:butt"/>
     </g>
     </svg>

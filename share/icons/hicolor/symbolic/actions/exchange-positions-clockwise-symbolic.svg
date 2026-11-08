@@ -86,7 +86,7 @@
     <title
        id="title40821">exchange-positions-clockwise</title>
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="M 0,0 H 24 V 24 H 0 Z"
        id="rect40823"
        inkscape:connector-curvature="0" />

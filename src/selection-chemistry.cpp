@@ -4304,11 +4304,11 @@ void sp_transform_selected_items(SPDesktop* desktop, const Geom::Rect& rect, con
 
     auto selection = desktop->getSelection();
     auto document = desktop->getDocument();
-    auto& pm = document->getPageManager();
-    auto page = pm.getSelectedPageRect();
-    auto page_correction = document->get_origin_follows_page();
 
     document->ensureUpToDate();
+
+    auto& pm = document->getPageManager();
+    auto origin = pm.getSelectedPageOrigin();
 
     Geom::OptRect bbox_vis = selection->visualBounds();
     Geom::OptRect bbox_geom = selection->geometricBounds();
@@ -4337,11 +4337,9 @@ void sp_transform_selected_items(SPDesktop* desktop, const Geom::Rect& rect, con
         double old_x = bbox_user->min()[Geom::X] + old_w * selection->anchor.x();
         double old_y = bbox_user->min()[Geom::Y] + old_h * selection->anchor.y();
 
-        // Adjust against selected page, so later correction isn't broken.
-        if (page_correction) {
-            old_x -= page.left();
-            old_y -= page.top();
-        }
+        // Adjust against selected page origin, so later correction isn't broken.
+        old_x -= origin.x();
+        old_y -= origin.y();
 
         new_x = old_x * (x / 100 / unit->factor);
         new_y = old_y * (y / 100 / unit->factor);
@@ -4353,11 +4351,9 @@ void sp_transform_selected_items(SPDesktop* desktop, const Geom::Rect& rect, con
     double x0 = new_x - old_w * selection->anchor.x() - (new_w - old_w) * selection->anchor.x();
     double y0 = new_y - old_h * selection->anchor.y() - (new_h - old_h) * selection->anchor.y();
 
-    // Adjust according to the selected page, if needed
-    if (page_correction) {
-        x0 += page.left();
-        y0 += page.top();
-    }
+    // Adjust according to the selected page origin
+    x0 += origin.x();
+    y0 += origin.y();
 
     double x1 = x0 + new_w;
     // double xrel = new_w / old_w;
@@ -4419,12 +4415,10 @@ Geom::Rect sp_selection_get_xywh(SPDesktop* desktop, const Inkscape::Util::Unit*
     auto x = bbox->left() + width * sel->anchor.x();
     auto y = bbox->top() + height * sel->anchor.y();
 
-    if (desktop->getDocument()->get_origin_follows_page()) {
-        auto &pm = desktop->getDocument()->getPageManager();
-        auto page = pm.getSelectedPageRect();
-        x -= page.left();
-        y -= page.top();
-    }
+    auto &pm = desktop->getDocument()->getPageManager();
+    auto origin = pm.getSelectedPageOrigin();
+    x -= origin.x();
+    y -= origin.y();
 
     // auto _adj_x = _x_item.get_adjustment();
     // auto _adj_y = _y_item.get_adjustment();

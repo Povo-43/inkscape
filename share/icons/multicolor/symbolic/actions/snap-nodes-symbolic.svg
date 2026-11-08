@@ -61,7 +61,7 @@
      id="snap-nodes"
      transform="matrix(0.998641,0,0,0.9996,-737.97402,-506.15331)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 739,506.3558 h 16 v 16 h -16 z"
        id="rect22660"
        inkscape:connector-curvature="0" />

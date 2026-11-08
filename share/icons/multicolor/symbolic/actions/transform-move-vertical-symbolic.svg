@@ -62,7 +62,7 @@
      id="transform-move-vertical"
      transform="matrix(0.999268,0,0,-1,-527.61352,698.36218)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 528.01172,682.36218 h 16 v 16 h -16 z"
        id="rect15593"
        inkscape:connector-curvature="0" />

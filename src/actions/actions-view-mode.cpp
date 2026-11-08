@@ -76,6 +76,15 @@ canvas_toggle_state(InkscapeWindow *win, Glib::ustring action_name)
     return state;
 }
 
+bool
+get_widescreen_default()
+{
+    Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_primary();
+    double const width  = monitor_geometry.get_width();
+    double const height = monitor_geometry.get_height();
+    return height > 0 && width / height > 1.65;
+}
+
 void
 canvas_commands_bar_toggle(InkscapeWindow *win)
 {
@@ -250,6 +259,10 @@ view_set_gui(InkscapeWindow* win)
     bool scrollbars_state  = prefs->getBool(pref_root + "scrollbars/state", true);
     bool rulers_state      = prefs->getBool(pref_root + "rulers/state", true);
 
+    // If interface_mode is unset, use the screen aspect ratio.
+    bool const widescreen = get_widescreen_default();
+    bool interface_mode = prefs->getBool(pref_root + "interface_mode", widescreen);
+
     canvas_set_state(win, "canvas-commands-bar",      commands_state);
     canvas_set_state(win, "canvas-snap-controls-bar", snaptoolbox_state);
     canvas_set_state(win, "canvas-tool-control-bar",  toppanel_state);
@@ -258,6 +271,7 @@ view_set_gui(InkscapeWindow* win)
     canvas_set_state(win, "canvas-scroll-bars",       scrollbars_state);
     canvas_set_state(win, "canvas-palette",           palette_state);
     canvas_set_state(win, "canvas-statusbar",         statusbar_state);
+    canvas_set_state(win, "canvas-interface-mode",    interface_mode);
     // clang-format on
 }
 
@@ -295,10 +309,7 @@ add_actions_view_mode(InkscapeWindow* win)
     // Initial States of Actions
 
     // If interface_mode unset, use screen aspect ratio.
-    Gdk::Rectangle monitor_geometry = Inkscape::UI::get_monitor_geometry_primary();
-    double const width  = monitor_geometry.get_width();
-    double const height = monitor_geometry.get_height();
-    bool widescreen = (height > 0 && width/height > 1.65);
+    bool const widescreen = get_widescreen_default();
 
     // clang-format off
     bool commands_toggle    = prefs->getBool(pref_root + "commands/state", true);

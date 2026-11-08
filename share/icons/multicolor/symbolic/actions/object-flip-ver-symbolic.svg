@@ -67,7 +67,7 @@
        id="g6273">
       <path
          transform="rotate(90)"
-         style="opacity:0;fill:none"
+         opacity="0"
          d="m 379,-117.0002 h 16 v 16 h -16 z"
          id="rect6216"
          inkscape:connector-curvature="0" />

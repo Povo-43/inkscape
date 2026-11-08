@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 // This is a basic text entry with some light conveniences, like a signal that fires when
-// the value in the entry should be committed/saved.
+// the value in the entry should be committed/saved or reverting to original value upon Escape.
 
 #ifndef INKSCAPE_UI_WIDGET_GENERIC_TEXT_ENTRY_H
 #define INKSCAPE_UI_WIDGET_GENERIC_TEXT_ENTRY_H
@@ -10,6 +10,10 @@
 #include <sigc++/signal.h>
 
 #include "ui/widget/gtk-registry.h"
+
+namespace Gtk {
+class EventControllerKey;
+} // namespace Gtk
 
 namespace Inkscape::UI::Widget {
 
@@ -26,6 +30,11 @@ public:
 private:
     void construct();
 
+    void _on_focus_change();
+    bool _on_key_pressed(Gtk::EventControllerKey const &controller,
+                         unsigned keyval, unsigned keycode, Gdk::ModifierType state);
+
+    Glib::ustring _saved_value;
     sigc::signal<void ()> _signal_commit;
 };
 

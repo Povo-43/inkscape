@@ -49,7 +49,7 @@
        type="xygrid" />
   </sodipodi:namedview>
   <path
-     style="opacity:0;fill:none"
+     opacity="0"
      d="m 1,1.7263782e-4 h 14 c 0.554,0 1,0.44599955218 1,0.99999896218 V 15.000158 c 0,0.553999 -0.446,0.999999 -1,0.999999 H 1 c -0.554,0 -1,-0.446 -1,-0.999999 V 1.0001716 C 0,0.44617219 0.446,1.7263782e-4 1,1.7263782e-4 Z"
      id="rect19770"
      inkscape:connector-curvature="0" />

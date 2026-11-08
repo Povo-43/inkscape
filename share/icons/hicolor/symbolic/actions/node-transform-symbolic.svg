@@ -11,6 +11,6 @@
         <use height="540" width="1250" transform="matrix(1,0,0,-1,0,126)" id="use5805" xlink:href="#path5786" y="0" x="0"/>
         <use height="540" width="1250" transform="rotate(180,488,63)" id="use5819" xlink:href="#path5786" y="0" x="0"/>
       </g>
-      <path inkscape:connector-curvature="0" id="rect19206" d="m 349,46 h 16 v 16 h -16 z" style="opacity:0;fill:none" transform="translate(0,512.3622)"/>
+      <path inkscape:connector-curvature="0" id="rect19206" d="m 349,46 h 16 v 16 h -16 z" opacity="0" transform="translate(0,512.3622)"/>
     </g>
     </svg>

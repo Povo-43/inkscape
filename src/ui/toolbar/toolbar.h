@@ -13,6 +13,7 @@
 
 #include <stack>
 #include <gtkmm/box.h>
+#include <sigc++/scoped_connection.h>
 
 #include "ui/defocus-target.h"
 #include "ui/widget/generic/bin.h"
@@ -74,7 +75,7 @@ class Toolbar
 public:
     ~Toolbar() override;
 
-    virtual void setDesktop(SPDesktop *desktop) { _desktop = desktop; }
+    virtual void setDesktop(SPDesktop *desktop);
     SPDesktop *getDesktop() const { return _desktop; }
 
     virtual void setActiveUnit(Util::Unit const *unit) {}
@@ -84,7 +85,12 @@ public:
 protected:
     using ToolbarWidget::ToolbarWidget;
 
+    virtual void documentReplaced() {} // convenience hook for when the doc is assigned or replaced
+
     SPDesktop *_desktop = nullptr;
+
+private:
+    sigc::scoped_connection _doc_replaced_conn;
 };
 
 } // namespace Inkscape::UI::Toolbar

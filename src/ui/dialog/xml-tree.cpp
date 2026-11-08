@@ -296,6 +296,7 @@ void XmlTree::set_tree_select(Inkscape::XML::Node *repr, bool edit)
 
     _xml_treeview->select_node(repr, edit);
     propagate_tree_select(repr);
+    on_tree_select_row_enable(repr);
 }
 
 
@@ -371,23 +372,10 @@ void XmlTree::set_dt_select(Inkscape::XML::Node *repr)
 
 bool XmlTree::deferred_on_tree_select_row()
 {
-    if (selected_repr) {
-        selected_repr = nullptr;
-    }
-
     auto selection = _xml_treeview->get_selection();
     auto iter = selection->get_selected();
-    if (!iter) {
-        propagate_tree_select(nullptr);
-        set_dt_select(nullptr);
-        on_tree_unselect_row_disable();
-        return false;
-    }
 
-    auto repr = _xml_treeview->get_repr(*iter);
-    assert(repr != nullptr);
-
-    selected_repr = repr;
+    selected_repr = iter ? _xml_treeview->get_repr(*iter) : nullptr;
 
     propagate_tree_select(selected_repr);
     set_dt_select(selected_repr);
@@ -405,7 +393,10 @@ void XmlTree::_set_status_message(Inkscape::MessageType /*type*/, const gchar *m
 
 void XmlTree::on_tree_select_row_enable(Inkscape::XML::Node *node)
 {
-    assert (node);
+    if (!node) {
+        on_tree_unselect_row_disable();
+        return;
+    }
 
     // If mutable and not top node svg:svg :
     bool is_mutable = xml_tree_node_mutable(node);

@@ -5,7 +5,7 @@
     <inkscape:grid type="xygrid" id="grid"/>
   </sodipodi:namedview>
   <g transform="matrix(0.988179,0,0,0.9858,-162.93565,-835.21727)" inkscape:label="00089" id="path-reverse">
-      <path inkscape:connector-curvature="0" id="rect15611" d="m 165,335 h 16 v 16 h -16 z" style="opacity:0;fill:none" transform="translate(0,512.3622)"/>
+      <path inkscape:connector-curvature="0" id="rect15611" d="m 165,335 h 16 v 16 h -16 z" opacity="0" transform="translate(0,512.3622)"/>
       <path inkscape:connector-curvature="0" id="path15627" d="m 165,849.3622 v 2 h 4 v 2 l 2.9883,-3 -2.9883,-3 v 2 z" style="opacity:1"/>
       <path style="opacity:1" d="m 181,859.3622 v 2 h -4 v 2 l -2.9883,-3 2.9883,-3 v 2 z" id="path15629" inkscape:connector-curvature="0"/>
       <path inkscape:connector-curvature="0" id="path15631" d="m 180.25977,847.24805 -0.13672,0.4082 c 0,0 -0.61831,1.84593 -1.83985,3.68359 -1.22154,1.83767 -3.00041,3.5918 -5.2832,3.5918 -2.71721,0 -4.71382,2.0298 -6.01758,3.97656 -1.30375,1.94676 -1.95898,3.88477 -1.95898,3.88477 l -0.13867,0.4082 0.81445,0.27735 0.13867,-0.40821 c 0,0 0.62843,-1.84555 1.85938,-3.68359 1.23094,-1.83804 3.01994,-3.59375 5.30273,-3.59375 2.71721,0 4.70569,-2.02943 6,-3.97656 1.29431,-1.94714 1.93945,-3.88672 1.93945,-3.88672 l 0.13672,-0.40821 z" style="opacity:1"/>

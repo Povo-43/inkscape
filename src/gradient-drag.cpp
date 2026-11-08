@@ -1855,7 +1855,7 @@ void GrDragger::highlightNode(SPMeshNode *node, bool highlight, Geom::Point corn
     if (d && node->draggable < G_MAXUINT) {
         Geom::Point end = d->knot->pos;
         Geom::Ray ray = Geom::Ray(corner_pos, end);
-        if (d->knot->desktop->yaxisdown()) {
+        if (!d->knot->desktop->yaxisdown()) {
             end *= Geom::Scale(1, -1);
             corner_pos *= Geom::Scale(1, -1);
             ray.setPoints(corner_pos, end);

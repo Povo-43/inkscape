@@ -192,181 +192,190 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, std::vector<SPIte
         AppendItemFromAction(gmenu_section, "doc.page-move-forward", _("Move Page _Forward"), "pages-order-forwards");
         gmenu->append_section(gmenu_section);
 
-    } else if (!layer || desktop->getSelection()->includes(layer)) {
-        // "item" is the object that was under the mouse when right-clicked. It determines what is shown
-        // in the menu thus it makes the most sense that it is either selected or part of the current
-        // selection.
-        auto &selection = *desktop->getSelection();
+    } else {
+        auto only_layer = layer && !desktop->getSelection()->includes(layer);
 
-        // Do not include this object in the selection if any of its
-        // children have been selected separately.
-        if (object && !selection.includes(object) && item && !childrenIncludedInSelection(item, selection)) {
-            selection.set(object);
-        }
+        if (!only_layer) {
+            // "item" is the object that was under the mouse when right-clicked. It determines what is shown
+            // in the menu thus it makes the most sense that it is either selected or part of the current
+            // selection.
+            auto &selection = *desktop->getSelection();
 
-        if (!item) {
-            // Even when there's no item, we should still have the Paste action on top
-            // (see https://gitlab.com/inkscape/inkscape/-/issues/4150)
-            gmenu->append_section(create_clipboard_actions(true));
-
-            gmenu_section = Gio::Menu::create();
-            AppendItemFromAction(gmenu_section, "win.dialog-open('DocumentProperties')", _("Document Properties..."), "document-properties");
-            gmenu->append_section(gmenu_section);
-        } else {
-            // When an item is selected, show all three of Cut, Copy and Paste.
-            gmenu->append_section(create_clipboard_actions());
-
-            gmenu_section = Gio::Menu::create();
-            AppendItemFromAction(gmenu_section, "app.duplicate", _("Duplic_ate"), "edit-duplicate");
-            AppendItemFromAction(gmenu_section, "app.clone", _("_Clone"), "edit-clone");
-            AppendItemFromAction(gmenu_section, "app.delete-selection", _("_Delete"), "edit-delete");
-            gmenu->append_section(gmenu_section);
-
-            // Dialogs
-            auto gmenu_dialogs = Gio::Menu::create();
-            if (!hide_layers_and_objects_menu_item) { // Hidden when context menu is popped up in Layers and Objects dialog!
-                AppendItemFromAction(gmenu_dialogs, "win.dialog-open('Objects')",                   _("Layers and Objects..."), "dialog-objects"             );
-            }
-            AppendItemFromAction(gmenu_dialogs,     "win.dialog-open('ObjectProperties')",          _("_Object Properties..."), "dialog-object-properties"   );
-
-            if (is<SPShape>(item) || is<SPText>(item) || is<SPGroup>(item)) {
-                AppendItemFromAction(gmenu_dialogs, "win.dialog-open('FillStroke')",                _("_Fill and Stroke..."),   "dialog-fill-and-stroke"     );
+            // Do not include this object in the selection if any of its
+            // children have been selected separately.
+            if (object && !selection.includes(object) && item && !childrenIncludedInSelection(item, selection)) {
+                selection.set(object);
             }
 
-            // Image dialogs (mostly).
-            if (auto image = cast<SPImage>(item)) {
-                AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('Trace')",                     _("_Trace Bitmap..."),      "bitmap-trace"          );
+            if (!item) {
+                // Even when there's no item, we should still have the Paste action on top
+                // (see https://gitlab.com/inkscape/inkscape/-/issues/4150)
+                gmenu->append_section(create_clipboard_actions(true));
 
-                if (image->getClipObject()) {
-                    AppendItemFromAction( gmenu_dialogs, "app.element-image-crop",                       _("Crop Image to Clip"),    ""                      );
-                }
-                if (strncmp(image->href, "data", 4) == 0) {
-                    // Image is embedded.
-                    AppendItemFromAction( gmenu_dialogs, "app.org.inkscape.filter.extract-image",        _("Extract Image..."),      ""                      );
-                } else {
-                    // Image is linked.
-                    AppendItemFromAction( gmenu_dialogs, "app.org.inkscape.filter.selected.embed-image", _("Embed Image"),           ""                      );
-                    AppendItemFromAction( gmenu_dialogs, "app.element-image-edit",                       _("Edit Externally..."),    ""                      );
-                }
-            }
-
-            // A clone of an image supports "Edit Externally" as well
-            if (is_clone_of_image(item)) {
-                AppendItemFromAction(gmenu_dialogs, "app.element-image-edit", _("Edit Externally..."), "");
-            }
-
-            // Text dialogs.
-            if (is<SPText>(item)) {
-                AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('Text')",                      _("_Text and Font..."),     "dialog-text-and-font"  );
-                AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('Spellcheck')",                _("Check Spellin_g..."),    "tools-check-spelling"  );
-            }
-            gmenu->append_section(gmenu_dialogs); // We might add to it later...
-
-            if (!is<SPAnchor>(item)) {
-                // Item menu
-
-                // Selection
                 gmenu_section = Gio::Menu::create();
-                auto gmenu_submenu = Gio::Menu::create();
-                AppendItemFromAction(     gmenu_submenu, "win.select-same-fill-and-stroke",     _("Fill _and Stroke"),      "edit-select-same-fill-and-stroke");
-                AppendItemFromAction(     gmenu_submenu, "win.select-same-fill",                _("_Fill Color"),           "edit-select-same-fill"           );
-                AppendItemFromAction(     gmenu_submenu, "win.select-same-stroke-color",        _("_Stroke Color"),         "edit-select-same-stroke-color"   );
-                AppendItemFromAction(     gmenu_submenu, "win.select-same-stroke-style",        _("Stroke St_yle"),         "edit-select-same-stroke-style"   );
-                AppendItemFromAction(     gmenu_submenu, "win.select-same-object-type",         _("_Object Type"),          "edit-select-same-object-type"    );
-                gmenu_section->append_submenu(_("Select Sa_me"), gmenu_submenu);
+                AppendItemFromAction(gmenu_section, "win.dialog-open('DocumentProperties')", _("Document Properties..."), "document-properties");
+                gmenu->append_section(gmenu_section);
+            } else {
+                // When an item is selected, show all three of Cut, Copy and Paste.
+                gmenu->append_section(create_clipboard_actions());
+
+                gmenu_section = Gio::Menu::create();
+                AppendItemFromAction(gmenu_section, "app.duplicate", _("Duplic_ate"), "edit-duplicate");
+                AppendItemFromAction(gmenu_section, "app.clone", _("_Clone"), "edit-clone");
+                AppendItemFromAction(gmenu_section, "app.delete-selection", _("_Delete"), "edit-delete");
+                if (auto text = cast<SPText>(item); text && text->has_shape_inside()) {
+                    AppendItemFromAction(gmenu_section, "app.text-unflow-and-keep-shape", _("_Unflow and keep shape"), "select_text_unflow_and_keep_shape");
+                }
                 gmenu->append_section(gmenu_section);
 
-                // Groups and Layers
-                gmenu_section = Gio::Menu::create();
-                AppendItemFromAction(     gmenu_section, "win.selection-move-to-layer",         _("_Move to Layer..."),     ""                                );
-                AppendItemFromAction(     gmenu_section, "app.selection-link",                  _("Create Anchor (Hyperlink)"),   ""                          );
-                AppendItemFromAction(     gmenu_section, "app.selection-group",                 _("_Group"),                ""                                );
-                if (is<SPGroup>(item)) {
-                    AppendItemFromAction( gmenu_section, "app.selection-ungroup",               _("_Ungroup"),              ""                                );
-                    Glib::ustring label = Glib::ustring::compose(_("Enter Group %1"), item->defaultLabel());
-                    AppendItemFromAction( gmenu_section, "win.selection-group-enter",           label,                      ""                                );
-                    if (!layer && (item->getParentGroup()->isLayer() || item->getParentGroup() == root)) {
-                        // A layer should be a child of root or another layer.
-                        AppendItemFromAction( gmenu_section, "win.layer-from-group",            _("Group to Layer"),        ""                                );
+                // Dialogs
+                auto gmenu_dialogs = Gio::Menu::create();
+                if (!hide_layers_and_objects_menu_item) { // Hidden when context menu is popped up in Layers and Objects dialog!
+                    AppendItemFromAction(gmenu_dialogs, "win.dialog-open('Objects')",                   _("Layers and Objects..."), "dialog-objects"             );
+                }
+                AppendItemFromAction(gmenu_dialogs,     "win.dialog-open('ObjectProperties')",          _("_Object Properties..."), "dialog-object-properties"   );
+
+                if (is<SPShape>(item) || is<SPText>(item) || is<SPGroup>(item)) {
+                    AppendItemFromAction(gmenu_dialogs, "win.dialog-open('FillStroke')",                _("_Fill and Stroke..."),   "dialog-fill-and-stroke"     );
+                }
+
+                // Image dialogs (mostly).
+                if (auto image = cast<SPImage>(item)) {
+                    AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('Trace')",                     _("_Trace Bitmap..."),      "bitmap-trace"          );
+
+                    if (image->getClipObject()) {
+                        AppendItemFromAction( gmenu_dialogs, "app.element-image-crop",                       _("Crop Image to Clip"),    ""                      );
+                    }
+                    if (strncmp(image->href, "data", 4) == 0) {
+                        // Image is embedded.
+                        AppendItemFromAction( gmenu_dialogs, "app.org.inkscape.filter.extract-image",        _("Extract Image..."),      ""                      );
+                    } else {
+                        // Image is linked.
+                        AppendItemFromAction( gmenu_dialogs, "app.org.inkscape.filter.selected.embed-image", _("Embed Image"),           ""                      );
+                        AppendItemFromAction( gmenu_dialogs, "app.element-image-edit",                       _("Edit Externally..."),    ""                      );
                     }
                 }
-                auto group = cast<SPGroup>(item->parent);
-                if (group && !group->isLayer()) {
-                    AppendItemFromAction( gmenu_section, "win.selection-group-exit",            _("Exit Group"),            ""                                );
-                    AppendItemFromAction( gmenu_section, "app.selection-ungroup-pop",           _("_Pop Selection out of Group"), ""                          );
-                }
-                gmenu->append_section(gmenu_section);
 
-                // Clipping and Masking
-                gmenu_section = Gio::Menu::create();
-                if (selection.size() > 1) {
-                    AppendItemFromAction( gmenu_section, "app.object-set-clip",                 _("Set Cl_ip"),             ""                                );
+                // A clone of an image supports "Edit Externally" as well
+                if (is_clone_of_image(item)) {
+                    AppendItemFromAction(gmenu_dialogs, "app.element-image-edit", _("Edit Externally..."), "");
                 }
-                if (item->getClipObject()) {
-                    AppendItemFromAction( gmenu_section, "app.object-release-clip",             _("Release C_lip"),         ""                                );
+
+                // Text dialogs.
+                if (is<SPText>(item)) {
+                    AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('Text')",                      _("_Text and Font..."),     "dialog-text-and-font"  );
+                    AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('Spellcheck')",                _("Check Spellin_g..."),    "tools-check-spelling"  );
+                }
+                gmenu->append_section(gmenu_dialogs); // We might add to it later...
+
+                if (!is<SPAnchor>(item)) {
+                    // Item menu
+
+                    // Selection
+                    gmenu_section = Gio::Menu::create();
+                    auto gmenu_submenu = Gio::Menu::create();
+                    AppendItemFromAction(     gmenu_submenu, "win.select-same-fill-and-stroke",     _("Fill _and Stroke"),      "edit-select-same-fill-and-stroke");
+                    AppendItemFromAction(     gmenu_submenu, "win.select-same-fill",                _("_Fill Color"),           "edit-select-same-fill"           );
+                    AppendItemFromAction(     gmenu_submenu, "win.select-same-stroke-color",        _("_Stroke Color"),         "edit-select-same-stroke-color"   );
+                    AppendItemFromAction(     gmenu_submenu, "win.select-same-stroke-style",        _("Stroke St_yle"),         "edit-select-same-stroke-style"   );
+                    AppendItemFromAction(     gmenu_submenu, "win.select-same-object-type",         _("_Object Type"),          "edit-select-same-object-type"    );
+                    gmenu_section->append_submenu(_("Select Sa_me"), gmenu_submenu);
+                    gmenu->append_section(gmenu_section);
+
+                    // Groups and Layers
+                    gmenu_section = Gio::Menu::create();
+                    AppendItemFromAction(     gmenu_section, "win.selection-move-to-layer",         _("_Move to Layer..."),     ""                                );
+                    AppendItemFromAction(     gmenu_section, "app.selection-link",                  _("Create Anchor (Hyperlink)"),   ""                          );
+                    AppendItemFromAction(     gmenu_section, "app.selection-group",                 _("_Group"),                ""                                );
+                    if (is<SPGroup>(item)) {
+                        AppendItemFromAction( gmenu_section, "app.selection-ungroup",               _("_Ungroup"),              ""                                );
+                        Glib::ustring label = Glib::ustring::compose(_("Enter Group %1"), item->defaultLabel());
+                        AppendItemFromAction( gmenu_section, "win.selection-group-enter",           label,                      ""                                );
+                        if (!layer && (item->getParentGroup()->isLayer() || item->getParentGroup() == root)) {
+                            // A layer should be a child of root or another layer.
+                            AppendItemFromAction( gmenu_section, "win.layer-from-group",            _("Group to Layer"),        ""                                );
+                        }
+                    }
+                    auto group = cast<SPGroup>(item->parent);
+                    if (group && !group->isLayer()) {
+                        AppendItemFromAction( gmenu_section, "win.selection-group-exit",            _("Exit Group"),            ""                                );
+                        AppendItemFromAction( gmenu_section, "app.selection-ungroup-pop",           _("_Pop Selection out of Group"), ""                          );
+                    }
+                    gmenu->append_section(gmenu_section);
+
+                    // Clipping and Masking
+                    gmenu_section = Gio::Menu::create();
+                    if (selection.size() > 1) {
+                        AppendItemFromAction( gmenu_section, "app.object-set-clip",                 _("Set Cl_ip"),             ""                                );
+                    }
+                    if (item->getClipObject()) {
+                        AppendItemFromAction( gmenu_section, "app.object-release-clip",             _("Release C_lip"),         ""                                );
+                    } else {
+                        AppendItemFromAction( gmenu_section, "app.object-set-clip-group",           _("Set Clip G_roup"),       ""                                );
+                    }
+                    if (selection.size() > 1) {
+                        AppendItemFromAction( gmenu_section, "app.object-set-mask",                 _("Set Mask"),              ""                                );
+                    }
+                    if (item->getMaskObject()) {
+                        AppendItemFromAction( gmenu_section, "app.object-release-mask",             _("Release Mask"),          ""                                );
+                    }
+                    gmenu->append_section(gmenu_section);
+
+                    // Hide and Lock
+                    gmenu_section = Gio::Menu::create();
+                    AppendItemFromAction(     gmenu_section, "app.selection-hide",                  _("Hide Selected Objects"), ""                                );
+                    AppendItemFromAction(     gmenu_section, "app.selection-lock",                  _("Lock Selected Objects"), ""                                );
+                    gmenu->append_section(gmenu_section);
+
                 } else {
-                    AppendItemFromAction( gmenu_section, "app.object-set-clip-group",           _("Set Clip G_roup"),       ""                                );
+                    // Anchor menu
+                    gmenu_section = Gio::Menu::create();
+                    AppendItemFromAction(     gmenu_section, "app.element-a-open-link",             _("_Open Link in Browser"), ""                                );
+                    AppendItemFromAction(     gmenu_section, "app.selection-ungroup",               _("_Remove Link"),          ""                                );
+                    AppendItemFromAction(     gmenu_section, "win.selection-group-enter",           _("Enter Group"),           ""                                );
+                    gmenu->append_section(gmenu_section);
                 }
-                if (selection.size() > 1) {
-                    AppendItemFromAction( gmenu_section, "app.object-set-mask",                 _("Set Mask"),              ""                                );
-                }
-                if (item->getMaskObject()) {
-                    AppendItemFromAction( gmenu_section, "app.object-release-mask",             _("Release Mask"),          ""                                );
-                }
-                gmenu->append_section(gmenu_section);
-
-                // Hide and Lock
-                gmenu_section = Gio::Menu::create();
-                AppendItemFromAction(     gmenu_section, "app.selection-hide",                  _("Hide Selected Objects"), ""                                );
-                AppendItemFromAction(     gmenu_section, "app.selection-lock",                  _("Lock Selected Objects"), ""                                );
-                gmenu->append_section(gmenu_section);
-
-            } else {
-                // Anchor menu
-                gmenu_section = Gio::Menu::create();
-                AppendItemFromAction(     gmenu_section, "app.element-a-open-link",             _("_Open Link in Browser"), ""                                );
-                AppendItemFromAction(     gmenu_section, "app.selection-ungroup",               _("_Remove Link"),          ""                                );
-                AppendItemFromAction(     gmenu_section, "win.selection-group-enter",           _("Enter Group"),           ""                                );
-                gmenu->append_section(gmenu_section);
             }
+
+            // Hidden or locked beneath cursor
+            gmenu_section = Gio::Menu::create();
+            if (has_hidden_below_cursor) {
+                AppendItemFromAction( gmenu_section, "ctx.unhide-objects-below-cursor",     _("Unhide Objects Below Cursor"),  ""                         );
+            }
+            if (has_locked_below_cursor) {
+                AppendItemFromAction( gmenu_section, "ctx.unlock-objects-below-cursor",     _("Unlock Objects Below Cursor"),  ""                         );
+            }
+            gmenu->append_section(gmenu_section);
         }
 
-        // Hidden or locked beneath cursor
-        gmenu_section = Gio::Menu::create();
-        if (has_hidden_below_cursor) {
-            AppendItemFromAction( gmenu_section, "ctx.unhide-objects-below-cursor",     _("Unhide Objects Below Cursor"),  ""                         );
+        if (layer) {
+            // Layers: Only used in "Layers and Objects" dialog.
+
+            gmenu_section = Gio::Menu::create();
+            AppendItemFromAction(gmenu_section,     "win.layer-new",                _("_Add Layer..."),              "layer-new");
+            AppendItemFromAction(gmenu_section,     "win.layer-duplicate",          _("D_uplicate Layer"),           "layer-duplicate");
+            AppendItemFromAction(gmenu_section,     "win.layer-delete",             _("_Delete Layer"),              "layer-delete");
+            AppendItemFromAction(gmenu_section,     "win.layer-rename",             _("Re_name Layer..."),           "layer-rename");
+            AppendItemFromAction(gmenu_section,     "win.layer-to-group",           _("Layer to _Group"),            "dialog-objects");
+            gmenu->append_section(gmenu_section);
+
+            gmenu_section = Gio::Menu::create();
+            AppendItemFromAction(gmenu_section,     "win.layer-raise",              _("_Raise Layer"),               "layer-raise");
+            AppendItemFromAction(gmenu_section,     "win.layer-lower",              _("_Lower Layer"),               "layer-lower");
+            gmenu->append_section(gmenu_section);
+
+            gmenu_section = Gio::Menu::create();
+            AppendItemFromAction(gmenu_section,     "win.layer-hide-toggle-others", _("_Hide/Show Other Layers"),    "");
+            AppendItemFromAction(gmenu_section,     "win.layer-hide-all",           _("_Hide All Layers"),           "");
+            AppendItemFromAction(gmenu_section,     "win.layer-unhide-all",         _("_Show All Layers"),           "");
+            gmenu->append_section(gmenu_section);
+
+            gmenu_section = Gio::Menu::create();
+            AppendItemFromAction(gmenu_section,     "win.layer-lock-toggle-others", _("_Lock/Unlock Other Layers"),  "");
+            AppendItemFromAction(gmenu_section,     "win.layer-lock-all",           _("_Lock All Layers"),           "");
+            AppendItemFromAction(gmenu_section,     "win.layer-unlock-all",         _("_Unlock All Layers"),         "");
+            gmenu->append_section(gmenu_section);
         }
-        if (has_locked_below_cursor) {
-            AppendItemFromAction( gmenu_section, "ctx.unlock-objects-below-cursor",     _("Unlock Objects Below Cursor"),  ""                         );
-        }
-        gmenu->append_section(gmenu_section);
-    } else {
-        // Layers: Only used in "Layers and Objects" dialog.
-
-        gmenu_section = Gio::Menu::create();
-        AppendItemFromAction(gmenu_section,     "win.layer-new",                _("_Add Layer..."),              "layer-new");
-        AppendItemFromAction(gmenu_section,     "win.layer-duplicate",          _("D_uplicate Layer"),           "layer-duplicate");
-        AppendItemFromAction(gmenu_section,     "win.layer-delete",             _("_Delete Layer"),              "layer-delete");
-        AppendItemFromAction(gmenu_section,     "win.layer-rename",             _("Re_name Layer..."),           "layer-rename");
-        AppendItemFromAction(gmenu_section,     "win.layer-to-group",           _("Layer to _Group"),            "dialog-objects");
-        gmenu->append_section(gmenu_section);
-
-        gmenu_section = Gio::Menu::create();
-        AppendItemFromAction(gmenu_section,     "win.layer-raise",              _("_Raise Layer"),               "layer-raise");
-        AppendItemFromAction(gmenu_section,     "win.layer-lower",              _("_Lower Layer"),               "layer-lower");
-        gmenu->append_section(gmenu_section);
-
-        gmenu_section = Gio::Menu::create();
-        AppendItemFromAction(gmenu_section,     "win.layer-hide-toggle-others", _("_Hide/Show Other Layers"),    "");
-        AppendItemFromAction(gmenu_section,     "win.layer-hide-all",           _("_Hide All Layers"),           "");
-        AppendItemFromAction(gmenu_section,     "win.layer-unhide-all",         _("_Show All Layers"),           "");
-        gmenu->append_section(gmenu_section);
-
-        gmenu_section = Gio::Menu::create();
-        AppendItemFromAction(gmenu_section,     "win.layer-lock-toggle-others", _("_Lock/Unlock Other Layers"),  "");
-        AppendItemFromAction(gmenu_section,     "win.layer-lock-all",           _("_Lock All Layers"),           "");
-        AppendItemFromAction(gmenu_section,     "win.layer-unlock-all",         _("_Unlock All Layers"),         "");
-        gmenu->append_section(gmenu_section);
     }
     // clang-format on
 

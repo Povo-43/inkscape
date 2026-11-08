@@ -153,8 +153,8 @@ std::vector<std::vector<Glib::ustring>> raw_data_selection_object =
     { "app.selection-link",                 NC_("Hyperlink|Verb", "Link"),            SECTION_SELECT, N_("Add an anchor to selected objects")},
 
     { "app.selection-top",                  N_("Raise to Top"),                       SECTION_SELECT, N_("Raise selection to top")},
-    { "app.selection-raise",                N_("Raise"),                              SECTION_SELECT, N_("Raise selection one step")},
-    { "app.selection-lower",                N_("Lower"),                              SECTION_SELECT, N_("Lower selection one step")},
+    { "app.selection-raise",                N_("Raise"),                              SECTION_SELECT, N_("Bring selection up one step")},
+    { "app.selection-lower",                N_("Lower"),                              SECTION_SELECT, N_("Bring selection down one step")},
     { "app.selection-bottom",               N_("Lower to Bottom"),                    SECTION_SELECT, N_("Lower selection to bottom")},
 
     { "app.selection-stack-up",             N_("Move up the Stack"),                  SECTION_SELECT, N_("Move the selection up in the stack order")},

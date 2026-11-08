@@ -41,16 +41,18 @@ const std::vector<PaperSize>& PaperSize::getPageSizes()
     
         for (int i = 0; lines && lines[i]; ++i) {
             gchar **line = g_strsplit_set(lines[i], ",", 5);
-            if (!line[0] || !line[1] || !line[2] || !line[3] || line[0][0]=='#') 
-                continue;
     
-            //name, width, height, unit
-            double width = g_ascii_strtod(line[1], nullptr);
-            double height = g_ascii_strtod(line[2], nullptr);
-            g_strstrip(line[0]);
-            g_strstrip(line[3]);
-            Glib::ustring name = line[0];
-            ret.emplace_back(name, width, height, Inkscape::Util::UnitTable::get().getUnit(line[3]));
+            if (line[0] && line[1] && line[2] && line[3] && line[0][0] != '#') {
+                //name, width, height, unit
+                double width = g_ascii_strtod(line[1], nullptr);
+                double height = g_ascii_strtod(line[2], nullptr);
+                g_strstrip(line[0]);
+                g_strstrip(line[3]);
+                Glib::ustring name = line[0];
+                ret.emplace_back(name, width, height, Inkscape::Util::UnitTable::get().getUnit(line[3]));
+            }
+
+            g_strfreev(line);
         }
         g_strfreev(lines); 
         g_free(content);

@@ -6,7 +6,7 @@
   </sodipodi:namedview>
   <g id="go-down" inkscape:label="00383">
       <title id="title47619">go-down</title>
-      <path inkscape:connector-curvature="0" id="gtk-go-down" d="M 0,0 H 16 V 16 H 0 Z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="gtk-go-down" d="M 0,0 H 16 V 16 H 0 Z" opacity="0"/>
       <path inkscape:connector-curvature="0" style="opacity:1" d="M 8,11.4375 2.281252,5.71875 C 2.085382,5.52288 2,5.25562 2,5 V 4 H 3 C 3.25562,4 3.52288,4.0854 3.71875,4.28125 L 8,8.5625 12.28125,4.28125 C 12.47712,4.08538 12.74438,4 13,4 h 1 v 1 c 0,0.25562 -0.0854,0.52288 -0.28125,0.71875 z" id="path47623"/>
     </g>
     </svg>

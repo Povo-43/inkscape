@@ -172,7 +172,7 @@ int XmlSource::setFile(char const *filename)
 
 xmlDocPtr XmlSource::readXml()
 {
-    int parse_options = XML_PARSE_HUGE | XML_PARSE_RECOVER;
+    int parse_options = XML_PARSE_HUGE | XML_PARSE_NOENT | XML_PARSE_RECOVER;
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     bool allowNetAccess = prefs->getBool("/options/externalresources/xml/allow_net_access", false);
@@ -276,8 +276,6 @@ Document *sp_repr_read_file (const gchar * filename, const gchar *default_ns, bo
     xmlDocPtr doc = nullptr;
     Document * rdoc = nullptr;
 
-    xmlSubstituteEntitiesDefault(1);
-
     g_return_val_if_fail(filename != nullptr, NULL);
     if (!Inkscape::IO::file_test(filename, G_FILE_TEST_EXISTS)) {
         g_warning("Can't open file: %s (doesn't exist)", filename);
@@ -326,11 +324,9 @@ Document *sp_repr_read_mem (const gchar * buffer, gint length, const gchar *defa
     xmlDocPtr doc;
     Document * rdoc;
 
-    xmlSubstituteEntitiesDefault(1);
-
     g_return_val_if_fail (buffer != nullptr, NULL);
 
-    int parser_options = XML_PARSE_HUGE | XML_PARSE_RECOVER;
+    int parser_options = XML_PARSE_HUGE | XML_PARSE_NOENT | XML_PARSE_RECOVER;
     parser_options |= XML_PARSE_NONET; // TODO: should we allow network access?
                                        // proper solution would be to check the preference "/options/externalresources/xml/allow_net_access"
                                        // as done in XmlSource::readXml which gets called by the analogous sp_repr_read_file()

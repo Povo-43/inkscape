@@ -7,10 +7,18 @@
     <property name="column-spacing">4</property>
     <!--dim: 5, 3-->
     <child>
+      <object class="GtkLabel">
+        <property name="label" translatable="yes">Stroke width</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">0</property>
+        </layout>
+      </object>
+    </child>
+    <child>
       <object class="gtkmm__CustomObject_InkSpinButton" id="stroke-width">
         <property name="icon">stroke-widths</property>
-        <property name="tooltip-text" translatable="yes">Stroke width</property>
-        <property name="digits">5</property>
+        <property name="digits">3</property>
         <property name="max-value">1000000.000000</property>
         <property name="step-value">0.100000</property>
         <layout>
@@ -24,6 +32,15 @@
         <layout>
           <property name="column">3</property>
           <property name="row">0</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="label" translatable="yes">Stroke style</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">1</property>
         </layout>
       </object>
     </child>

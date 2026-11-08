@@ -71,7 +71,7 @@
      id="draw-star"
      transform="matrix(1.000006,0,0,1.002537,-348.99376,-684.09339)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 349,682.36218 h 15.97919 v 15.9375 H 349 Z"
        id="rect19962"
        inkscape:connector-curvature="0" />

@@ -69,7 +69,7 @@
        inkscape:connector-curvature="0"
        id="rect22921"
        d="m 949,506.36221 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <g
        id="g2895"
        transform="translate(-1.030693,-0.0368105)">

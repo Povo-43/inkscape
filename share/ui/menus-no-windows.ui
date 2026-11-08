@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  This is a very pared down version of our normal menus, only used when there aren't open InkscapeWindows.
+  This only gets used in MacOS, when a user closes all windows. We just want to offer a way to open files again.
+-->
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <menu id="menus">
+    <submenu id="file-menu">
+      <attribute name="label" translatable="yes">_File</attribute>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">_New</attribute>
+          <attribute name="action">app.document-new</attribute>
+          <attribute name="icon">document-new</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">New from _Template...</attribute>
+          <attribute name="action">app.document-dialog-templates</attribute>
+          <attribute name="icon">dialog-templates</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_Open...</attribute>
+          <attribute name="action">app.document-open</attribute>
+          <attribute name="icon">document-open</attribute>
+        </item>
+      </section>
+      <submenu id="recent-files">
+        <attribute name="label" translatable="yes">Open _Recent</attribute>
+      </submenu>
+    </submenu>
+  </menu>
+</interface>

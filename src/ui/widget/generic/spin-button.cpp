@@ -40,7 +40,7 @@ ink-spinbutton { border: 0 solid @border-color; border-radius: 2px; background-c
 ink-spinbutton.frame { border: 1px solid @border-color; }
 ink-spinbutton:hover button { opacity: 1; }
 ink-spinbutton:focus-within { outline: 2px solid @focus-color; outline-offset: -2px; }
-ink-spinbutton label#InkSpinButton-Label { opacity: 0.5; margin-left: 3px; margin-right: 3px; }
+ink-spinbutton label#InkSpinButton-Label { opacity: 0.7; margin-left: 3px; margin-right: 3px; }
 ink-spinbutton image#InkSpinButton-Icon { opacity: 0.5; }
 ink-spinbutton button { border: 0 solid alpha(@border-color, 0.30); border-radius: 2px; padding: 1px; min-width: 6px; min-height: 8px; -gtk-icon-size: 10px; background-image: none; }
 ink-spinbutton button.left  { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right-width: 1px; }
@@ -356,8 +356,8 @@ void InkSpinButton::measure_vfunc(Gtk::Orientation orientation, int for_size, in
         _ = _icon.measure(orientation);
 
         auto btn = _enable_arrows ? _button_width : 0;
-        // always reserve space for inc/dec buttons and label, whichever is greater
-        natural = std::max(get_left_padding() + text_width, btn + text_width + btn);
+        // Always reserve space for icon/label, minus, text, plus.
+        natural = get_left_padding() + btn + text_width + btn;
         // allow spin button to shrink if pushed;
         // if it is wide, then we let it go down to 0.5 its normal size
         // if it is narrow, then we let it shrink less
@@ -399,7 +399,6 @@ void InkSpinButton::size_allocate_vfunc(int width, int height, int baseline) {
         alloc.set_y(0);
         _label.size_allocate(alloc, baseline);
         left += _label_width;
-        right -= _label_width;
     }
     if (_icon.get_visible()) {
         Gtk::Allocation alloc;
@@ -410,14 +409,14 @@ void InkSpinButton::size_allocate_vfunc(int width, int height, int baseline) {
         _icon.size_allocate(alloc, baseline);
         auto w = 2 * icon_margin + _icon_width;
         left += w;
-        right -= w;
     }
     if (_minus.get_visible()) {
+        allocation.set_x(left);
         _minus.size_allocate(allocation, baseline);
         left += allocation.get_width();
     }
     if (_plus.get_visible()) {
-        allocation.set_x(width - allocation.get_width());
+        allocation.set_x(right - allocation.get_width()); // Same width as for minus
         _plus.size_allocate(allocation, baseline);
         right -= allocation.get_width();
     }
@@ -638,7 +637,6 @@ void InkSpinButton::on_motion_enter(double x, double y) {
     _mouse_entered = true;
     if (_focus->contains_focus()) return;
 
-    show_label_icon(false);
     if (_mouse_entered) show_arrows();
 }
 
@@ -647,7 +645,6 @@ void InkSpinButton::on_motion_leave() {
     if (_focus->contains_focus()) return;
 
     show_arrows(false);
-    if (!_mouse_entered) show_label_icon();
 
     if (_entry.is_visible()) {
         // We left the spinbutton, save value and update.
@@ -671,7 +668,6 @@ static double get_accel_factor(Gdk::ModifierType state) {
 
 Gtk::EventSequenceState InkSpinButton::on_drag_begin_value(Gdk::EventSequence* sequence) {
     _value.set_cursor("col-resize");
-    _initial_value = _adjustment->get_value();
     _drag_value->get_point(sequence, _drag_start.x,_drag_start.y);
     return Gtk::EventSequenceState::CLAIMED;
 }
@@ -697,8 +693,12 @@ Gtk::EventSequenceState InkSpinButton::on_drag_update_value(Gdk::EventSequence* 
     if (_drag.started) {
         auto state = _drag_value->get_current_event_state();
         auto distance = _drag.horizontal ? dx - _drag.x : dy - _drag.y;
-        auto value = _initial_value + get_accel_factor(state) * distance * _adjustment->get_step_increment();
+        auto value = _adjustment->get_value() + get_accel_factor(state) * distance * _adjustment->get_step_increment();
         set_new_value(value);
+
+        // Reset our drag point, so the next update will be relative to here
+        _drag.x = dx;
+        _drag.y = dy;
     }
     return Gtk::EventSequenceState::CLAIMED;
 }
@@ -720,11 +720,6 @@ Gtk::EventSequenceState InkSpinButton::on_drag_end_value(Gdk::EventSequence* seq
 void InkSpinButton::show_arrows(bool on) {
     _minus.set_visible(on && _enable_arrows);
     _plus.set_visible(on && _enable_arrows);
-}
-
-void InkSpinButton::show_label_icon(bool on) {
-    _icon.set_visible(on && _icon_width > 0);
-    _label.set_visible(on && _label_width > 0 && _icon_width == 0);
 }
 
 static char const *get_text(Gtk::Editable const &editable) {
@@ -760,7 +755,6 @@ bool InkSpinButton::commit_entry() {
 void InkSpinButton::exit_edit() {
     show_arrows(false);
     _entry.hide();
-    show_label_icon();
     _value.show();
     _mask.show();
 }
@@ -776,7 +770,6 @@ void InkSpinButton::cancel_editing() {
 
 inline void InkSpinButton::enter_edit() {
     show_arrows(false);
-    show_label_icon(false);
     stop_spinning();
     _value.hide();
     _mask.hide();
@@ -1126,3 +1119,14 @@ void InkSpinButton::FadeOut::snapshot_vfunc(const Glib::RefPtr<Gtk::Snapshot>& s
 }
 
 } // namespace Inkscape::UI::Widget
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :

@@ -435,7 +435,7 @@ Inkscape::SnappedPoint SnapManager::constrainedAngularSnap(Inkscape::SnapCandida
     return sp;
 }
 
-void SnapManager::guideFreeSnap(Geom::Point &p, Geom::Point &origin_or_vector, bool origin, bool freeze_angle) const
+bool SnapManager::guideFreeSnap(Geom::Point &p, Geom::Point &origin_or_vector, bool origin, bool freeze_angle) const
 {
     if (freeze_angle && origin) {
         g_warning("Dear developer, when snapping guides you shouldn't ask me to freeze the guide's vector when you haven't specified one");
@@ -443,7 +443,7 @@ void SnapManager::guideFreeSnap(Geom::Point &p, Geom::Point &origin_or_vector, b
     }
 
     if (!snapprefs.getSnapEnabledGlobally() || snapprefs.getSnapPostponedGlobally() || !snapprefs.isTargetSnappable(Inkscape::SNAPTARGET_GUIDE)) {
-        return;
+        return false;
     }
 
     Inkscape::SnapCandidatePoint candidate(p, Inkscape::SNAPSOURCE_GUIDE);
@@ -466,10 +466,13 @@ void SnapManager::guideFreeSnap(Geom::Point &p, Geom::Point &origin_or_vector, b
 
     if (!freeze_angle && s.getSnapped()) {
         if (!Geom::are_near(s.getTangent(), Geom::Point(0,0))) { // If the tangent has been set ...
-            origin_or_vector = Geom::rot90(s.getTangent()); // then use it to update the normal of the guide
             // PS: The tangent might not have been set if we snapped for example to a node
+            origin_or_vector = Geom::rot90(s.getTangent()); // then use it to update the normal of the guide
+            return true;
         }
     }
+
+    return false;
 }
 
 void SnapManager::guideConstrainedSnap(Geom::Point &p, SPGuide const &guideline) const

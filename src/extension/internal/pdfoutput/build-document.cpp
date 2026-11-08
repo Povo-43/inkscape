@@ -26,6 +26,7 @@
 #include "object/sp-symbol.h"
 #include "object/sp-text.h"
 #include "object/sp-use.h"
+#include "object/uri.h"
 #include "style.h"
 
 namespace Inkscape::Extension::Internal::PdfBuilder {
@@ -253,10 +254,11 @@ std::vector<CapyPDF_AnnotationId> Document::get_anchors_for_page(SPPage const *p
             continue;
         }
 
-        auto annot = capypdf::Annotation();
+        auto annot = capypdf::Annotation::new_link_annotation();
         annot.set_rectangle(bbox->left(), bbox->bottom(), bbox->right(), bbox->top());
         annot.set_flags(CAPY_ANNOTATION_FLAG_HIDDEN);
 
+        auto safe_href = Inkscape::URI(a->href).str();
         if (a->local_link) {
             auto obj = a->local_link->getObject();
             auto dest = capypdf::Destination();
@@ -271,11 +273,11 @@ std::vector<CapyPDF_AnnotationId> Document::get_anchors_for_page(SPPage const *p
                 annot.set_destination(dest);
             } else {
                 // This happens because of an Inkscape bug elsewhere in the code.
-                annot.set_uri(std::string(a->href));
+                annot.set_uri(safe_href);
             }
         } else {
             // This pathway is currently not working because of the above bug
-            annot.set_uri(std::string(a->href));
+            annot.set_uri(safe_href);
         }
         result.push_back(_gen.add_annotation(annot));
     }

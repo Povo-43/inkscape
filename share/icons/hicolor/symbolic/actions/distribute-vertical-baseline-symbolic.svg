@@ -69,9 +69,9 @@
        inkscape:connector-curvature="0"
        id="rect19003"
        d="m 1105.9992,783.86186 v 24 h -24 v -24 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 1081.9994,783.86128 h 24 v 24 h -24 z"
        id="rect18962"
        inkscape:connector-curvature="0" />

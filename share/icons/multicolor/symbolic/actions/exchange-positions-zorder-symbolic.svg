@@ -139,7 +139,7 @@
     <title
        id="title40837">exchange-positions-zorder</title>
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="M 0,0 H 24 V 24 H 0 Z"
        id="rect40839"
        inkscape:connector-curvature="0" />

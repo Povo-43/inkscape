@@ -56,6 +56,14 @@
         <col id="1">page</col>
       </row>
       <row>
+        <col id="0" translatable="yes">Page Margins</col>
+        <col id="1">page-margin</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Page Bleed</col>
+        <col id="1">page-bleed</col>
+      </row>
+      <row>
         <col id="0" translatable="yes">Drawing</col>
         <col id="1">drawing</col>
       </row>

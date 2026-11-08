@@ -1342,9 +1342,7 @@ void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
         pathmeasure = std::move(new_pathmeasure);
         auto affine = over->i2dt_affine() * Geom::Scale(scale);
         // Correct for the current page's position.
-        if (_desktop->getDocument()->get_origin_follows_page()) {
-            affine *= _desktop->getDocument()->getPageManager().getSelectedPageAffine().inverse();
-        }
+        affine *= _desktop->getDocument()->getPageManager().getSelectedPageOriginAffine().inverse();
         if (auto bbox = over->bounds(box_type, affine)) {
             item_width  = Quantity::convert(bbox->width(), "px", unit_name);
             item_height = Quantity::convert(bbox->height(), "px", unit_name);

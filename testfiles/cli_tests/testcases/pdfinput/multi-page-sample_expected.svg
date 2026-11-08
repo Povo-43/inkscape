@@ -4,12 +4,12 @@
 <svg
    version="2.0"
    id="svg1"
+   inkscape:version="1.5-dev (2816209, 2026-10-17)"
    width="794.6666667"
    height="1122.666667"
    viewBox="0 0 794.6666667 1122.666667"
    sodipodi:docname="multi-page-sample.pdf"
    standalone="no"
-   inkscape:version="1.5-dev (8b8f190, 2026-06-29)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -442,7 +442,7 @@
      id="namedview1"
      pagecolor="#ffffff"
      bordercolor="#000000"
-     borderopacity="0.25"
+     borderopacity="0.1"
      inkscape:showpageshadow="2"
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
@@ -767,7 +767,7 @@
          transform="matrix(1.333333333,0,0,1.330884,814.6666667,0)" />
       <path
          id="path65"
-         d="m 71.401,665.751 -12.012,6.942 10e-4,-13.884 z"
+         d="m 71.401,665.751 -12.012,6.942 0.001,-13.884 z"
          style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.85158;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          transform="matrix(1.333333333,-0.2892426667,0.2897746667,1.330884,814.6666667,0)" />
       <path

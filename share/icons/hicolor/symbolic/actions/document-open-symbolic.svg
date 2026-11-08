@@ -6,7 +6,7 @@
   </sodipodi:namedview>
   <g transform="translate(-285.00211,-1131.3622)" id="document-open" inkscape:label="00375">
       <g transform="translate(24.0019,734.3622)" id="g14298" inkscape:label="folder-open">
-        <path inkscape:connector-curvature="0" id="rect12206" d="m 261.00021,397 h 16 v 16 h -16 z" style="opacity:0;fill:none"/>
+        <path inkscape:connector-curvature="0" id="rect12206" d="m 261.00021,397 h 16 v 16 h -16 z" opacity="0"/>
         <path inkscape:connector-curvature="0" id="path12212" d="m 261.572,398 c -0.2878,0 -0.5288,0.242 -0.5288,0.5312 v 12.9363 c 0,0.2984 0.2315,0.5312 0.5288,0.5312 h 13.7485 c 0.2972,0 0.5288,-0.2327 0.5288,-0.5312 l 1.1509,-5.9369 c 0,-0.2891 -0.241,-0.5312 -0.5288,-0.5312 h -11.4156 l -1.0265,4.4995 c 0,0.277 -0.222,0.5 -0.4977,0.5 -0.2757,0 -0.4963,-0.223 -0.4977,-0.5 L 263.0002,403 c 2.4928,0 8.3465,0 12,0 0,0 0.2366,-2 -0.4806,-2 h -7.5215 v -2.4686 c 0,-0.2891 -0.241,-0.5312 -0.5288,-0.5312 L 263.9981,398 h -1.9285 z" style="opacity:1"/>
       </g>
     </g>

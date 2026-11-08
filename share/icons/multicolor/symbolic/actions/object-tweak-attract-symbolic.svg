@@ -63,7 +63,7 @@
      id="object-tweak-attract"
      transform="translate(-255,-707.36218)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 255,707.36218 h 16 v 16 h -16 z"
        id="rect16104"
        inkscape:connector-curvature="0" />

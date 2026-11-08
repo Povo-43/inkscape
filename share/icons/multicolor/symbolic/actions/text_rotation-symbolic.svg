@@ -135,7 +135,7 @@
      transform="translate(-499,-836.36218)">
     <path
        inkscape:label="backround"
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 499,836.36218 h 16 v 16 h -16 z"
        id="rect21524"
        inkscape:connector-curvature="0" />

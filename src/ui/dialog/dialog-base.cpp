@@ -83,6 +83,9 @@ void DialogBase::on_map() {
     // the time of dialog creation. Formerly used _app.get_active_view() did not at application start-up.
     setDesktop(Inkscape::Application::instance().active_desktop());
     parent_type::on_map();
+
+    // Defocus spinbuttons on second press of "Esc".
+    set_defocus_target(this, this);
 }
 
 bool DialogBase::on_key_pressed(Gtk::EventControllerKey const &controller,

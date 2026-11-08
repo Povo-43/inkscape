@@ -115,7 +115,7 @@ Jabier Arraiza</dc:title>
        id="path9609" />
     <path
        inkscape:connector-curvature="0"
-       style="opacity:0;fill:none"
+       opacity="0"
        d="M 0,0 H 16 V 16 H 0 Z"
        id="rect22048" />
     <path

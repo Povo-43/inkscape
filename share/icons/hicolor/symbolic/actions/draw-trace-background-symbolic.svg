@@ -54,7 +54,7 @@
      id="draw-trace-background"
      transform="matrix(0.99985,0,0,0.99854,-408.93866,-804.18608)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 409.00079,805.40521 h 15.99918 v 15.95703 h -15.99918 z"
        id="rect20263"
        inkscape:connector-curvature="0" />

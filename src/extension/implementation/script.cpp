@@ -705,8 +705,12 @@ void Script::_change_extension(Inkscape::Extension::Extension *module, Execution
     } // data_read
 
     if (new_xmldoc) {
-        //uncomment if issues on ref extensions links (with previous function)
-        //sp_change_hrefs(new_xmldoc, tempfile_out.get_filename().c_str(), doc->getDocumentFilename());
+        // Reset any relative hrefs from script dir (tmpdir) to the doc's dir
+        auto absref = prefs->getBool("/options/svgoutput/usesodipodiabsref", false);
+        auto out_dirname = Glib::path_get_dirname(tempfile_out.get_filename());
+        Inkscape::XML::rebase_hrefs(new_xmldoc->root(), out_dirname.c_str(), doc->getDocumentBase(), absref);
+
+        // Push the parsed xml tree into the document
         doc->rebase(new_xmldoc);
     } else {
         Inkscape::UI::gui_warning(_("The output from the extension could not be parsed."), parent_window);
@@ -899,7 +903,9 @@ int Script::execute(std::list<std::string> const &in_command, std::list<std::str
         conns.emplace_back(document->connectDestroy(on_lose_document));
     }
 
-    _setAppSensitive(false);
+    if (!pipe_diffs) {
+        _setAppSensitive(false);
+    }
     _canceled = false;
     _main_loop->run();
 
@@ -918,7 +924,9 @@ int Script::execute(std::list<std::string> const &in_command, std::list<std::str
     Glib::spawn_close_pid(local_pid);
 
     _main_loop.reset();
-    _setAppSensitive(true);
+    if (!pipe_diffs) {
+        _setAppSensitive(true);
+    }
 
     WAIT_PROCESS(local_pid);
     if (_canceled) {
@@ -931,12 +939,14 @@ int Script::execute(std::list<std::string> const &in_command, std::list<std::str
     }
 
     Glib::ustring stderr_data = fileerr.string();
-    if (!stderr_data.empty() && !ignore_stderr) {
-        if (INKSCAPE.use_gui()) {
+    if (!stderr_data.empty()) {
+        // If we are using a GUI, flag the error to the user if asked, otherwise just print to the console for help
+        // when debugging / reporting a bug. (Unless we are in non-GUI mode, in which case we only print if asked.)
+        if (INKSCAPE.use_gui() && !ignore_stderr) {
             showPopupError(stderr_data, Gtk::MessageType::INFO,
                                  _("Inkscape has received additional data from the script executed.  "
                                    "The script did not return an error, but this may indicate the results will not be as expected."));
-        } else {
+        } else if (INKSCAPE.use_gui() || !ignore_stderr) {
             std::cerr << "Script Error\n----\n" << stderr_data.c_str() << "\n----\n";
         }
     }
@@ -984,7 +994,7 @@ bool Script::file_listener::toFile(const Glib::ustring &name) {
 }
 
 /**
- * @param name File path. 
+ * @param name File path.
  *             Value is in platform-native encoding (see Glib::filename_to_utf8).
  */
 bool Script::file_listener::toFile(const std::string &name) {

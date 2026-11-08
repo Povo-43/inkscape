@@ -344,8 +344,8 @@ FontVariations::get_css_string() {
 
     for (auto axis: axes) {
         Glib::ustring tag = axis->get_tag();
-        std::stringstream value;
-        value << std::fixed << std::setprecision(axis->get_precision()) << axis->get_value();
+        auto value = Inkscape::ustring::format_classic(std::fixed, std::setprecision(axis->get_precision()),
+                                                       axis->get_value());
         css_string += "'" + tag + "' " + value.str() + "', ";
     }
 

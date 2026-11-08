@@ -44,7 +44,7 @@ public:
     void set_gradient(SPGradient* gradient);
 
     // set selected stop handle (or pass -1 to deselect)
-    void set_focused_stop(int index);
+    void setSelectedStop(int index);
 
     // stop has been selected
     sigc::signal<void (size_t)>& signal_stop_selected() {
@@ -104,6 +104,9 @@ private:
     Glib::RefPtr<Gdk::Cursor> const *get_cursor(double x, double y) const;
     void set_stop_cursor(Glib::RefPtr<Gdk::Cursor> const *cursor);
 
+    // set focused stop handle
+    void setFocusedStop(int index);
+
     SPGradient* _gradient = nullptr;
 
     struct stop_t {
@@ -116,7 +119,7 @@ private:
     // handle stop SVG template
     svg_renderer _template;
 
-    // selected handle indicator
+    // focused handle indicator
     svg_renderer _tip_template;
 
     sigc::scoped_connection _release;
@@ -130,6 +133,7 @@ private:
 
     // index of handle stop that user clicked; may be out of range
     int _focused_stop = -1;
+    int _selected_stop = -1;
 
     double _pointer_x = 0;
     double _stop_offset = 0;

@@ -55,7 +55,7 @@
        inkscape:connector-curvature="0"
        id="rect16572"
        d="m 979,15 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none"
+       opacity="0"
        transform="translate(0,512.3622)" />
     <path
        id="path3254"

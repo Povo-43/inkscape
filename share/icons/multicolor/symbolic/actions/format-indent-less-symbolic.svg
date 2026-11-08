@@ -63,12 +63,12 @@
     <title
        id="title43156">format-indent-less</title>
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="M 0,0 H 16 V 16 H 0 Z"
        id="unindent"
        inkscape:connector-curvature="0" />
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="M 0,0 H 16 V 16 H 0 Z"
        id="gtk-unindent"
        inkscape:connector-curvature="0" />

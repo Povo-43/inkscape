@@ -714,6 +714,7 @@ bool SPMeshNodeArray::read(SPMeshGradient const *mg_in)
                             // std::cout << "    current_p: " << current_p << std::endl;
 
                             std::stringstream os( path_string );
+                            os.imbue(std::locale::classic());
 
                             // Determine type of path
                             char path_type;
@@ -818,6 +819,7 @@ bool SPMeshNodeArray::read(SPMeshGradient const *mg_in)
                         // std::cout << "    tensor_string: " << tensor_string << std::endl;
 
                         std::stringstream os( tensor_string );
+                        os.imbue(std::locale::classic());
                         for( unsigned i = 0; i < 4; ++i ) {
                             double x = 0.0;
                             double y = 0.0;
@@ -925,6 +927,7 @@ void SPMeshNodeArray::write( SPMeshGradient *mg )
             if( patchi.tensorIsSet() ) {
 
                 std::stringstream is;
+                is.imbue(std::locale::classic());
 
                 for( unsigned k = 0; k < 4; ++k ) {
                     Geom::Point p = patchi.getTensorPoint( k ) - patchi.getPoint( k, 0 );
@@ -951,6 +954,7 @@ void SPMeshNodeArray::write( SPMeshGradient *mg )
 
                 // Add path
                 std::stringstream is;
+                is.imbue(std::locale::classic());
                 char path_type = patchi.getPathType( k ); 
                 is << path_type;
 

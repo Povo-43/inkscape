@@ -25,6 +25,10 @@
 #include "generic/popover-menu.h"
 #include "ui/operation-blocker.h"
 
+namespace Gio {
+class SimpleAction;
+} // namespace Gio
+
 namespace Gtk {
 class Adjustment;
 class Builder;
@@ -94,6 +98,11 @@ private:
     SPGradient* get_gradient_vector();
     void fire_stop_selected(SPStop* stop);
     void fire_change_type(bool linear);
+    int getLeftStopInsertIndex();
+    int getRightStopInsertIndex();
+    void insertStopLeft();
+    void insertStopRight();
+    void updateButtonSensitivity();
 
     Glib::RefPtr<Gtk::Builder> _builder;
     GradientSelector* _selector;
@@ -115,6 +124,15 @@ private:
     Gtk::ToggleButton& _linear_btn;
     Gtk::ToggleButton& _radial_btn;
     Gtk::MenuButton& _repeat_mode_btn;
+    Gtk::Button& _prev_stop_btn;
+    Gtk::Button& _next_stop_btn;
+    Gtk::Button& _add_stop_btn;
+    Gtk::MenuButton& _insert_stop_btn;
+    Glib::RefPtr<Gio::SimpleAction> _insert_stop_left;
+    Glib::RefPtr<Gio::SimpleAction> _insert_stop_right;
+    Gtk::Button& _remove_stop_btn;
+
+    sigc::scoped_connection _vector_modified_connection;
 };
 
 // SPGradientSpread modes, names and icons

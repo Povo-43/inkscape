@@ -117,13 +117,26 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(INKSCAPE_DEP REQUIRED IMPORTED_TARGET
-                  harfbuzz>=2.6.5
+                  harfbuzz>=8.0.0
                   pangocairo>=1.44
                   pangoft2
                   fontconfig
                   gmodule-2.0
                   bdw-gc #boehm-demers-weiser gc
                   lcms2)
+
+# AFTER WINDOWS CI UPDATED: add 'harbuzz-cairo' above and remove the following (see !7565):
+message("Checking for module 'harfbuzz-cairo'")
+pkg_check_modules(HARFBUZZ_CAIRO IMPORTED_TARGET harfbuzz-cairo)
+if(HARFBUZZ_CAIRO_FOUND)
+    message("- Found 'harfbuzz-cairo'")
+    list(APPEND INKSCAPE_LIBS PkgConfig::HARFBUZZ_CAIRO)
+    set(WITH_HARFBUZZ_CAIRO ON)
+    add_definitions(-DWITH_HARFBUZZ_CAIRO)
+else()
+    message("- Not found 'harfbuzz-cairo'")
+    set(WITH_HARFBUZZ_CAIRO OFF)
+endif()
 
 list(APPEND INKSCAPE_LIBS PkgConfig::INKSCAPE_DEP)
 
@@ -194,7 +207,7 @@ endif()
 
 if(WITH_CAPYPDF)
     if(NOT WITH_INTERNAL_CAPYPDF)
-        pkg_check_modules(CAPYPDF QUIET IMPORTED_TARGET capypdf>=0.21)
+        pkg_check_modules(CAPYPDF QUIET IMPORTED_TARGET capypdf>=0.21.99)
         if(CAPYPDF_FOUND)
             add_library(Inkscape::CapyPDF ALIAS PkgConfig::CAPYPDF)
         else()
@@ -278,6 +291,30 @@ pkg_check_modules(
     graphene-1.0
 )
 list(APPEND INKSCAPE_LIBS PkgConfig::MM)
+
+pkg_check_modules(CAIRO QUIET IMPORTED_TARGET cairo>=1.18.6)
+if(NOT CAIRO_FOUND)
+    message(STATUS "Cairo too old, will compile it from source")
+    include(ExternalProject)
+    ExternalProject_Add(cairo_ext
+        URL https://cairographics.org/releases/cairo-1.18.6.tar.xz
+        URL_HASH SHA256=1c767308174337a74694da0f3ec069c271452163a1ef4540964c50c301f157d4
+        CONFIGURE_COMMAND meson setup . ../cairo_ext -Dfontconfig=enabled -Dfreetype=enabled --prefix=${CMAKE_CURRENT_BINARY_DIR}/deps-cairo --libdir lib
+        BUILD_COMMAND meson compile
+        INSTALL_COMMAND meson install
+        STEP_TARGETS install
+    )
+    add_library(cairo_LIB INTERFACE)
+    add_dependencies(cairo_LIB cairo_ext-install)
+    target_include_directories(cairo_LIB INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/deps-cairo/include/cairo)
+    list(APPEND CMAKE_BUILD_RPATH "${CMAKE_BINARY_DIR}/deps-cairo/lib")
+    install(
+        DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/deps-cairo/lib/
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/inkscape"
+        USE_SOURCE_PERMISSIONS
+    )
+    list(APPEND INKSCAPE_LIBS cairo_LIB)
+endif()
 
 # if system's gtk is new enough for gtkmm, pick it, otherwise ignore it and gtkmm build will build it
 pkg_check_modules(GTK IMPORTED_TARGET gtk4>=4.14.0)

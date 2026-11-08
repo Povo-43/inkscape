@@ -99,7 +99,7 @@
        inkscape:connector-curvature="0"
        id="rect11641"
        d="m 149.60185,662.61005 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <rect
        style="fill-opacity:1;stroke:none;stroke-width:0.0300984;stroke-linecap:round;stroke-linejoin:round;fill:#000000"
        id="rect26500"

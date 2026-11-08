@@ -230,7 +230,7 @@ Jabier Arraiza</dc:title>
        style="opacity:0.998;fill:#00aaff;stroke:none;stroke-width:1;stroke-linecap:round;paint-order:markers fill stroke"
        sodipodi:insensitive="true" />
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="M 0,0 H 16 V 16 H 0 Z"
        id="rect22048"
        inkscape:connector-curvature="0" />

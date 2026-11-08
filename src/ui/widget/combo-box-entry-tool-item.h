@@ -28,6 +28,8 @@ namespace Gtk {
 class TreeModel;
 } // namespace Gtk
 
+namespace Inkscape::UI { class DefocusTarget; }
+
 namespace Inkscape::UI::Widget {
 
 /**
@@ -60,10 +62,8 @@ public:
     void popup_disable();
     void focus_on_click(bool focus_on_click);
 
-    void set_info      (Glib::ustring info);
-    void set_info_cb   (InfoCallback info_cb);
-    void set_warning   (Glib::ustring warning_cb);
-    void set_warning_cb(InfoCallback warning);
+    void set_info      (std::string icon, Glib::ustring info, InfoCallback info_cb);
+    void set_warning   (Glib::ustring warning_cb, InfoCallback warning);
     void set_tooltip   (Glib::ustring const &tooltip);
 
     // Accessor methods
@@ -76,7 +76,7 @@ public:
 
     void set_model(Glib::RefPtr<Gtk::TreeModel> model) { _model = std::move(model); }
 
-    void setDefocusWidget(Gtk::Widget *widget) { _focusWidget = widget; }
+    void setDefocusTarget(DefocusTarget *target) { _defocus_target = target; }
 
 private:
     Glib::ustring       _tooltip;
@@ -89,12 +89,13 @@ private:
     CellDataFunc        _cell_data_func; // drop-down menu format
     bool                _popup = false; // Do we pop-up an entry-completion dialog?
     Glib::RefPtr<Gtk::EntryCompletion> _entry_completion;
-    Gtk::Widget        *_focusWidget = nullptr; ///< The widget to return focus to
+    DefocusTarget      *_defocus_target = nullptr; ///< The widget to return focus to
     std::optional<Gtk::CellRendererText> _cell;
 
     int                 _active = -1; // Index of active menu item (-1 if not in list).
     Glib::ustring       _text; // Text of active menu item or entry box.
     Glib::ustring       _info;       // Text for tooltip info about entry.
+    std::string         _info_icon;
     InfoCallback        _info_cb; // Callback for clicking info icon.
     sigc::scoped_connection     _info_cb_id;
     bool                _info_cb_blocked = false;
@@ -105,7 +106,7 @@ private:
 
     bool _combo_box_changed_cb_blocked = false;
 
-    sigc::scoped_connection idle_conn;
+    sigc::scoped_connection _idle_conn;
 
     sigc::signal<void ()> _signal_changed;
 
@@ -113,7 +114,7 @@ private:
     void defocus();
 
     void combo_box_changed_cb();
-    bool combo_box_popup_cb();
+    void combo_box_popup_cb();
     bool set_cell_markup();
     void entry_activate_cb();
     bool match_selected_cb(Gtk::TreeModel::iterator const &iter);

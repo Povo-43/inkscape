@@ -54,7 +54,7 @@
        id="snap-page-7"
        inkscape:label="00334">
       <path
-         style="opacity:0;fill:none"
+         opacity="0"
          d="m 979,15 h 16 v 16 h -16 z"
          id="rect16572-9"
          inkscape:connector-curvature="0"
@@ -73,7 +73,7 @@
        inkscape:connector-curvature="0"
        id="rect16572"
        d="m 979,15 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none"
+       opacity="0"
        transform="translate(0,512.3622)" />
   </g>
   <style

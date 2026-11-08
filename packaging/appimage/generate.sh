@@ -39,40 +39,40 @@ apt_bundle() {
 
 PY_VER=3.14
 apt_bundle \
+    gir1.2-gdkpixbuf-2.0 \
+    gir1.2-glib-2.0 \
+    gir1.2-gtk-4.0 \
+    gir1.2-pango-1.0 \
+    glycin-loaders \
     libpython${PY_VER}-stdlib \
     libpython${PY_VER}-minimal \
     python${PY_VER} \
     python${PY_VER}-minimal \
-    python3-lxml \
-    python3-numpy \
-    python3-six \
-    python3-scour \
-    python3-requests \
-    python3-cachecontrol \
-    python3-urllib3 \
-    python3-chardet \
-    python3-certifi \
-    python3-idna \
-    python3-msgpack \
-    python3-filelock \
-    python3-cssselect \
-    python3-webencodings \
-    python3-tinycss2 \
-    python3-packaging \
-    python3-platformdirs \
     python3-bs4 \
+    python3-cachecontrol \
+    python3-cairo \
+    python3-certifi \
+    python3-chardet \
+    python3-cssselect \
+    python3-filelock \
     python3-gi \
     python3-gi-cairo \
-    python3-cairo \
+    python3-idna \
+    python3-lxml \
+    python3-msgpack \
+    python3-numpy \
+    python3-packaging \
     python3-pil \
+    python3-platformdirs \
     python3-pyparsing \
+    python3-requests \
+    python3-scour \
     python3-serial \
-    python3-zstandard \
-    gir1.2-glib-2.0 \
-    gir1.2-gtk-4.0 \
-    gir1.2-gdkpixbuf-2.0 \
-    gir1.2-pango-1.0
-
+    python3-six \
+    python3-tinycss2 \
+    python3-urllib3 \
+    python3-webencodings \
+    python3-zstandard
 (
     cd ./appdir/usr/bin
     make_ld_launcher "python${PY_VER}" python3
@@ -100,7 +100,18 @@ wget -c "$goappimage_url" -O goappimage
 chmod +x goappimage
 
 ./goappimage -s --preserve_cwd deploy ./appdir/usr/share/applications/org.inkscape.Inkscape.desktop
+
+# Make gdk-pixbuf loaders use relative paths, rather than absolute paths pointing at /usr/lib
 sed -i -e 's|/usr/lib/x86_64-linux-gnu/gdk-pixbuf-.*/.*/loaders/||g' ./appdir/lib/x86_64-linux-gnu/gdk-pixbuf-*/*/loaders.cache
+
+# If GTK_THEME is set, it overrides everything and changing the global theme GtkSetting on the fly will do nothing.
+# goappimage's wrapper sets GTK_THEME=Default, thus preventing our theme preferences from ever taking effect.
+# So just drop that bit of the wrapper here.
+sed -i '/export GTK_THEME=/d' ./appdir/AppRun
+
+# Inject a custom script for any dynamic setup we might need to do
+sed -i '/^MAIN=/r../packaging/appimage/setup.sh' ./appdir/AppRun
+
 ARCH=x86_64 VERSION=1.0 ./goappimage ./appdir
 
 sha="$(git rev-parse --short HEAD)"

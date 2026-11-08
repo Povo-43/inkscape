@@ -39,11 +39,9 @@
 #include "ui/knot/knot.h"
 #include "ui/tools/gradient-tool.h"
 #include "ui/util.h"
-#include "ui/widget/drop-down-list.h"
-#include "ui/widget/gradient-editor.h"
+#include "ui/widget/gradient-editor.h"  // for  sp_get_spread_repeats()
 #include "ui/widget/gradient-image.h"
-#include "ui/widget/gradient-vector-selector.h"
-#include "ui/widget/paint-selector.h"
+#include "ui/widget/gradient-vector-selector.h" // for gr_prepare_label() and gr_ellipsze_text()
 #include "ui/widget/spinbutton.h"
 
 using Inkscape::DocumentUndo;

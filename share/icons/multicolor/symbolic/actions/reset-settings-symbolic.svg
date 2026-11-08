@@ -17,7 +17,7 @@
     <path
        id="rect13989"
        d="m 282.58109,536.7323 h 15.72099 v 15.721 h -15.72099 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
   </g>
   <path
      id="path1047"

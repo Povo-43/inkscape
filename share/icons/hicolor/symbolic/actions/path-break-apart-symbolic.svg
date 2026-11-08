@@ -5,7 +5,7 @@
     <inkscape:grid type="xygrid" id="grid"/>
   </sodipodi:namedview>
   <g transform="matrix(1,0,0,0.999983,-165,-727.34939)" inkscape:label="00083" id="path-break-apart">
-      <path inkscape:connector-curvature="0" id="rect19489" d="m 165,727.36212 h 16 v 16 h -16 z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect19489" d="m 165,727.36212 h 16 v 16 h -16 z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="path19491" d="m 176.9688,732.3621 h 0.031 l -0.031,1 h 3 v 9 h -9 v -3 c -0.4825,0.1142 0.048,0 -0.4688,0 -0.1711,0 -0.3323,-0.018 -0.5,-0.031 v 4.0313 h 2 9 v -2 -7 -2 h -2 -2.0312 z" style="opacity:1"/>
       <path style="opacity:1" d="m 169.9688,732.3621 v 2 1 h 1 v -2 h 2 v -1 h -1 z" id="path19493" inkscape:connector-curvature="0"/>
       <path inkscape:connector-curvature="0" id="path19495" d="m 170.5,727.3622 c -3.0376,0 -5.5,2.4624 -5.5,5.5 0,3.0376 2.4624,5.5 5.5,5.5 3.0376,0 5.5,-2.4624 5.5,-5.5 0,-3.0376 -2.4624,-5.5 -5.5,-5.5 z m 0,1 c 2.4853,0 4.5,2.0147 4.5,4.5 0,2.4853 -2.0147,4.5 -4.5,4.5 -2.4853,0 -4.5,-2.0147 -4.5,-4.5 0,-2.4853 2.0147,-4.5 4.5,-4.5 z" style="opacity:1"/>

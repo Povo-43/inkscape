@@ -166,7 +166,6 @@
            fill="black" />
       </g>
       <rect
-         style="display:inline;opacity:0;fill:none;fill-opacity:0;stroke:none"
          id="rect138"
          width="16"
          height="16"
@@ -176,7 +175,7 @@
          inkscape:tile-x0="1856"
          inkscape:tile-y0="308"
          transform="translate(-1427,1831)"
-         class="bbox " />
+         opacity="0" />
     </g>
   </g>
   <style

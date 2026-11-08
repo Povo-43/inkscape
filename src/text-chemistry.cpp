@@ -29,6 +29,7 @@
 #include "svg/svg.h"
 #include "text-chemistry.h"
 #include "text-editing.h"
+#include "selection-chemistry.h"
 
 #include "object/sp-flowdiv.h"
 #include "object/sp-flowregion.h"
@@ -42,7 +43,7 @@
 
 using Inkscape::DocumentUndo;
 
-static SPItem *text_or_flowtext_in_selection(Inkscape::Selection *selection)
+SPItem *text_or_flowtext_in_selection(Inkscape::Selection *selection)
 {
     for (auto item : selection->items()) {
         if (is<SPText>(item) || is<SPFlowtext>(item)) {
@@ -767,6 +768,33 @@ Glib::ustring text_relink_shapes_str(gchar const *prop, std::map<Glib::ustring, 
         res.resize(res.size() - 1);
     }
     return res;
+}
+
+void text_select_by_font(Glib::ustring const &family, SPObject *parent)
+{
+    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
+    if (!desktop) {
+        return;
+    }
+
+    // Get all items with matching font-family set (not inherited!).
+    std::vector<SPItem *> selectList;
+    for (auto item : get_all_items(parent, desktop, false, false, true) | std::views::reverse) {
+        auto style = item->style;
+        if (!style) {
+            continue;
+        }
+        Glib::ustring family_style;
+        if (style->font_family.set) {
+            family_style = style->font_family.value();
+        } else if (style->font_specification.set) {
+            family_style = style->font_specification.value();
+        }
+        if (family_style == family) {
+            selectList.push_back(item);
+        }
+    }
+    desktop->getSelection()->setList(selectList);
 }
 
 /*

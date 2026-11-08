@@ -40,12 +40,13 @@ enum Triggers : Trigger {
     NODE_TOOL, BOOLEANS_TOOL, BOX3D_TOOL, CALLI_TOOL,
     DROPPER_TOOL, FLOOD_TOOL, SPIRAL_TOOL, STAR_TOOL,
     TWEAK_TOOL, GRADIENT_TOOL, MEASURE_TOOL, PENCIL_TOOL,
-    PEN_TOOL,
+    PEN_TOOL, ARC_TOOL, TEXT_TOOL,
     // Action taken to trigger this modifier, starts at
     // bit 6 so categories and triggers can be combined.
     CLICK = 32,
     DRAG = 64,
-    SCROLL = 128,
+    DRAG_MIDDLE_BUTTON = 128,
+    SCROLL = 256,
 };
 
 /**
@@ -58,6 +59,7 @@ enum class Type {
     CANVAS_PAN_DRAG,      // Pan freely {CTRL+SHIFT+DRAG}
     CANVAS_PAN_X,         // Pan left and right {SHIFT+SCROLL}
     CANVAS_PAN_Y,         // Pan up and down {NOTHING+SCROLL}
+    CANVAS_DRAG_ZOOM,     // Pan and zoom the canvas {CTRL+MBUTTON2}
     CANVAS_ROTATE,        // Rotate CW and CCW {CTRL+SHIFT+SCROLL}
     CANVAS_ROTATE_DRAG,   // Rotate CW and CCW {CTRL+DRAG}
     CANVAS_ROTATE_RESET,  // Reset angle while rotating {CTRL+SHIFT+DRAG}
@@ -77,6 +79,12 @@ enum class Type {
     SELECT_DUPLICATE,     // Duplicate selection when starting a drag {ALT+DRAG+Selected} unassigned by default
     SELECT_REMOVE_SNAP,   // Remove snap target during a drag {SHIFT+ALT+DRAG+Selected}
 
+    // Arc tool
+    ARC_MAINTAIN_GAP,     // Move both the start and end knots {SHIFT+DRAG}
+
+    // Text tool
+    TEXT_CLEAR_INLINE_SIZE,// Have width fit the content for auto-wrapped text {CTRL+CLICK}
+
     // Transform handles (applies to multiple tools)
     MOVE_CONFINE,         // Limit dragging to X OR Y only {DRAG+CTRL}
     MOVE_INCREMENT,       // Move in increments of grid pitch (preserves distances w.r.t grid) {DRAG+ALT} unassigned by default
@@ -94,6 +102,7 @@ enum class Type {
 
     BOOL_SHIFT,           // Shift the shape builder into its alternative mode.
 
+    BOX3D_CHANGE_KNOT_DIRECTION, // Move the knot along Z axis instead of X/Y direction or vice-versa
     BOX3D_EXTRUDE_ONE,    // Extrudes a box along a single dimension {DRAG+SHIFT}
     BOX3D_EXTRUDE_TWO,    // Do not constrain extrusion to perspective line {DRAG+CTRL} while extruding
 
@@ -129,6 +138,7 @@ enum class Type {
     NODE_PRESERVE_LENGTH, // Preserve handle length {DRAG+ALT}
     NODE_REMOVE_FROM,     // Remove selected nodes from selection {DRAG+SHIFT+CTRL}
     NODE_RETRACT_HANDLE,  // Remove handle {CLICK+ALT}
+    NODE_SCULPT,          // Sculpt selected nodes {DRAG+ALT}
     NODE_STRAIGHTEN_SEGMENT, // Straighten segment {DOUBLECLICK+ALT}
 
     PEN_CUSP_NODE,        // Makes cusp node {CLICK+SHIFT}

@@ -77,7 +77,7 @@
          inkscape:connector-curvature="0"
          id="rect22453"
          d="M 80.685799,-28.802999 H 104.7358 V -4.8029995 H 80.685799 Z"
-         style="opacity:0;fill:none"
+         opacity="0"
          transform="matrix(0,1,1,0,0,0)" />
       <path
          inkscape:connector-curvature="0"

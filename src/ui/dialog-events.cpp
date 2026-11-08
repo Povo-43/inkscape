@@ -78,7 +78,9 @@ void sp_transientize(Gtk::Window &window)
         if (is_x11_display()) {
             auto native = GTK_NATIVE(window.gobj());
             auto surface = gtk_native_get_surface(native);
-            gdk_x11_surface_set_skip_taskbar_hint(surface, TRUE);
+            if (surface) {
+                gdk_x11_surface_set_skip_taskbar_hint(surface, TRUE);
+            }
         }
     }
 #endif

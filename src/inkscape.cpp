@@ -428,6 +428,22 @@ Application::crash_handler (int /*signum*/)
     }
     *(b + pos) = '\0';
 
+    // Save stacktrace in case (in autosave directory).
+    try {
+        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+        Glib::ustring tmp_dir = prefs->getString("/options/autosave/path");
+        if (tmp_dir.empty()) {
+            tmp_dir = Glib::build_filename(Glib::get_user_cache_dir(), "inkscape");
+        }
+        Glib::ustring stacktracefile = Glib::build_filename(tmp_dir,  Glib::DateTime::create_now_local().format_iso8601() + ".stacktrace");
+        std::string new_etag;
+        Gio::File::create_for_path(stacktracefile)->replace_contents(boost::stacktrace::to_string(boost::stacktrace::stacktrace()), "", new_etag);
+        g_message ("If you closed the dialog, the stacktrace is saved in %s", stacktracefile.c_str());
+    } catch (const Glib::Error &ex) {
+        g_message("Could not save the crash to a file :(");
+    }
+
+    // GUI dialog with crash info and stacktrace
     if ( exists() && instance().use_gui() ) {
         try {
             auto mainloop = Glib::MainLoop::create();

@@ -67,7 +67,7 @@
        transform="rotate(90,8,8)"
        id="g40650">
       <path
-         style="opacity:0;fill:none"
+         opacity="0"
          d="M 0,0 H 16 V 16 H 0 Z"
          id="rect40652"
          inkscape:connector-curvature="0" />

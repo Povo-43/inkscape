@@ -164,7 +164,8 @@ void ObjectSet::_remove(SPObject *object) {
 }
 
 void ObjectSet::_add(SPObject *object) {
-    _releaseConnections[object] = object->connectRelease(sigc::hide_return(sigc::mem_fun(*this, &ObjectSet::remove)));
+    _releaseConnections[object] =
+        object->connectRelease(sigc::hide_return(sigc::mem_fun(*this, static_cast<bool (ObjectSet::*)(SPObject*)>(&ObjectSet::remove))));
     _container.push_back(object);
     _add3DBoxesRecursively(object);
     _connectSignals(object);

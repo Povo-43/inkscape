@@ -6,7 +6,7 @@
   </sodipodi:namedview>
   <g transform="translate(-74.979417,-867.36218)" inkscape:label="00040" id="dialog-messages">
       <g transform="matrix(0.9985297,0,0,1,60.025,260)" id="g17812">
-        <path inkscape:connector-curvature="0" id="rect17814" d="m 14.97644,607.36218 h 16 v 16 h -16 z" style="opacity:0;fill:none"/>
+        <path inkscape:connector-curvature="0" id="rect17814" d="m 14.97644,607.36218 h 16 v 16 h -16 z" opacity="0"/>
         <path inkscape:connector-curvature="0" id="path17816" d="m 17,609.3622 h 12 v 2 H 17 Z" style="opacity:1"/>
         <path inkscape:connector-curvature="0" id="rect17818" d="m 15,607.36218 h 1 v 16 h -1 z" style="opacity:1"/>
         <path inkscape:connector-curvature="0" id="rect17820" d="m 15,607.36218 h 16 v 1 H 15 Z" style="opacity:1"/>

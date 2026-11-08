@@ -648,6 +648,11 @@ std::string getDictString(Dict *dict, const char *key)
     return getString(obj.getString());
 }
 
+std::string getString(const std::optional<std::string> &value)
+{
+    return value ? getString(*value) : "";
+}
+
 std::string getString(const std::unique_ptr<GooString> &value)
 {
     return getString(value.get());
@@ -673,7 +678,9 @@ std::string getString(const GooString &value)
 std::string getString(const std::string &value)
 {
     char *str = nullptr;
+#if !POPPLER_CHECK_VERSION(25,02,0)
     int stringLength;
+#endif
 
     if (_POPPLER_HAS_UNICODE_BOM(value)) {
         str = g_convert(value.c_str() + 2, value.size() - 2,

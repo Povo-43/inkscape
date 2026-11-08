@@ -774,7 +774,7 @@ bool ClipboardManagerImpl::pasteStyle(ObjectSet *set)
 
     // check whether something is selected
     if (set->isEmpty()) {
-        _userWarn(set->desktop(), _("Select <b>object(s)</b> to paste style to."));
+        _userWarn(set->desktop(), _("Select object(s) to paste style to."));
         return false;
     }
 
@@ -838,7 +838,7 @@ bool ClipboardManagerImpl::pasteSize(ObjectSet *set, bool separately, bool apply
 
     if (set->isEmpty()) {
         if(set->desktop())
-            _userWarn(set->desktop(), _("Select <b>object(s)</b> to paste size to."));
+            _userWarn(set->desktop(), _("Select object(s) to paste size to."));
         return false;
     }
 
@@ -900,7 +900,7 @@ bool ClipboardManagerImpl::pastePathEffect(ObjectSet *set)
     }
 
     if (!set || set->isEmpty()) {
-        _userWarn(set->desktop(), _("Select <b>object(s)</b> to paste live path effect to."));
+        _userWarn(set->desktop(), _("Select object(s) to paste live path effect to."));
         return false;
     }
 
@@ -1391,9 +1391,11 @@ void ClipboardManagerImpl::_copyUsedDefs(SPItem *item)
 void ClipboardManagerImpl::_copyGradient(SPGradient *gradient)
 {
     while (gradient) {
-        // climb up the refs, copying each one in the chain
-        _copyNode(gradient->getRepr(), _doc, _defs);
-        if (gradient->ref){
+        // Climb up the refs, copying each one in the chain.
+        // Ignore dups here as gradients can point at each other and we want to preserve that structure and to also not
+        // break links from shape styles into these gradients.
+        _copyIgnoreDup(gradient->getRepr(), _doc, _defs);
+        if (gradient->ref) {
             gradient = gradient->ref->getObject();
         }
         else {
@@ -1474,14 +1476,11 @@ Inkscape::XML::Node *ClipboardManagerImpl::_copyNode(Inkscape::XML::Node *node, 
 
 Inkscape::XML::Node *ClipboardManagerImpl::_copyIgnoreDup(Inkscape::XML::Node *node, Inkscape::XML::Document *target_doc, Inkscape::XML::Node *parent)
 {
-    if (sp_repr_lookup_child(_root, "id", node->attribute("id"))) {
+    if (sp_repr_lookup_descendant(_root, "id", node->attribute("id"))) {
         // node already copied
         return nullptr;
     }
-    Inkscape::XML::Node *dup = node->duplicate(target_doc);
-    parent->appendChild(dup);
-    Inkscape::GC::release(dup);
-    return dup;
+    return _copyNode(node, target_doc, parent);
 }
 
 /**
@@ -2023,12 +2022,12 @@ void ClipboardManagerImpl::_setClipboardColor(Colors::Color const &color)
 }
 
 /**
- * Put a notification on the message stack.
+ * Show a canvas notice.
  */
 void ClipboardManagerImpl::_userWarn(SPDesktop *desktop, char const *msg)
 {
     if (desktop) {
-        desktop->messageStack()->flash(Inkscape::WARNING_MESSAGE, msg);
+        desktop->showNotice(msg);
     }
 }
 

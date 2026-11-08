@@ -512,6 +512,10 @@ LPEFilletChamfer::doEffect_path(Geom::PathVector const &path_in)
         double time0 = 0;
         std::size_t curve = -1;
         size_t tcurves = count_path_curves(pathv[path]);
+        if (tcurves < 2) {
+            path_out.push_back(pathv[path]);
+            continue;
+        }
         while (curve_it1 != curve_endit) {
 
             ++curve;

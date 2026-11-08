@@ -47,10 +47,8 @@
     </child>
     <child>
       <object class="gtkmm__CustomObject_InkSpinButton" id="paint-alpha">
-        <property name="icon">transparency</property>
         <property name="hexpand">true</property>
         <property name="hexpand-set">true</property>
-        <property name="tooltip-text" translatable="yes">Opacity</property>
         <property name="suffix" translatable="yes" context="Transparency percent">%</property>
         <property name="scaling-factor">100.000000</property>
         <property name="digits">0</property>

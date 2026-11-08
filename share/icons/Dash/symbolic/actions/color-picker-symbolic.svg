@@ -157,8 +157,7 @@
          inkscape:tile-x0="272"
          inkscape:tile-y0="308"
          transform="translate(157,-185)"
-         class="bbox "
-         style="opacity:0;fill:none;fill-opacity:0;stroke:none" />
+         opacity="0" />
       <g
          id=".dropper-0">
         <path
@@ -175,16 +174,4 @@
       </g>
     </g>
   </g>
-  <style
-     id="style219-9">
-.bbox { 
-    fill:none;
-    fill-opacity:0;
-    opacity:0;
-    stroke:none;
-}
-.error { fill: url(#linearGradient885); }
-.success { fill: url(#linearGradient953); }
-.warning { fill: url(#linearGradient3); }
-</style>
 </svg>

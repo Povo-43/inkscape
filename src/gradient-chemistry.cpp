@@ -304,17 +304,18 @@ static SPGradient *sp_gradient_fork_private_if_necessary(SPGradient *gr, SPGradi
             }
             sp_gradient_repr_set_link(repr_new, nullptr);
 
-            // Need to generate SPObjects (which fills in node array and handle arrays).
-            gr->requestModified(SP_OBJECT_MODIFIED_FLAG);
-            gr->document->ensureUpToDate();
-       }
+        }
+        // Need to pass through ::update() to calculate computed values.
+        // Need to generate SPObjects (which fills in node array and handle arrays for meshes).
+        gr->requestModified(SP_OBJECT_MODIFIED_FLAG);
+        gr->document->ensureUpToDate();
         return gr_new;
     } else {
         return gr;
     }
 }
 
-SPGradient *sp_gradient_fork_vector_if_necessary(SPGradient *gr)
+static SPGradient *sp_gradient_fork_vector_if_necessary(SPGradient *gr)
 {
 #ifdef SP_GR_VERBOSE
     g_message("sp_gradient_fork_vector_if_necessary(%p)", gr);
@@ -346,11 +347,17 @@ SPGradient *sp_gradient_get_forked_vector_if_necessary(SPGradient *gradient, boo
 #ifdef SP_GR_VERBOSE
     g_message("sp_gradient_get_forked_vector_if_necessary(%p, %d)", gradient, force_vector);
 #endif
-    SPGradient *vector = gradient->getVector(force_vector);
-    vector = sp_gradient_fork_vector_if_necessary (vector);
-    if ( gradient != vector && gradient->ref->getObject() != vector ) {
-        sp_gradient_repr_set_link(gradient->getRepr(), vector);
+    auto vector = gradient->getVector(force_vector);
+    if (!vector) {
+        return vector;
     }
+
+    vector = sp_gradient_fork_vector_if_necessary(vector);
+    if (gradient != vector && gradient->ref->getObject() != vector) {
+        sp_gradient_repr_set_link(gradient->getRepr(), vector);
+        gradient->repr_clear_vector(); // remove any stops now that we link to a vector
+    }
+
     return vector;
 }
 
@@ -547,17 +554,20 @@ SPGradient *sp_gradient_convert_to_userspace(SPGradient *gr, SPItem *item, gchar
             Geom::Point c_b = Geom::Point(rg->cx.computed, rg->cy.computed);
             Geom::Point f_b = Geom::Point(rg->fx.computed, rg->fy.computed);
             double r_b = rg->r.computed;
+            double fr_b = rg->fr.computed;
 
             // converted points in userspace coords
             Geom::Point c_u = c_b * point_convert;
             Geom::Point f_u = f_b * point_convert;
             double r_u = r_b * point_convert.descrim();
+            double fr_u = fr_b * point_convert.descrim();
 
             repr->setAttributeSvgDouble("cx", c_u[Geom::X]);
             repr->setAttributeSvgDouble("cy", c_u[Geom::Y]);
             repr->setAttributeSvgDouble("fx", f_u[Geom::X]);
             repr->setAttributeSvgDouble("fy", f_u[Geom::Y]);
             repr->setAttributeSvgDouble("r", r_u);
+            repr->setAttributeSvgDouble("fr", fr_u);
 
             // set the gradientUnits
             repr->setAttribute("gradientUnits", "userSpaceOnUse");
@@ -761,16 +771,19 @@ SPStop *sp_vector_add_stop(SPGradient *vector, SPStop* prev_stop, SPStop* next_s
 }
 
 // delete gradient's stop
-void sp_gradient_delete_stop(SPGradient* gradient, SPStop* stop) {
+bool sp_gradient_delete_stop(SPGradient* gradient, SPStop* stop) {
 
     if (!stop || !gradient) {
-        return;
+        return false;
     }
 
     if (gradient->getStopCount() > 2) { // 2 is the minimum
         gradient->getRepr()->removeChild(stop->getRepr());
         DocumentUndo::done(gradient->document, RC_("Undo", "Delete gradient stop"), INKSCAPE_ICON("color-gradient"));
+        return true;
     }
+
+    return false;
 }
 
 // make gradient well-formed if needed; from gradient-vector.cpp
@@ -1020,15 +1033,9 @@ void sp_item_gradient_stop_set_style(SPItem *item, GrPointType point_type, guint
 
     if (is<SPLinearGradient>(gradient) || is<SPRadialGradient>(gradient) ) {
 
-        SPGradient *vector = gradient->getVector();
-
+        auto vector = sp_gradient_get_forked_vector_if_necessary(gradient);
         if (!vector) // orphan!
             return;
-
-        vector = sp_gradient_fork_vector_if_necessary (vector);
-        if ( gradient != vector && gradient->ref->getObject() != vector ) {
-            sp_gradient_repr_set_link(gradient->getRepr(), vector);
-        }
 
         switch (point_type) {
             case POINT_LG_BEGIN:
@@ -1120,14 +1127,9 @@ void sp_gradient_reverse_vector(SPGradient* gradient) {
     if (!gradient)
         return;
 
-    SPGradient *vector = gradient->getVector();
+    auto vector = sp_gradient_get_forked_vector_if_necessary(gradient);
     if (!vector) // orphan!
         return;
-
-    vector = sp_gradient_fork_vector_if_necessary (vector);
-    if ( gradient != vector && gradient->ref->getObject() != vector ) {
-        sp_gradient_repr_set_link(gradient->getRepr(), vector);
-    }
 
     std::vector<SPObject *> child_objects;
     std::vector<Inkscape::XML::Node *>child_reprs;
@@ -1168,14 +1170,9 @@ void sp_item_gradient_invert_vector_color(SPItem *item, Inkscape::PaintTarget fi
     if (!gradient)
         return;
 
-    SPGradient *vector = gradient->getVector();
+    auto vector = sp_gradient_get_forked_vector_if_necessary(gradient);
     if (!vector) // orphan!
         return;
-
-    vector = sp_gradient_fork_vector_if_necessary (vector);
-    if ( gradient != vector && gradient->ref->getObject() != vector ) {
-        sp_gradient_repr_set_link(gradient->getRepr(), vector);
-    }
 
     for (auto &child: vector->children) {
         if (auto stop = cast<SPStop>(&child)) {
@@ -1273,7 +1270,7 @@ void sp_item_gradient_set_coords(SPItem *item, GrPointType point_type, guint poi
                 Geom::Point end(lg->x2.computed, lg->y2.computed);
                 double offset = Geom::LineSegment(begin, end).nearestTime(p);
                 offset = midpoint_offset_hack(offset);
-                SPGradient *vector = sp_gradient_get_forked_vector_if_necessary (lg, false);
+                auto vector = sp_gradient_get_forked_vector_if_necessary(lg);
                 lg->ensureVector();
                 lg->vector.stops.at(point_i).offset = offset;
                 if (SPStop* stopi = sp_get_stop_i(vector, point_i)) {
@@ -1370,7 +1367,7 @@ void sp_item_gradient_set_coords(SPItem *item, GrPointType point_type, guint poi
                 Geom::Point end   = Geom::Point (rg->cx.computed + rg->r.computed, rg->cy.computed);
                 double offset = Geom::LineSegment(start, end).nearestTime(p);
                 offset = midpoint_offset_hack(offset);
-                SPGradient *vector = sp_gradient_get_forked_vector_if_necessary (rg, false);
+                auto vector = sp_gradient_get_forked_vector_if_necessary(rg);
                 rg->ensureVector();
                 rg->vector.stops.at(point_i).offset = offset;
                 if (SPStop* stopi = sp_get_stop_i(vector, point_i)) {
@@ -1389,7 +1386,7 @@ void sp_item_gradient_set_coords(SPItem *item, GrPointType point_type, guint poi
                 Geom::Point end   = Geom::Point (rg->cx.computed, rg->cy.computed - rg->r.computed);
                 double offset = Geom::LineSegment(start, end).nearestTime(p);
                 offset = midpoint_offset_hack(offset);
-                SPGradient *vector = sp_gradient_get_forked_vector_if_necessary(rg, false);
+                auto vector = sp_gradient_get_forked_vector_if_necessary(rg);
                 rg->ensureVector();
                 rg->vector.stops.at(point_i).offset = offset;
                 if (SPStop* stopi = sp_get_stop_i(vector, point_i)) {
@@ -1644,6 +1641,7 @@ SPGradient *sp_item_set_gradient(SPItem *item, SPGradient *gr, SPGradientType ty
             if ( current != gr && current->getVector() != gr ) {
                 // href is not the vector
                 sp_gradient_repr_set_link(current->getRepr(), gr);
+                current->repr_clear_vector(); // remove any stops now that we link to a vector
             }
             item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
             return current;

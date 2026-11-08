@@ -357,6 +357,14 @@ void MultiPathManipulator::copySelectedPath(Geom::PathBuilder *builder)
     _done(RC_("Undo", "Copy nodes"));
 }
 
+void MultiPathManipulator::simplifyInvisible(double epsilon)
+{
+    if (_selection.empty())
+        return;
+    invokeForAll(&PathManipulator::simplifyInvisible, epsilon);
+    _doneWithCleanup(RC_("Undo", "Simplify invisible nodes"), true);
+}
+
 void MultiPathManipulator::joinNodes()
 {
     if (_selection.empty()) return;

@@ -63,8 +63,9 @@ public:
     std::vector<SPItem*> item_list();
 
 private:
+    bool _should_choose_layer_highlight() const;
     void _updateLayerMode(unsigned int display_key=0);
-
+    bool adding_children = false;
 public:
     void build(SPDocument *document, Inkscape::XML::Node *repr) override;
    	void release() override;
@@ -72,6 +73,8 @@ public:
     void child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) override;
     void remove_child(Inkscape::XML::Node *child) override;
     void order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node *old_ref, Inkscape::XML::Node *new_ref) override;
+    void start_adding_children() { adding_children = true; }
+    void end_adding_children(unsigned count, unsigned position);
 
     void update(SPCtx *ctx, unsigned int flags) override;
     void modified(unsigned int flags) override;
@@ -92,6 +95,8 @@ public:
     void update_patheffect(bool write) override;
 
     Inkscape::Colors::Color highlight_color() const override;
+    void preserveGroupHighlight();
+    void preserveLayerHighlight();
 
     void removeTransformsRecursively(SPObject const *root) override;
 

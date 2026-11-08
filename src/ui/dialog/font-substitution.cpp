@@ -8,6 +8,7 @@
  */
 
 #include <glibmm/i18n.h>
+#include <glibmm/main.h>
 #include <glibmm/regex.h>
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/messagedialog.h>
@@ -210,7 +211,8 @@ void checkFontSubstitutions(SPDocument *doc)
 
     auto [list, msg] = getFontReplacedItems(doc);
     if (!msg.empty()) {
-        show(list, msg);
+        // Show once idle to let any floating dialogs to show up first
+        Glib::signal_idle().connect_once([list, msg] { show(list, msg); });
     }
 }
 

@@ -514,6 +514,17 @@ void PaintAttribute::PaintStrip::set_preview(const SPIPaint& paint, double paint
         return;
     }
 
+    // in the simple solid case, make it more clear we are editing the color alpha here, otherwise it's opacity
+    if (mode == PaintMode::Solid) {
+        _alpha.set_icon("");
+        _alpha.set_label(C_("Short for 'Alpha'", "A"));
+        _alpha.set_tooltip_text(_("Alpha"));
+    } else {
+        _alpha.set_label("");
+        _alpha.set_icon("opacity");
+        _alpha.set_tooltip_text(_("Opacity"));
+    }
+
     if (mode == PaintMode::Solid || mode == PaintMode::Swatch || mode == PaintMode::Gradient || mode == PaintMode::Pattern || mode == PaintMode::Hatch) {
         _alpha.set_value(paint_opacity);
         _paint_icon.set_visible(false);
@@ -958,9 +969,9 @@ bool PaintAttribute::can_update() const {
 void PaintAttribute::update_reset_opacity_button() {
     if (!_current_item || !_current_item->style) return;
 
-    auto& opacity = _current_item->style->opacity;
     // no reset btn available
     //TODO: find place for reset btn
+    // auto& opacity = _current_item->style->opacity;
     // _reset_opacity.set_visible(opacity.inherit || (opacity.set && static_cast<double>(opacity) < 1.0));
 }
 

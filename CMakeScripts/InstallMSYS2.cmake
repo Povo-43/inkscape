@@ -76,6 +76,7 @@ if(WIN32)
     ${MINGW_BIN}/libspelling-1-[0-9]*.dll
     ${MINGW_BIN}/libgtksourceview-5-[0-9]*.dll
     ${MINGW_BIN}/libharfbuzz-[0-9]*.dll
+    ${MINGW_BIN}/libharfbuzz-cairo-[0-9]*.dll
     ${MINGW_BIN}/libharfbuzz-subset-[0-9]*.dll
     ${MINGW_BIN}/libheif.dll
     ${MINGW_BIN}/libiconv-[0-9]*.dll
@@ -102,6 +103,7 @@ if(WIN32)
     ${MINGW_BIN}/libopenjp2-[0-9]*.dll
     ${MINGW_BIN}/libopenjph-0.[0-9]*.dll
     ${MINGW_BIN}/liborc-0.4-[0-9]*.dll
+    ${MINGW_BIN}/libpanelw[0-9]*.dll
     ${MINGW_BIN}/libpango-1.0-[0-9]*.dll
     ${MINGW_BIN}/libpangocairo-1.0-[0-9]*.dll
     ${MINGW_BIN}/libpangoft2-1.0-[0-9]*.dll

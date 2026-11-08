@@ -24,6 +24,7 @@
 #include <gio/gio.h>
 #include <giomm/themedicon.h>
 #include <glibmm/i18n.h>
+#include <glibmm/main.h>
 #include <glibmm/markup.h>
 #include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
@@ -66,8 +67,10 @@
 #include "inkscape-window.h"
 #include "inkscape.h"
 #include "io/recent-files.h"
+#include "io/resource.h"
 #include "object/box3d-side.h"
 #include "object/box3d.h"
+#include "libnrtype/font-instance.h"
 #include "path-prefix.h"
 #include "selcue.h"
 #include "selection-chemistry.h"
@@ -84,6 +87,7 @@
 #include "ui/toolbar/tool-toolbar.h"
 #include "ui/toolbar/toolbar-constants.h"
 #include "ui/util.h"
+#include "ui/widget/desktop-widget.h"
 #include "ui/widget/style-swatch.h"
 #include "util/recently-used-fonts.h"
 #include "util/trim.h"
@@ -392,6 +396,7 @@ InkscapePreferences::InkscapePreferences()
     initPageBitmaps();
     initPageRendering();
     initPageSpellcheck();
+    initPageTemplates();
 
     signal_map().connect(sigc::mem_fun(*this, &InkscapePreferences::showPage));
 
@@ -992,15 +997,15 @@ void InkscapePreferences::initPageTools()
     _page_selector.add_line( true, "", _t_sel_cue_box, "",
                             _("Each selected object displays its bounding box"));
 
-    _page_selector.add_group_header( _("Fade Other Objects..."));
+    _page_selector.add_group_header( _("Fade Other Objects on Canvas"));
     _t_too_off.init ( C_("Translucency Group", "Never (Off)"), "/options/translucency_groups/value", 0, false, nullptr);
     _page_selector.add_line( true, "", _t_too_off, "", _("Turn off fade."));
 
     _t_too_group.init ( C_("Translucency Group", "When in Groups"), "/options/translucency_groups/value", 1, true, &_t_too_off);
     _page_selector.add_line( true, "", _t_too_group, "", _("Indicate the entered group by making all other objects fade."));
 
-    _t_too_layer.init ( C_("Translucency Group", "When in Layers"), "/options/translucency_groups/value", 2, false, &_t_too_off);
-    _page_selector.add_line( true, "", _t_too_layer, "", _("Indicate the selected layer by making all other layers fade."));
+    _t_too_layer.init ( C_("Translucency Group", "When in Groups or Layers"), "/options/translucency_groups/value", 2, false, &_t_too_off);
+    _page_selector.add_line( true, "", _t_too_layer, "", _("Indicate the selected group or layer by making all other groups or layers fade."));
 
     //Node
     AddSelcueCheckbox(_page_node, "/tools/nodes", true);
@@ -1126,14 +1131,6 @@ void InkscapePreferences::initPageTools()
     this->AddGradientCheckbox(_page_text, "/tools/text", true);
     {
         auto cb = Gtk::make_managed<PrefCheckButton>();
-        cb->init ( _("Enable cursor Text on Path"), "/tools/text/text_on_path", true);
-        _page_text.add_line( false, "", *cb, "", _("Allow the text tool to put text directly on a path without holding the shift key."));
-
-        cb = Gtk::make_managed<PrefCheckButton>();
-        cb->init ( _("Enable cursor Text in Shape"), "/tools/text/text_in_shape", true);
-        _page_text.add_line( false, "", *cb, "", _("Allow the text tool to flow text directly into a shape without holding the shift key."));
-
-        cb = Gtk::make_managed<PrefCheckButton>();
         cb->init ( _("Show font samples in the drop-down list"), "/tools/text/show_sample_in_list", true);
         _page_text.add_line( false, "", *cb, "", _("Show font samples alongside font names in the drop-down list in Text bar"));
 
@@ -1430,7 +1427,6 @@ void InkscapePreferences::toggleSymbolic()
 void InkscapePreferences::comboThemeChange()
 {
     //we reset theming on combo change
-    _dark_theme.set_active(false);
     _symbolic_base_colors.set_active(false);
     if (_contrast_theme.getSpinButton()->get_value() != 10.0){
         _contrast_theme.getSpinButton()->set_value(10.0);
@@ -1601,7 +1597,7 @@ void InkscapePreferences::initPageUI()
     Gtk::TreeModel::iterator iter_ui = this->AddPage(_page_ui, _("Interface"), PREFS_PAGE_UI);
 
     Glib::ustring languages[] = {_("System default"),
-        _("Albanian (sq)"), _("Arabic (ar)"), _("Armenian (hy)"), _("Assamese (as)"), _("Azerbaijani (az)"),
+        _("Albanian (sq)"), _("Amharic (am)"), _("Arabic (ar)"), _("Armenian (hy)"), _("Assamese (as)"), _("Azerbaijani (az)"),
         _("Basque (eu)"), _("Belarusian (be)"), _("Bulgarian (bg)"), _("Bengali (bn)"), _("Bengali/Bangladesh (bn_BD)"), _("Bodo (brx)"), _("Breton (br)"),
         _("Catalan (ca)"), _("Valencian Catalan (ca@valencia)"), _("Chinese/China (zh_CN)"),  _("Chinese/Taiwan (zh_TW)"), _("Croatian (hr)"), _("Czech (cs)"),
         _("Danish (da)"), _("Dogri (doi)"), _("Dutch (nl)"), _("Dzongkha (dz)"),
@@ -1625,7 +1621,7 @@ void InkscapePreferences::initPageUI()
         _("Ukrainian (uk)"), _("Urdu (ur)"),
         _("Vietnamese (vi)")};
     Glib::ustring langValues[] = {"",
-        "sq", "ar", "hy", "as", "az",
+        "sq", "am", "ar", "hy", "as", "az",
         "eu", "be", "bg", "bn", "bn_BD", "brx", "br",
         "ca", "ca@valencia", "zh_CN", "zh_TW", "hr", "cs",
         "da", "doi", "nl", "dz",
@@ -1801,7 +1797,7 @@ void InkscapePreferences::initPageUI()
         std::sort(values.begin(), values.end());
         labels.erase(unique(labels.begin(), labels.end()), labels.end());
         values.erase(unique(values.begin(), values.end()), values.end());
-        values.emplace_back("");
+        values.emplace_back(default_theme);
         Glib::ustring default_theme_label = _("Use system theme");
         default_theme_label += " (" + default_theme + ")";
         labels.emplace_back(default_theme_label);
@@ -2083,6 +2079,7 @@ void InkscapePreferences::initPageUI()
     _win_hide_task.init ( _("Dialogs are hidden in taskbar"), "/options/dialogsskiptaskbar/value", true);
     _win_save_viewport.init ( _("Save and restore documents viewport"), "/options/savedocviewport/value", true);
     _win_zoom_resize.init ( _("Zoom when window is resized"), "/options/stickyzoom/value", false);
+    _win_version_in_title.init ( _("Show version in title"), "/options/versionintitle/value", true);
     _win_ontop_none.init ( C_("Dialog on top", "None"), "/options/transientpolicy/value", PREFS_DIALOGS_WINDOWS_NONE, false, nullptr);
     _win_ontop_normal.init ( _("Normal"), "/options/transientpolicy/value", PREFS_DIALOGS_WINDOWS_NORMAL, true, &_win_ontop_none);
     _win_ontop_agressive.init ( _("Aggressive"), "/options/transientpolicy/value", PREFS_DIALOGS_WINDOWS_AGGRESSIVE, false, &_win_ontop_none);
@@ -2156,12 +2153,6 @@ void InkscapePreferences::initPageUI()
         _page_windows.add_line( true, "", _win_hide_task, "",
                                 _("Whether dialog windows are to be hidden in the window manager taskbar"));
     }
-    _page_windows.add_group_header( _("Text and Font dialog"));
-    std::vector<PrefItem> lister = {
-        { _("List fonts and styles"), 0, _("List fonts and styles separately"), true },
-        { _("Unified font browser"), 1, _("Show all font styles in a single list or tree view") }
-    };
-    _page_windows.add_line(true, _("Font selector"), *Gtk::make_managed<PrefRadioButtons>(lister, "/options/font/browser"), "", "", true, reset_icon());
 
     _page_windows.add_group_header( _("Miscellaneous"));
 
@@ -2169,6 +2160,8 @@ void InkscapePreferences::initPageUI()
                             _("Zoom drawing when document window is resized, to keep the same area visible (this is the default which can be changed in any window using the button above the right scrollbar)"));
     _page_windows.add_line( true, "", _win_save_viewport, "",
                             _("Save documents viewport (zoom and panning position). Useful to turn off when sharing version controlled files."));
+    _page_windows.add_line( true, "", _win_version_in_title, "",
+                            _("Show Inkscape version in the title of the main window."));
 
     this->AddPage(_page_windows, _("Windows"), iter_ui, PREFS_PAGE_UI_WINDOWS);
 
@@ -2187,7 +2180,7 @@ void InkscapePreferences::initPageUI()
         for (auto& space : Colors::Manager::get().spaces(Colors::Space::Traits::Picker)) {
             auto const btn = Gtk::make_managed<Gtk::ToggleButton>();
             auto const box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL);
-            auto const label = Gtk::make_managed<Gtk::Label>(space->getName());
+            auto const label = Gtk::make_managed<Gtk::Label>(space->getShortName());
             label->set_valign(Gtk::Align::CENTER);
             UI::pack_start(*box, *label);
             UI::pack_start(*box, *sp_get_icon_image(space->getIcon(), 16));
@@ -3164,6 +3157,16 @@ void InkscapePreferences::initPageRendering()
     _canvas_debug_animate.init("", "/options/rendering/debug_animate", false);
     add_devmode_line(_("Animate"), _canvas_debug_animate, "", _("Continuously adjust viewing parameters in an animation loop."));
 
+    add_devmode_line(_("Draw glyph boxes"), _canvas_debug_glyph_boxes, "", _("Show boxes around glyphs"));
+    _canvas_debug_glyph_boxes.init("", "/options/rendering/debug_glyph_boxes", false);
+    add_devmode_line(_("Debug color fonts"), _canvas_debug_color_fonts, "", _("Enable debug output for color fonts"));
+    _canvas_debug_color_fonts.init("", "/options/rendering/debug_color_fonts", false);
+    _debug_color_fonts = Preferences::PreferencesObserver::create("/options/rendering/debug_color_fonts", [this] (auto &entry) {
+        FontInstance::debug_color_fonts = entry.getBool("/options/rendering/debug_color_fonts");
+    });
+    add_devmode_line(_("Debug Cairo fonts"), _canvas_debug_cairo_fonts, "", _("Enable rendering for Cairo fonts even for 1.18.4 and earlier with deadlock issues."));
+    _canvas_debug_cairo_fonts.init("", "/options/rendering/debug_cairo_fonts", false);
+
     AddPage(_page_rendering, _("Rendering"), PREFS_PAGE_RENDERING);
 }
 
@@ -3279,6 +3282,7 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
     _kb_shortcut_renderer.property_editable() = true;
 
     _kb_tree.set_model(_kb_filter);
+    _kb_tree.set_name("_kb_tree");
     _kb_tree.append_column(_("Name"), _kb_columns.name);
     _kb_tree.append_column(_("Shortcut"), _kb_shortcut_renderer);
     _kb_tree.append_column(_("Description"), _kb_columns.description);
@@ -3315,6 +3319,7 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
 
     _kb_notebook.append_page(_kb_page_shortcuts, _("Shortcuts"));
     auto const shortcut_scroller = Gtk::make_managed<Gtk::ScrolledWindow>();
+    shortcut_scroller->set_name("shortcut_scroller");
     shortcut_scroller->set_child(_kb_tree);
     shortcut_scroller->set_hexpand();
     shortcut_scroller->set_vexpand();
@@ -3327,6 +3332,7 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
     _kb_page_shortcuts.attach(*shortcut_scroller, 0, 3, 2, 1);
 
     _mod_store = Gtk::TreeStore::create( _mod_columns );
+    _mod_tree.set_name("_mod_tree");
     _mod_tree.set_model(_mod_store);
     _mod_tree.append_column(_("Name"), _mod_columns.name);
     _mod_tree.append_column("hot", _mod_columns.and_modifiers);
@@ -3346,6 +3352,7 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
     _kb_mod_alt.set_label("Alt");
     _kb_mod_meta.set_label("Meta");
     _kb_mod_enabled.set_label(_("Enabled"));
+    edit_bar->set_name("edit_bar");
     edit_bar->append(_kb_mod_ctrl);
     edit_bar->append(_kb_mod_shift);
     edit_bar->append(_kb_mod_alt);
@@ -3363,6 +3370,7 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
 
     _kb_notebook.append_page(_kb_page_modifiers, _("Tools Modifiers"));
     auto const mod_scroller = Gtk::make_managed<Gtk::ScrolledWindow>();
+    mod_scroller->set_name("mod_scroller");
     mod_scroller->set_child(_mod_tree);
     mod_scroller->set_hexpand();
     mod_scroller->set_vexpand();
@@ -3568,7 +3576,10 @@ void InkscapePreferences::onKBRealize()
 {
     if (!_kb_shortcuts_loaded /*&& _current_page == &_page_keyshortcuts*/) {
         _kb_shortcuts_loaded = true;
-        onKBListKeyboardShortcuts();
+        // Delay loading keyboad shortcuts until idle because shortcuts need access to action data, which is only
+        // available when the main window is done being hooked up. So on startup, if the preferences are showing, we
+        // need to delay a tad to let the windows get registered.
+        Glib::signal_idle().connect_once(sigc::mem_fun(*this, &InkscapePreferences::onKBListKeyboardShortcuts));
     }
 }
 
@@ -3774,7 +3785,7 @@ void InkscapePreferences::onKBListKeyboardShortcuts()
             iter_mod_group = _mod_store->append();
             (*iter_mod_group)[_mod_columns.name] = cat_name.empty() ? "" : _(cat_name.c_str());
             (*iter_mod_group)[_mod_columns.id] = "";
-            (*iter_mod_group)[_mod_columns.description] = "";
+            //(*iter_mod_group)[_mod_columns.description] = ""; Don't set or an empty tootip will be shown!
             (*iter_mod_group)[_mod_columns.and_modifiers] = "";
             (*iter_mod_group)[_mod_columns.user_set] = 0;
             old_mod_group = cat_name;
@@ -3814,6 +3825,34 @@ void InkscapePreferences::initPageSpellcheck()
 
     AddPage(_page_spellcheck, _("Spellcheck"), PREFS_PAGE_SPELLCHECK);
 #endif
+}
+
+void InkscapePreferences::initPageTemplates()
+{
+    _templates_default.set_label(_("Open for Editing..."));
+    _templates_default.signal_clicked().connect([]()
+    {
+        std::string cur_path = Inkscape::IO::Resource::get_filename(Inkscape::IO::Resource::TEMPLATES, "default.svg");
+
+        InkscapeApplication *app = InkscapeApplication::instance();
+
+        SPDocument *doc = app->document_open(Gio::File::create_for_path(cur_path)).first;
+
+        if (doc)
+        {
+            std::string user_path = Inkscape::IO::Resource::get_path_string(Inkscape::IO::Resource::USER,
+                                                                            Inkscape::IO::Resource::TEMPLATES,
+                                                                            "default.svg");
+
+            doc->setDocumentFilename(user_path.c_str());
+
+            app->desktopOpen(doc);
+        }
+    });
+
+    _page_templates.add_line(false, _("Default template:"), _templates_default, "", _("Default template:"), false);
+
+    AddPage(_page_templates, _("Templates"), PREFS_PAGE_TEMPLATES);
 }
 
 template <typename string_type>

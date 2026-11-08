@@ -218,6 +218,12 @@ Geom::OptRect SPClipPath::geometricBounds(Geom::Affine const &transform) const
     return bbox;
 }
 
+Geom::OptRect SPClipPath::visualBounds(Geom::Affine const &transform) const
+{
+    // Clips don't support visual modifiers like filters (unlike say, masks), so just provide the geometric bounds
+    return geometricBounds(transform);
+}
+
 void SPClipPath::transform_multiply(Geom::Affine postmul, bool set)
 {
     for (auto &clip : children) {

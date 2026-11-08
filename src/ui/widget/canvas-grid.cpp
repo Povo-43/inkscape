@@ -337,11 +337,9 @@ void CanvasGrid::updateRulers()
 
     Geom::Rect viewbox = _canvas->get_area_world();
     Geom::Rect startbox = viewbox;
-    if (document->get_origin_follows_page()) {
-        // Move viewbox according to the selected page's position (if any)
-        auto page_transform = pm.getSelectedPageAffine().inverse() * desktop->d2w();
-        startbox += page_transform.translation();
-    }
+    // Move viewbox according to the selected page's position
+    auto page_transform = pm.getSelectedPageOriginAffine().inverse() * desktop->d2w();
+    startbox += page_transform.translation();
 
     // Scale coordinates to current display units
     auto d2c_scalerot = _canvas->get_affine();
@@ -422,6 +420,11 @@ void CanvasGrid::ToggleRulers()
 void CanvasGrid::ToggleCommandPalette()
 {
     _command_palette->toggle();
+}
+
+void CanvasGrid::showNotice(Glib::ustring const &msg)
+{
+    _notice->show(msg);
 }
 
 void CanvasGrid::showNotice(Glib::ustring const &msg, int timeout)
@@ -579,14 +582,12 @@ static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom
     // Because the guide snapper only looks in the document for guides to snap to,
     // we don't have to worry about a guide snapping to itself here
     auto const normal_orig = normal;
-    m.guideFreeSnap(event_dt, normal, false, false);
+    auto snapped = m.guideFreeSnap(event_dt, normal, false, false);
 
     // After snapping, both event_dt and normal have been modified accordingly; we'll take the normal (of the
     // curve we snapped to) to set the normal the guide. And rotate it by 90 deg. if needed
-    if (pref_perp) { // Perpendicular snapping to paths is requested by the user, so let's do that
-        if (normal != normal_orig) {
-            normal = Geom::rot90(normal);
-        }
+    if (snapped && pref_perp) { // Perpendicular snapping to paths is requested by the user, so let's do that
+        normal = Geom::rot90(normal);
     }
 
     if (!(pref_tang || pref_perp)) { // if we don't want to snap either perpendicularly or tangentially, then
@@ -753,6 +754,9 @@ void CanvasGrid::updateScrollbars(double scale)
     } else {
         deskarea |= doc->getRoot()->desktopGeometricBounds();
     }
+
+    // Account for desktop rotation, offset, etc - but ignore zoom
+    deskarea *= desktop->d2w() * Geom::Zoom(desktop->current_zoom()).inverse();
 
     // Canvas region we always show unconditionally.
     double const y_dir = desktop->yaxisdir();

@@ -21,7 +21,10 @@
 namespace Inkscape {
 
 DrawingGroup::DrawingGroup(Drawing &drawing)
-    : DrawingItem(drawing) {}
+    : DrawingItem(drawing)
+{
+    _class_name = "DrawingGroup";
+}
 
 /**
  * Set whether the group returns children from pick calls.

@@ -41,6 +41,7 @@ using namespace std::literals;
 #include "ui/drag-and-drop.h"
 #include "ui/icon-loader.h"
 #include "ui/pack.h"
+#include "util-string/ustring-format.h"
 #include "util/value-utils.h"
 #include "xml/href-attribute-helper.h"
 
@@ -918,15 +919,14 @@ static std::unique_ptr<SPDocument> read_vss(std::string filename, std::string na
 
   // Each "symbol" is in its own SVG file, we wrap with <symbol> and merge into one file.
   for (unsigned i=0; i<output.size(); ++i) {
-    std::stringstream ss;
     if (titles.size() == output.size() && titles[i] != "") {
       // TODO: Do we need to check for duplicated titles?
-      ss << regex1->replace(titles[i].cstr(), 0, "_", Glib::Regex::MatchFlags::PARTIAL);
+      id = regex1->replace(titles[i].cstr(), 0, "_", Glib::Regex::MatchFlags::PARTIAL);
     } else {
-      ss << id << "_" << i;
+      id = Inkscape::ustring::format_classic(id, "_", i);
     }
 
-    tmpSVGOutput += "<symbol id=\"" + ss.str() + "\">\n";
+    tmpSVGOutput += "<symbol id=\"" + id + "\">\n";
 
     if (titles.size() == output.size() && titles[i] != "") {
       tmpSVGOutput += "<title>" + Glib::ustring(RVNGString::escapeXML(titles[i].cstr()).cstr()) + "</title>\n";

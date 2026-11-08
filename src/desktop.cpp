@@ -38,6 +38,7 @@
 #include "layer-manager.h"
 #include "message-context.h"
 #include "message-stack.h"
+#include "preferences.h"
 #include "style.h"
 #include "actions/actions-canvas-mode.h"
 #include "actions/actions-canvas-transform.h"
@@ -186,6 +187,9 @@ void SPDesktop::_setupCanvasItems()
 
     canvas->set_drawing(_canvas_drawing->get_drawing());
 
+    _translucency_observer = Preferences::PreferencesObserver::create("/options/translucency_groups/value", [this] (auto &entry) {
+        updateTranslucencyGroups();
+    });
     _layer_changed_connection = _layer_manager->connectCurrentLayerChanged([this](SPGroup *group) {
         updateTranslucencyGroups();
     });
@@ -1133,6 +1137,7 @@ void SPDesktop::focusMode(bool mode)
     _focusMode = mode;
 
     layoutWidget();
+    view_set_gui(getInkscapeWindow());
 }
 
 Geom::IntPoint SPDesktop::getWindowSize() const
@@ -1506,6 +1511,11 @@ void SPDesktop::_detachDocument()
     _reconstruction_start_connection.disconnect();
     _reconstruction_finish_connection.disconnect();
     _schedule_zoom_from_document_connection.disconnect();
+}
+
+void SPDesktop::showNotice(Glib::ustring const &msg)
+{
+    _widget->showNotice(msg);
 }
 
 void SPDesktop::showNotice(Glib::ustring const &msg, int timeout)

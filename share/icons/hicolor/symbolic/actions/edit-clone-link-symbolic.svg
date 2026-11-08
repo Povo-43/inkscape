@@ -55,7 +55,7 @@
      id="edit-clone">
     <path
        inkscape:connector-curvature="0"
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 45,607.3622 v 16 h 16 v -16 z"
        id="path45837" />
     <path

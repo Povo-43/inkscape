@@ -51,13 +51,6 @@ void TemplateSocial::init()
 "<preset name='" N_("LinkedIn hero image") "' label='1128 × 376 px' height='376' width='1128'/>"
 "<preset name='" N_("LinkedIn sponsored content image") "' label='1200 × 627 px' height='627' width='1200'/>"
 "<preset name='" N_("Snapchat advertisement") "' label='1080 × 1920 px' height='1920' width='1080' icon='social_portrait'/>"
-"<preset name='" N_("Twitter card image") "' label='1200 × 628 px' height='628' width='1200'/>"
-"<preset name='" N_("Twitter header") "' label='1500 × 500 px' height='500' width='1500'/>"
-"<preset name='" N_("Twitter post image") "' label='1024 × 512 px' height='512' width='1024'/>"
-"<preset name='" N_("Twitter profile picture") "' label='400 × 400 px' height='400' width='400' icon='social_square'/>"
-"<preset name='" N_("Twitter video landscape") "' label='1280 × 720 px' height='720' width='1280'/>"
-"<preset name='" N_("Twitter video portrait") "' label='720 × 1280 px' height='1280' width='720' icon='social_portrait'/>"
-"<preset name='" N_("Twitter video square") "' label='720 × 720 px' height='720' width='720' icon='social_square'/>"
 
             "</template>"
         "</inkscape-extension>",

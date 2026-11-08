@@ -65,8 +65,7 @@ void sp_object_ensure_stroke_gradient_normalized (SPObject *object);
 SPGradient *sp_gradient_convert_to_userspace (SPGradient *gr, SPItem *item, const char *property);
 SPGradient *sp_gradient_reset_to_userspace (SPGradient *gr, SPItem *item);
 
-SPGradient *sp_gradient_fork_vector_if_necessary (SPGradient *gr);
-SPGradient *sp_gradient_get_forked_vector_if_necessary(SPGradient *gradient, bool force_vector);
+SPGradient *sp_gradient_get_forked_vector_if_necessary(SPGradient *gradient, bool force_vector = false);
 
 
 SPStop* sp_last_stop(SPGradient *gradient);
@@ -79,7 +78,7 @@ unsigned int sp_number_of_stops_before_stop(SPGradient* gradient, SPStop *target
 
 SPStop *sp_vector_add_stop(SPGradient *vector, SPStop* prev_stop, SPStop* next_stop, gfloat offset);
 
-void sp_gradient_delete_stop(SPGradient* gradient, SPStop* stop);
+bool sp_gradient_delete_stop(SPGradient* gradient, SPStop* stop);
 SPStop* sp_gradient_add_stop(SPGradient* gradient, SPStop* current);
 SPStop* sp_gradient_add_stop_at(SPGradient* gradient, double offset);
 void sp_set_gradient_stop_color(SPDocument* document, SPStop* stop, Color const &color);

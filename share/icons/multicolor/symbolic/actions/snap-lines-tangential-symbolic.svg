@@ -14,7 +14,7 @@
   <path
      id="rect22719"
      d="M 0.021669,1.0147821e-4 H 15.999925 V 15.993717 H 0.021669 Z"
-     style="opacity:0;fill:none;stroke-width:0.999121" />
+     opacity="0" />
   <path
      id="path881"
      style="color:#000000;stroke-linejoin:bevel;-inkscape-stroke:none"

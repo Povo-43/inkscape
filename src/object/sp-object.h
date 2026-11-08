@@ -204,7 +204,7 @@ public:
      * Returns the objects current ID string.
      */
     char const* getId() const;
-
+    Glib::ustring getIdLabel() const; // Used for debugging outut.
     void getIds(std::set<std::string> &ret) const;
 
     /**

@@ -52,6 +52,31 @@
 
 using namespace Inkscape::Colors;
 
+template <typename Derived>
+SVGLength SPGradient::find_attr_length(const Derived* src, SVGLength Derived::*attr)
+{
+    SPGradient const *start = src;
+    auto found = chase_hrefs(start, [attr](SPGradient const *g) {
+        auto d = dynamic_cast<Derived const*>(g);
+        return d && (d->*attr)._set;
+    });
+
+    // If found, make a copy (so we don't violate constantness), setting _found to true.
+    if (found) {
+        SVGLength l = static_cast<Derived const *>(found)->*attr;
+        l._found = true;
+        return l;
+    }
+
+    // If not found, return the original SVGLength as to not overwrite defaults.
+    return static_cast<Derived const *>(start)->*attr;
+}
+// Needed to keep the definition in the .cpp file.
+template SVGLength SPGradient::find_attr_length<SPRadialGradient>(
+    SPRadialGradient const *, SVGLength SPRadialGradient::*);
+template SVGLength SPGradient::find_attr_length<SPLinearGradient>(
+    SPLinearGradient const *, SVGLength SPLinearGradient::*);
+
 bool SPGradient::hasStops() const
 {
     return has_stops;
@@ -80,6 +105,11 @@ bool SPGradient::isSpreadSet() const
 SPGradientSpread SPGradient::getSpread() const
 {
     return spread;
+}
+
+bool SPGradient::isTransformSet() const
+{
+    return gradientTransform_set;
 }
 
 void SPGradient::setSwatch( bool swatch )
@@ -265,12 +295,17 @@ bool SPGradient::isAligned(SPGradient *that)
 /*
  * Gradient
  */
-SPGradient::SPGradient() : SPPaintServer(), units(),
-        spread(),
-        ref(nullptr),
-        state(2),
-        vector() {
-
+SPGradient::SPGradient()
+    : SPPaintServer()
+    , units()
+    , spread()
+    , ref(nullptr)
+    , state(2)
+    , vector()
+    , mesh()
+    , array()
+    , array_smoothed()
+{
     this->ref = new SPGradientReference(this);
     this->ref->changedSignal().connect(sigc::bind(sigc::ptr_fun(SPGradient::gradientRefChanged), this));
 
@@ -498,12 +533,14 @@ void SPGradient::gradientRefChanged(SPObject *old_ref, SPObject *ref, SPGradient
     // Per SVG, all unset attributes must be inherited from linked gradient.
     // So, as we're now (re)linked, we assign linkee's values to this gradient if they are not yet set -
     // but without setting the _set flags.
-    // FIXME: do the same for gradientTransform too
     if (!gr->units_set) {
         gr->units = gr->fetchUnits();
     }
     if (!gr->spread_set) {
         gr->spread = gr->fetchSpread();
+    }
+    if (!gr->gradientTransform_set) {
+        gr->gradientTransform = gr->fetchTransform();
     }
 
     /// \todo Fixme: what should the flags (second) argument be? */
@@ -771,10 +808,9 @@ void SPGradient::ensureArray() const
 SPGradientMesh const *SPGradient::getGradientMesh() const
 {
     if (!mesh.built) {
-        rebuildArray();
-        mesh.rows = array.patch_rows();
-        mesh.cols = array.patch_columns();
+        ensureArray();
         mesh.patches = getGradientPatches();
+        mesh.built = true;
     }
     return &mesh;
 }
@@ -800,48 +836,6 @@ void SPGradient::setSpread(SPGradientSpread spread)
         this->spread = spread;
         spread_set = TRUE;
         requestModified(SP_OBJECT_MODIFIED_FLAG);
-    }
-}
-
-/**
- * Returns the first of {src, src-\>ref-\>getObject(),
- * src-\>ref-\>getObject()-\>ref-\>getObject(),...}
- * for which \a match is true, or NULL if none found.
- *
- * The raison d'être of this routine is that it correctly handles cycles in the href chain (e.g., if
- * a gradient gives itself as its href, or if each of two gradients gives the other as its href).
- *
- * \pre is<SPGradient>(src).
- */
-static SPGradient *
-chase_hrefs(SPGradient *const src, bool (*match)(SPGradient const *))
-{
-    g_return_val_if_fail(src, NULL);
-
-    /* Use a pair of pointers for detecting loops: p1 advances half as fast as p2.  If there is a
-       loop, then once p1 has entered the loop, we'll detect it the next time the distance between
-       p1 and p2 is a multiple of the loop size. */
-    SPGradient *p1 = src, *p2 = src;
-    bool do1 = false;
-    for (;;) {
-        if (match(p2)) {
-            return p2;
-        }
-
-        p2 = p2->ref->getObject();
-        if (!p2) {
-            return p2;
-        }
-        if (do1) {
-            p1 = p1->ref->getObject();
-        }
-        do1 = !do1;
-
-        if ( p2 == p1 ) {
-            /* We've been here before, so return NULL to indicate that no matching gradient found
-             * in the chain. */
-            return nullptr;
-        }
     }
 }
 
@@ -878,6 +872,11 @@ has_units_set(SPGradient const *gr)
     return gr->isUnitsSet();
 }
 
+static bool
+has_transform_set(SPGradient const *gr)
+{
+    return gr->isTransformSet();
+}
 
 SPGradient *SPGradient::getVector(bool force_vector)
 {
@@ -926,6 +925,20 @@ SPGradientUnits SPGradient::fetchUnits()
     return ( src
              ? src->units
              : SP_GRADIENT_UNITS_OBJECTBOUNDINGBOX ); // bbox is the default
+}
+
+
+/**
+ * Returns the effective transform of given gradient (climbing up the refs chain if needed).
+ *
+ * \pre is<SPGradient>(gradient).
+ */
+Geom::Affine SPGradient::fetchTransform()
+{
+    SPGradient const *src = chase_hrefs(this, has_transform_set);
+    return ( src
+             ? src->gradientTransform
+             : Geom::Affine{} );
 }
 
 
@@ -1020,6 +1033,7 @@ bool SPGradient::invalidateArray()
 
     if (array.built) {
         array.built = false;
+        mesh.built = false; // the mesh depends on the array
         // array.clear();
         ret = true;
     }

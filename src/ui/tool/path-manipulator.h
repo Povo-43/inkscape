@@ -89,6 +89,7 @@ public:
     void insertNode(NodeList::iterator first, double t, bool take_selection);
     void duplicateNodes();
     void copySelectedPath(Geom::PathBuilder *builder);
+    void simplifyInvisible(double threshold);
     void weldNodes(NodeList::iterator preserve_pos = NodeList::iterator());
     void weldSegments();
     void breakNodes() { breakNodes(true); }
@@ -136,6 +137,7 @@ private:
     Geom::Point _bsplineHandleReposition(Handle *h, double pos);
     void _createGeometryFromControlPoints(bool alert_LPE = false);
     void _normalizeBsplineHandles(Node *n);
+    void _deleteRest(NodeList::iterator keep);
     unsigned _deleteStretch(NodeList::iterator first, NodeList::iterator last, NodeDeleteMode mode);
     std::string _createTypeString();
     void _updateOutline();
@@ -152,6 +154,7 @@ private:
     void _handleGrabbed();
     bool _handleClicked(Handle *, ButtonReleaseEvent const &);
     void _handleUngrabbed();
+    void _documentReplaced();
 
     void _externalChange(unsigned type);
     void _removeNodesFromSelection();
@@ -179,6 +182,8 @@ private:
     bool _live_objects = true;
     bool _is_bspline = false;
     Glib::ustring _lpe_key;
+
+    sigc::scoped_connection _doc_modified_conn;
 
     friend class PathManipulatorObserver;
     friend class CurveDragPoint;

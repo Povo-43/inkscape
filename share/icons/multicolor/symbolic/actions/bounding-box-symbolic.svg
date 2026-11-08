@@ -113,7 +113,7 @@ Jabier Arraiza</dc:title>
        inkscape:connector-curvature="0"
        id="rect22048"
        d="M 0,0 H 16 V 16 H 0 Z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <path
        style="opacity:1"
        d="M 3.3776384,11.006787 8.0395952,14.015625 12.796198,2.0734626 Z"

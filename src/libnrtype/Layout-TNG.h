@@ -324,9 +324,7 @@ public:
     /** Get the actual scale multiplier if it's due with the current values of above stuff, otherwise 1 */
     double getTextLengthMultiplierDue() const;
 
-    /** Get actual length of layout, by summing span lengths. For one-line non-flowed text, just
-        the width; for multiline non-flowed, sum of lengths of all lines; for flowed text, sum of
-        scanline widths for all non-last lines plus text width of last line. */
+    /** Get actual length of layout, by summing span lengths. */
     double getActualLength() const;
 
     // ************************** doing the actual flowing *************************
@@ -957,6 +955,7 @@ private:
     double _getChunkWidth(unsigned chunk_index) const;
 
     void _calculateBaselines();
+    void _fillTextDecorationData();
     PangoLogAttr const &_get_attributes(iterator const &it) const;
 };
 

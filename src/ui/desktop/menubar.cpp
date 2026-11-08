@@ -33,12 +33,20 @@
 #include "io/resource.h" // UI File location
 #include "preferences.h" // max recent documents
 
+// For debugging/development purposes, you can still launch the legacy version of the Text & Font dialog by enabling
+// this flag, rebuilding, and opening it from the menu. At some point, once we no longer need to compare how it used to
+// work to how the new dialog works, we can remove this and its related code in TextEdit.
+#define SHOW_LEGACY_TEXT_AND_FONT_DIALOG 0
+
 // Rebuild menu with icons enabled or disabled. Recursive.
 static void rewrite_menu(Glib::RefPtr<Gio::Menu> const &menu, int use_icons);
 
 void build_menu()
 {
-    auto const filename = Inkscape::IO::Resource::get_filename(Inkscape::IO::Resource::UIS, "menus.ui");
+    auto app = InkscapeApplication::instance();
+    auto const has_desktops = app->get_number_of_desktops();
+    auto const menufile = has_desktops ? "menus.ui" : "menus-no-windows.ui";
+    auto const filename = Inkscape::IO::Resource::get_filename(Inkscape::IO::Resource::UIS, menufile);
     auto const builder = Gtk::Builder::create();
 
     try {
@@ -56,12 +64,11 @@ void build_menu()
         return;
     }
 
-    auto app = InkscapeApplication::instance();
     enable_effect_actions(app, false);
     auto &label_to_tooltip_map = app->get_menu_label_to_tooltip_map();
     label_to_tooltip_map.clear();
 
-    { // Filters and Extensions
+    if (has_desktops) { // Filters and Extensions
         auto const effects_menu = builder->get_object<Gio::Menu>("effect-menu-effects");
         auto const filters_menu = builder->get_object<Gio::Menu>("filter-menu-filters");
         if (!filters_menu) {
@@ -154,6 +161,14 @@ void build_menu()
     };
 
     rebuild_recent(recent_menu);
+
+#if SHOW_LEGACY_TEXT_AND_FONT_DIALOG
+    auto const font_section = builder->get_object<Gio::Menu>("font-section");
+    auto const legacy_item = Gio::MenuItem::create("_Legacy Text and Font...", "");
+    auto const legacy_target = Glib::Variant<Glib::ustring>::create("LegacyText");
+    legacy_item->set_action_and_target("win.dialog-open", legacy_target);
+    font_section->insert_item(1, legacy_item);
+#endif
 
     // Remove all or some icons. Also create label to tooltip map.
     auto prefs = Inkscape::Preferences::get();

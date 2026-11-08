@@ -522,30 +522,18 @@ double SPStar::getSideLength() const
 {
     if (!flatsided) {
         // Pointy star
-        double totalLength = 0.0;
         auto tr = i2doc_affine();
-        
-        for (gint i = 0; i < sides; i++) {
-            Geom::Point outer1 = sp_star_get_xy(this, SP_STAR_POINT_KNOT1, i, false) * tr;
-            Geom::Point inner1 = sp_star_get_xy(this, SP_STAR_POINT_KNOT2, i, false) * tr;
-            
-            totalLength += Geom::distance(outer1, inner1);
 
-            Geom::Point outer2 = sp_star_get_xy(this, SP_STAR_POINT_KNOT1, (i + 1) % sides, false) * tr;
-            totalLength += Geom::distance(inner1, outer2);
-        }
-        
-        // Return the average side length (since we have 2 * sides distances, divide by 2 * sides)
-        return totalLength / (2 * sides);
+        Geom::Point outer1 = sp_star_get_xy(this, SP_STAR_POINT_KNOT1, 0, false) * tr;
+        Geom::Point inner1 = sp_star_get_xy(this, SP_STAR_POINT_KNOT2, 0, false) * tr;
+        Geom::Point outer2 = sp_star_get_xy(this, SP_STAR_POINT_KNOT1, 1, false) * tr;
+
+        return (Geom::distance(outer1, inner1) + Geom::distance(inner1, outer2)) / 2.0;
     }
     
-    double diameter = 0.0;
     auto tr = i2doc_affine();
-    for (gint i = 0; i < sides; i++) {
-        diameter += Geom::distance(sp_star_get_xy(this, SP_STAR_POINT_KNOT1, i, false) * tr,
-                                   sp_star_get_xy(this, SP_STAR_POINT_KNOT1, (i + 1) % sides, false) * tr);
-    }
-    return diameter / sides;
+    return Geom::distance(sp_star_get_xy(this, SP_STAR_POINT_KNOT1, 0, false) * tr,
+                          sp_star_get_xy(this, SP_STAR_POINT_KNOT1, 1, false) * tr);
 }
 
 /**
@@ -573,7 +561,7 @@ void SPStar::setSideLength(double length) {
         r[0] *= scale;
     }
 
-    this -> set_shape();
+    this->updateRepr();
 
     requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
 }

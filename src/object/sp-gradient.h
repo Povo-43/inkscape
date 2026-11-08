@@ -83,21 +83,60 @@ class SPGradient
     : public SPPaintServer
 {
 public:
-	SPGradient();
-	~SPGradient() override;
+    SPGradient();
+    ~SPGradient() override;
     int tag() const override { return tag_of<decltype(*this)>; }
 
-private:
+protected:
+    /**
+     * Returns the first of {src, src-\>ref-\>getObject(),
+     * src-\>ref-\>getObject()-\>ref-\>getObject(),...}
+     * for which \a match is true, or NULL if none found.
+     *
+     * The raison d'être of this routine is that it correctly handles cycles in the href chain (e.g., if
+     * a gradient gives itself as its href, or if each of two gradients gives the other as its href).
+     *
+     * \pre is<SPGradient>(src).
+     */
+    template <typename G, typename Pred>   // G is SPGradient or SPGradient const
+    static G *chase_hrefs(G *src, Pred match)
+    {
+        g_return_val_if_fail(src, nullptr);
+
+        G *p1 = src, *p2 = src;
+        bool do1 = false;
+        for (;;) {
+            if (match(p2)) {
+                return p2;
+            }
+
+            p2 = p2->ref->getObject();   // SPGradient* converts to G*
+            if (!p2) {
+                return nullptr;
+            }
+            if (do1) {
+                p1 = p1->ref->getObject();
+            }
+            do1 = !do1;
+
+            if (p2 == p1) {
+                return nullptr;          // cycle
+            }
+        }
+    }
+
+    /** SVGLength attributes (used by sp-linear-gradient.h and sp-radial-gradient.h) */
+    template <typename Derived>
+    static SVGLength find_attr_length(const Derived *src, SVGLength Derived::*attr);
+
     /** gradientUnits attribute */
     SPGradientUnits units;
     unsigned int units_set : 1;
-public:
 
+public:
     /** gradientTransform attribute */
     Geom::Affine gradientTransform;
     unsigned int gradientTransform_set : 1;
-
-    Geom::Affine getGradientTransform() const override { return gradientTransform; }
 
 private:
     /** spreadMethod attribute */
@@ -158,6 +197,9 @@ public:
     bool isSpreadSet() const;
     SPGradientSpread getSpread() const override;
 
+    bool isTransformSet() const;
+    Geom::Affine getGradientTransform() const override { return gradientTransform; }
+
 /**
  * Returns private vector of given gradient (the gradient at the end of the href chain which has
  * stops), optionally normalizing it.
@@ -192,6 +234,7 @@ public:
 
     SPGradientSpread fetchSpread() const;
     SPGradientUnits fetchUnits();
+    Geom::Affine fetchTransform();
 
     void setSwatch(bool swatch = true);
     void setPinned(bool pinned = true);

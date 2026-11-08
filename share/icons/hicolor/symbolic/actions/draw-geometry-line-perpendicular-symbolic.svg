@@ -5,7 +5,7 @@
     <inkscape:grid type="xygrid" id="grid"/>
   </sodipodi:namedview>
   <g transform="matrix(1,0,0,0.998805,-619,-588.64924)" inkscape:label="00225" id="draw-geometry-line-perpendicular">
-      <path inkscape:connector-curvature="0" id="rect14519" d="m 619,589.36212 h 16 v 16 h -16 z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect14519" d="m 619,589.36212 h 16 v 16 h -16 z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="path4418-8-1-2" d="m 620.56641,589.35352 a 0.57250329,0.57250329 0 0 0 -0.41407,0.95117 l 12.8086,14.86914 a 0.57262116,0.57262116 0 1 0 0.86718,-0.74805 l -12.80859,-14.86719 a 0.57250329,0.57250329 0 0 0 -0.45312,-0.20507 z" style="opacity:1;stroke-linecap:round"/>
       <path inkscape:connector-curvature="0" id="path4418-8-1-0-1" d="m 630.99609,593.30078 a 0.57250329,0.57250329 0 0 0 -0.30273,0.11328 l -8.29102,6.05274 a 0.57251975,0.57251975 0 1 0 0.67383,0.92578 l 8.29297,-6.05274 a 0.57250329,0.57250329 0 0 0 -0.37305,-1.03906 z" style="opacity:1;stroke-linecap:round"/>
     </g>

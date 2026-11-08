@@ -67,7 +67,7 @@
        y="0"
        x="0"
        width="16"
-       style="opacity:0;fill:none"
+       opacity="0"
        id="rect9056-0"
        height="16" />
   </g>

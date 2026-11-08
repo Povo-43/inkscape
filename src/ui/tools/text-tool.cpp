@@ -190,8 +190,8 @@ bool TextTool::item_handler(SPItem *item, CanvasEvent const &event)
             }
             auto const n_press = event.num_press % 3; // cycle through selection modes on repeated clicking
             if (n_press == 1) {
-                // this var allow too much lees subbselection queries
-                // reducing it to cursor iteracion, mouseup and down
+                // this var allow too much less subbselection queries
+                // reducing it to cursor interaction, mouseup and down
                 // find out clicked item, disregarding groups
                 auto const item_ungrouped = _desktop->getItemAtPoint(event.pos, true);
                 if (is<SPText>(item_ungrouped) || is<SPFlowtext>(item_ungrouped)) {
@@ -296,7 +296,7 @@ void TextTool::_setupText()
 
         double scale = cast<SPItem>(text_item->parent)->i2doc_affine().inverse().descrim();
         SPText::_adjustFontsizeRecursive(text_item, scale);
-        text_item->adjust_stroke_width_recursive(scale);
+        text_item->adjust_stroke(scale); // NOT recursive, if there is a <tspan>, let it inherit (it's empty at the moment).
     }
 
     DocumentUndo::done(_desktop->getDocument(), RC_("Undo", "Create text"), INKSCAPE_ICON("draw-text"));
@@ -360,6 +360,20 @@ static void hex_to_printable_utf8_buf(char const *const ehex, char *utf8)
     }
     auto const len = g_unichar_to_utf8(uv, utf8);
     utf8[len] = '\0';
+}
+
+/**
+ * Return the selected style from either the SPText itself or the selected text inside one.
+ */
+SPStyle const *TextTool::getSelectedStyle() const
+{
+    if (text) {
+        if (text_sel_start != text_sel_end) {
+            return sp_te_style_at_position(text, std::min(text_sel_start, text_sel_end));
+        }
+        return text->style;
+    }
+    return nullptr;
 }
 
 void TextTool::_showCurrUnichar()

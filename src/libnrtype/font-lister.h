@@ -32,6 +32,7 @@
 #include <gtkmm/treemodel.h>
 #include <gtkmm/treemodelcolumn.h>
 #include <gtkmm/treepath.h>
+#include <pangomm/fontfamily.h>
 
 #include "libnrtype/font-utils.h" // canonize_fontspec
 
@@ -114,7 +115,7 @@ public:
          * font style is actually used we'll cache it in
          * %styles.
          */
-        Gtk::TreeModelColumn<PangoFontFamily *> pango_family;
+        Gtk::TreeModelColumn<Glib::RefPtr<Pango::FontFamily>> pango_family;
         
         FontListClass()
         {
@@ -148,7 +149,7 @@ public:
      * The list of fonts, sorted by the order they will appear in the UI.
      * Also used to give log-time access to each font's PangoFontFamily, owned by the FontFactory.
      */
-    std::map<std::string, PangoFontFamily *> pango_family_map;
+    std::map<std::string, Glib::RefPtr<Pango::FontFamily>> pango_family_map;
 
     /** 
      * @return the ListStore with the family names

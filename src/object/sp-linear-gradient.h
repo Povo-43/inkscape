@@ -32,6 +32,12 @@ public:
     SVGLength x2;
     SVGLength y2;
 
+    // Walk up the reference tree to find values.
+    SVGLength find_x1() const { return find_attr_length(this, &SPLinearGradient::x1); }
+    SVGLength find_y1() const { return find_attr_length(this, &SPLinearGradient::y1); }
+    SVGLength find_x2() const { return find_attr_length(this, &SPLinearGradient::x2); }
+    SVGLength find_y2() const { return find_attr_length(this, &SPLinearGradient::y2); }
+
     PaintServerType getPaintType() const override { return PaintServerType::LINEAR_GRADIENT; }
     std::vector<double> getGradientGeom() const override;
 

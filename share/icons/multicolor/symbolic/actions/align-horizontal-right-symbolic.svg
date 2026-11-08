@@ -90,7 +90,7 @@
            inkscape:connector-curvature="0"
            id="rect22333"
            d="m -1106,595.36218 h 24 v 24 h -24 z"
-           style="opacity:0;fill:none"
+           opacity="0"
            transform="scale(-1,1)" />
         <path
            class="success"

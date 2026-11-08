@@ -32,7 +32,7 @@ std::list<DialogNotebook *> DialogNotebook::_instances;
 static const Glib::Quark dialog_notebook_id("dialog-notebook-id");
 
 DialogNotebook* find_dialog_notebook(Widget::TabStrip* tabs) {
-    return dynamic_cast<DialogNotebook*>(static_cast<Gtk::Widget*>(tabs->get_data(dialog_notebook_id)));
+    return static_cast<DialogNotebook*>(tabs->get_data(dialog_notebook_id));
 }
 
 Gtk::Widget* find_dialog_page(Widget::TabStrip* tabs, int position) {
@@ -142,7 +142,7 @@ DialogNotebook::DialogNotebook(DialogContainer* container)
     });
     _tabs.signal_move_tab().connect([this](auto& tab, int src_position, auto& source, int dest_position) {
         // move tab from source tabstrip/notebook here
-        if (auto notebook = dynamic_cast<DialogNotebook*>(static_cast<Gtk::Widget*>(source.get_data(dialog_notebook_id)))) {
+        if (auto notebook = find_dialog_notebook(&source)) {
             if (auto page = notebook->get_page(src_position)) {
                 move_tab_from(*notebook, *page, dest_position);
             }
@@ -356,6 +356,7 @@ void DialogNotebook::add_page(Gtk::Widget &page) {
         auto const wrapper = Gtk::make_managed<Gtk::ScrolledWindow>();
         wrapper->set_vexpand(true);
         wrapper->set_propagate_natural_height(true);
+        wrapper->set_propagate_natural_width(true);
         wrapper->set_overlay_scrolling(false);
         wrapper->get_style_context()->add_class("noborder");
 

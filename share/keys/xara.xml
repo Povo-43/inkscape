@@ -73,8 +73,8 @@ Hom/end keys-select minimum or maximum feather values
 
 <!-- File -->
 
-  <bind gaction="win.document-new"                  keys="&lt;ctrl&gt;n, &lt;ctrl&gt;N" />
-  <bind gaction="win.document-open"                 keys="&lt;ctrl&gt;o, &lt;ctrl&gt;O" />
+  <bind gaction="app.document-new"                  keys="&lt;ctrl&gt;n, &lt;ctrl&gt;N" />
+  <bind gaction="app.document-open"                 keys="&lt;ctrl&gt;o, &lt;ctrl&gt;O" />
   <bind gaction="win.document-save"                 keys="&lt;ctrl&gt;s, &lt;ctrl&gt;S" />
   <bind gaction="win.document-print"                keys="&lt;ctrl&gt;p, &lt;ctrl&gt;P" />
   <bind gaction="win.document-import"               keys="&lt;ctrl&gt;&lt;shift&gt;I, &lt;ctrl&gt;&lt;shift&gt;i" />

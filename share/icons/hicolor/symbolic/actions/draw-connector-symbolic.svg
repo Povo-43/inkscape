@@ -12,6 +12,6 @@
       </g>
       <use style="opacity:1" x="0" y="0" id="use5750" transform="translate(-4.99868,15.99998)" width="1250" height="1250" xlink:href="#g5746"/>
       <use style="opacity:1" x="0" y="0" id="use5757" transform="translate(15,8.780086e-4)" width="1250" height="1250" xlink:href="#use5750"/>
-      <path inkscape:connector-curvature="0" id="rect18379" d="m 285,867.36218 h 24 v 24 h -24 z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect18379" d="m 285,867.36218 h 24 v 24 h -24 z" opacity="0"/>
     </g>
     </svg>

@@ -107,8 +107,8 @@ Gtk::PopoverMenu create_context_menu_background()
     sec1->append_item(Gio::MenuItem::create(_("Close"), "win.document-close"));
     menu->append_section(sec1);
     auto sec2 = Gio::Menu::create();
-    sec2->append_item(Gio::MenuItem::create(_("New Document..."), "win.document-new"));
-    sec2->append_item(Gio::MenuItem::create(_("Open Document..."), "win.document-open"));
+    sec2->append_item(Gio::MenuItem::create(_("New Document..."), "app.document-new"));
+    sec2->append_item(Gio::MenuItem::create(_("Open Document..."), "app.document-open"));
     menu->append_section(sec2);
     return to_popovermenu(menu);
 }
@@ -141,6 +141,10 @@ Glib::ustring get_title(SPDesktop *desktop)
     }
 
     result += doc->getDocumentName();
+
+    if (doc->isTemplate()) {
+        result += " (template)";
+    }
 
     if (auto const v = desktop->viewNumber(); v > 1) {
         result += ": ";

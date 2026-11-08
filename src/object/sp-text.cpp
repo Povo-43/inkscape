@@ -217,23 +217,6 @@ void SPText::modified(guint flags) {
         cflags |= SP_OBJECT_PARENT_MODIFIED_FLAG;
     }
 
-    // FIXME: all that we need to do here is to call setStyle, to set the changed
-    // style, but there's no easy way to access the drawing glyphs or texts corresponding to a
-    // text this. Therefore we do here the same as in _update, that is, destroy all items
-    // and create new ones. This is probably quite wasteful.
-    if (flags & ( SP_OBJECT_STYLE_MODIFIED_FLAG )) {
-        Geom::OptRect paintbox = geometricBounds();
-
-        for (auto &v : views) {
-            auto &sa = view_style_attachments[v.key];
-            sa.unattachAll();
-            auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
-            _clearFlow(g);
-            g->setStyle(style, parent->style);
-            layout.show(g, sa, paintbox);
-        }
-    }
-
     // Create temporary list of children
     std::vector<SPObject *> l;
     for (auto& child: children) {
@@ -1241,6 +1224,11 @@ SPText *create_text_at_position(SPGroup *parent, SPCSSAttr *css, Geom::Point doc
     /* Create <tspan> */
     Inkscape::XML::Node *span_repr = xml_doc->createElement("svg:tspan");
     span_repr->setAttribute("sodipodi:role", "line"); // otherwise, why bother creating the tspan?
+    // CSS property "vector-effect" doesn't inherit, so add it to <tspan> if part of default style.
+    if (sp_repr_css_property(css, Glib::ustring("-inkscape-stroke"), Glib::ustring()) == "hairline" &&
+        sp_repr_css_property(css, Glib::ustring("vector-effect"), Glib::ustring()) == "non-scaling-stroke") {
+        span_repr->setAttribute("style", "vector-effect:non-scaling-stroke;-inkscape-stroke:hairline");
+    }
     text_repr->addChild(span_repr, nullptr);
     Inkscape::GC::release(span_repr);
 

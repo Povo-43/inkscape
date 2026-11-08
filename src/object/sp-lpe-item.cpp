@@ -528,7 +528,8 @@ sp_lpe_item_cleanup_original_path_recursive(SPLPEItem *lpeitem, bool keep_paths,
             repr->removeAttribute("inkscape:original-d");
             path->setCurveBeforeLPE(nullptr);
             if (!shape->curve()->curveCount()) {
-                repr->parent()->removeChild(repr);
+                repr->parent()->removeChild(repr); // will delete lpeitem
+                return nullptr;
             }
         } else {
             if (!keep_paths) {
@@ -705,6 +706,10 @@ SPLPEItem * SPLPEItem::removeCurrentPathEffect(bool keep_paths)
         }
         effect_->doOnRemove_impl(this);
     }
+    if (!this->path_effect_list) {
+        // We got deleted ourselves during the removal of the LPE
+        return nullptr;
+    }
     this->path_effect_list->remove(lperef); //current lpe ref is always our 'own' pointer from the path_effect_list
     this->setAttributeOrRemoveIfEmpty("inkscape:path-effect", patheffectlist_svg_string(*this->path_effect_list));
     if (!keep_paths) {
@@ -764,6 +769,10 @@ SPLPEItem * SPLPEItem::removeAllPathEffects(bool keep_paths, bool recursive)
                 }
                 lpe->doOnRemove_impl(this);
             }
+        }
+        if (!path_effect_list) {
+            // We got deleted ourselves during the removal of the LPE
+            return nullptr;
         }
         // this allow to keep references and propely delete satellites
         path_effect_list->remove(lperef);
@@ -850,7 +859,7 @@ SPLPEItem *SPLPEItem::flattenCurrentPathEffect()
     sp_lpe_item_update_patheffect(this, true, true);
 
     auto lpeitem = removeAllPathEffects(true);
-    if ( hreflist2.size()) {
+    if (lpeitem && hreflist2.size()) {
         sp_lpe_item_enable_path_effects(lpeitem, false);
         lpeitem->setAttributeOrRemoveIfEmpty("inkscape:path-effect", hreflist_svg_string(hreflist2));
         sp_lpe_item_create_original_path_recursive(lpeitem);

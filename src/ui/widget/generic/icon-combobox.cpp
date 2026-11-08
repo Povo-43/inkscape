@@ -145,7 +145,7 @@ void IconComboBox::construct(Glib::RefPtr<Gio::ListStore<ListItem>> store, bool 
         // show only label in closed combobox
         _compact_factory = Gtk::SignalListItemFactory::create();
 
-        _compact_factory->signal_setup().connect([=](const Glib::RefPtr<Gtk::ListItem>& list_item) {
+        _compact_factory->signal_setup().connect([this](const Glib::RefPtr<Gtk::ListItem>& list_item) {
             auto label = Gtk::make_managed<Gtk::Label>();
             label->set_hexpand();
             label->set_xalign(0.5);

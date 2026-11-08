@@ -105,7 +105,7 @@
      transform="matrix(0.666667,0,0,0.666666,-746.66667,-396.90779)">
     <path
        transform="scale(-1,1)"
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m -1144,595.36218 h 24 v 24 h -24 z"
        id="rect22217"
        inkscape:connector-curvature="0" />

@@ -62,7 +62,7 @@
      id="interactive_simplify"
      transform="matrix(1.017747,0,0,1.017747,-290.02614,-545.11537)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 284.96881,535.60992 h 15.721 v 15.721 h -15.721 z"
        id="rect17937-7"
        inkscape:connector-curvature="0" />

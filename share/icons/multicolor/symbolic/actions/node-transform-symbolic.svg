@@ -65,7 +65,7 @@
     <path
        inkscape:label="basckground"
        transform="translate(0,512.3622)"
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 349,46 h 16 v 16 h -16 z"
        id="rect19206"
        inkscape:connector-curvature="0" />

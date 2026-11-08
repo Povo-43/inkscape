@@ -76,7 +76,7 @@ Jabier Arraiza</dc:title>
     <path
        id="rect22048"
        d="M 0,0 H 16 V 16 H 0 Z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <path
        id="path420"
        style="opacity:1;stroke-width:1"

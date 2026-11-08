@@ -55,7 +55,7 @@
        inkscape:connector-curvature="0"
        id="rect19455"
        d="m 1156,823.36218 h 22 v 24 h -22 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <rect
        y="824.76483"
        x="1157.2463"

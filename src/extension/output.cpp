@@ -12,6 +12,7 @@
 #include "output.h"
 
 #include "document.h"
+#include "document-undo.h"
 
 #include "io/sys.h"
 #include "implementation/implementation.h"
@@ -198,18 +199,16 @@ Output::get_filetypetooltip(bool translated) const
 
 /**
     \return  None
-	\brief   Save a document as a file
-	\param   doc  Document to save
-	\param   filename  File to save the document as
+    \brief   Save a document as a file
+    \param   doc  Document to save
+    \param   filename  File to save the document as
 
-	This function does a little of the dirty work involved in saving
-	a document so that the implementation only has to worry about getting
-	bits on the disk.
+    This function does a little of the dirty work involved in saving
+    a document so that the implementation only has to worry about getting
+    bits on the disk.
 
-	The big thing that it does is remove and read the fields that are
-	only used at runtime and shouldn't be saved.  One that may surprise
-	people is the output extension.  This is not saved so that the IDs
-	could be changed, and old files will still work properly.
+    The big thing that it does is run extension actions that modify the document as it is saved (<action> elements
+    inside <inkscape-extension>).
 */
 void
 Output::save(SPDocument *doc, gchar const *filename, bool detachbase)
@@ -219,10 +218,18 @@ Output::save(SPDocument *doc, gchar const *filename, bool detachbase)
 
     if (loaded()) {
         imp->setDetachBase(detachbase);
-        auto new_doc = doc->copy();
-        new_doc->ensureUpToDate();
-        run_processing_actions(new_doc.get());
-        imp->save(this, new_doc.get(), filename);
+
+        // We're about to process actions for this output type, which can change the xml tree. Afterwards, we'll
+        // reset any of those changes via Undo::cancel. But first, we need to checkpoint any changes that haven't
+        // been checkpointed yet (can happen when copy/pasting and the copy data is put into the xml tree).
+        // If a user ends up seeing this in their undo history, it is a bug with some code missing a done() call.
+        DocumentUndo::done(doc, RC_("Undo", "Unknown"), "");
+
+        doc->ensureUpToDate();
+        run_processing_actions(doc);
+        imp->save(this, doc, filename);
+
+        DocumentUndo::cancel(doc); // reset any changes from run_processing_actions
     }
 }
 

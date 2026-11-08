@@ -46,6 +46,7 @@
 #include <sigc++/scoped_connection.h>
 #include "message-stack.h"
 #include "object/sp-gradient.h" // TODO refactor enums out to their own .h file
+#include "preferences.h"
 
 namespace Gtk {
 class Box;
@@ -182,6 +183,8 @@ private:
     std::unique_ptr<Inkscape::Display::TemporaryItemList> _temporary_item_list;
     std::unique_ptr<Inkscape::Display::TranslucencyGroups> _translucency_groups;
     std::unique_ptr<Inkscape::Display::SnapIndicator> _snapindicator;
+
+    std::unique_ptr<Inkscape::Preferences::PreferencesObserver> _translucency_observer;
 
     SPNamedView *namedview = nullptr;
     int _view_number{};
@@ -408,7 +411,9 @@ public:
     void setToolboxAdjustmentValue(char const *id, double val);
     bool isToolboxButtonActive(char const *id) const;
     void updateDialogs();
-    void showNotice(Glib::ustring const &msg, int timeout = 0);
+
+    void showNotice(Glib::ustring const &msg);
+    void showNotice(Glib::ustring const &msg, int timeout);
 
     void setWaitingCursor();
     void clearWaitingCursor();

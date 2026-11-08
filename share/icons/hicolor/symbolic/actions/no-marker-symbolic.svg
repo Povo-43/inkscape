@@ -6,7 +6,7 @@
   </sodipodi:namedview>
   <g id="no-marker" inkscape:label="00309">
       <title id="title36824">no-marker</title>
-      <path inkscape:connector-curvature="0" id="rect36826" d="M 0,0 H 16 V 16 H 0 Z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect36826" d="M 0,0 H 16 V 16 H 0 Z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="path36828" d="M 1,7 V 9 H 15 V 7 Z" style="opacity:1;stroke-linecap:butt"/>
     </g>
     </svg>

@@ -27,6 +27,7 @@
 #include "ui/widget/color-picker.h"
 #include "ui/widget/spinbutton.h"
 #include "ui/widget/scalar-unit.h"
+#include "preferences.h"
 
 namespace Gtk {
 class Button;
@@ -63,6 +64,13 @@ public:
               int int_value, bool default_value, PrefRadioButton* group_member);
     void init(Glib::ustring const &label, Glib::ustring const &prefs_path,
               Glib::ustring const &string_value, bool default_value, PrefRadioButton* group_member);
+    PrefRadioButton(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade,
+            Glib::ustring pref, int int_value, bool default_value)
+        : Gtk::CheckButton(cobject)
+    {
+        init("", pref, int_value, default_value, nullptr);
+    }
+    PrefRadioButton() = default;
     sigc::signal<void (bool)> changed_signal;
 
 private:
@@ -76,6 +84,8 @@ private:
     };
     int _int_value;
     void on_toggled() override;
+    Inkscape::PrefObserver _watch;
+    void watch_pref();
 };
 
 struct PrefItem { Glib::ustring label; int int_value; Glib::ustring tooltip; bool is_default = false; };

@@ -196,46 +196,37 @@
     <property name="row-spacing">4</property>
     <property name="column-spacing">4</property>
     <child>
-      <object class="GtkBox" id="rect-box">
-        <property name="spacing">0</property>
-        <child>
-          <object class="GtkButton" id="rect-sharp">
-            <property name="hexpand">true</property>
-            <property name="hexpand-set">true</property>
-            <property name="focusable">True</property>
-            <property name="receives-default">True</property>
-            <property name="tooltip-text" translatable="yes">Make corners sharp</property>
-            <property name="halign">fill</property>
-            <property name="valign">start</property>
-            <property name="icon-name">rectangle-make-corners-sharp</property>
+      <object class="GtkLabel">
+        <property name="halign">start</property>
+        <property name="label" translatable="yes">Corners</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">1</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkDropDown" id="rect-corners">
+        <property name="model">
+          <object class="GtkStringList">
+            <items>
+              <item translatable="yes" context="Rectangle corner option">Share same radius</item>
+              <item translatable="yes" context="Rectangle corner option">Independent (LPE)</item>
+            </items>
           </object>
-        </child>
-        <child>
-          <object class="GtkButton" id="rect-corners">
-            <property name="hexpand">true</property>
-            <property name="hexpand-set">true</property>
-            <property name="focusable">True</property>
-            <property name="receives-default">True</property>
-            <property name="tooltip-text" translatable="yes">Make corners independent (path effect)</property>
-            <property name="halign">fill</property>
-            <property name="valign">start</property>
-            <property name="icon-name">rectangle-make-corners-round</property>
-          </object>
-        </child>
+        </property>
         <layout>
           <property name="column">2</property>
           <property name="row">1</property>
+          <property name="column-span">2</property>
         </layout>
-        <style>
-          <class name="linked"></class>
-        </style>
       </object>
     </child>
     <!--dim: 5, 2-->
     <child>
       <object class="GtkLabel">
         <property name="halign">start</property>
-        <property name="label" translatable="yes">Corners</property>
+        <property name="label" translatable="yes">Radii</property>
         <layout>
           <property name="column">0</property>
           <property name="row">0</property>
@@ -262,6 +253,20 @@
         <property name="step-value">0.500000</property>
         <layout>
           <property name="column">3</property>
+          <property name="row">0</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="rect-sharp">
+        <property name="focusable">True</property>
+        <property name="has-frame">false</property>
+        <property name="receives-default">True</property>
+        <property name="tooltip-text" translatable="yes">Make corners sharp</property>
+        <property name="valign">center</property>
+        <property name="icon-name">rectangle-make-corners-sharp</property>
+       <layout>
+          <property name="column">4</property>
           <property name="row">0</property>
         </layout>
       </object>

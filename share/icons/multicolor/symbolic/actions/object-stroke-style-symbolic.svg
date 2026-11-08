@@ -66,7 +66,7 @@
        inkscape:connector-curvature="0"
        id="rect20574"
        d="m 1120,903.36218 h 12 v 12 h -12 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <path
        sodipodi:nodetypes="cccccccc"
        style="opacity:1"
@@ -87,7 +87,7 @@
        d="m 1124.4998,910.1124 v 1.5 h 2.2515 v -1.5 z"
        style="opacity:1" />
     <use
-       style="opacity:0;fill:none;stroke:#000000"
+       opacity="0"
        x="0"
        y="0"
        id="use10535"
@@ -102,7 +102,7 @@
        d="m 1120,913.8624 v 1.49978 h 12.002 v -1.49978 z"
        style="opacity:1" />
     <use
-       style="opacity:0;fill:none;stroke:#000000"
+       opacity="0"
        x="0"
        y="0"
        id="use4611"

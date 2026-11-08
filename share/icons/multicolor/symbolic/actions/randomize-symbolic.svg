@@ -141,7 +141,7 @@
      id="randomize"
      transform="matrix(0.666667,0,0,0.666667,-272,-451.57479)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 408,677.36218 h 24 v 24 h -24 z"
        id="rect7476"
        inkscape:connector-curvature="0" />

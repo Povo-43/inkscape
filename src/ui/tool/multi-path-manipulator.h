@@ -63,6 +63,7 @@ public:
     void alertLPE();
     void duplicateNodes();
     void copySelectedPath(Geom::PathBuilder *builder);
+    void simplifyInvisible(double epsilon);
     void joinNodes();
     void breakNodes();
     void deleteNodes();

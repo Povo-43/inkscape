@@ -36,6 +36,7 @@ std::span<const DialogData> get_dialog_data_list() {
 
     // TEXT ------------------------------------------
     {"Text",               _("_Text and Font"),        INKSCAPE_ICON("dialog-text-and-font"),        DialogData::Typography,     ScrollProvider::NOPROVIDE },
+    {"LegacyText",         "_Legacy Text and Font",    INKSCAPE_ICON("dialog-text-and-font"),        DialogData::Typography,     ScrollProvider::NOPROVIDE },
     {"FontCollections",    _("_Font Collections"),     INKSCAPE_ICON("font_collections"),            DialogData::Typography,     ScrollProvider::NOPROVIDE },
 #if WITH_LIBSPELLING
     {"Spellcheck",         _("Check Spellin_g"),       INKSCAPE_ICON("tools-check-spelling"),        DialogData::Typography,     ScrollProvider::NOPROVIDE },

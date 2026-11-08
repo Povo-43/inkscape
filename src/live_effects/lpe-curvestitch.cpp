@@ -27,16 +27,29 @@ namespace LivePathEffect {
 
 using namespace Geom;
 
-LPECurveStitch::LPECurveStitch(LivePathEffectObject *lpeobject) :
-    Effect(lpeobject),
-    strokepath(_("Stitch path:"), _("The path that will be used as stitch."), "strokepath", &wr, this, "M0,0 L1,0"),
-    nrofpaths(_("N_umber of paths:"), _("The number of paths that will be generated."), "count", &wr, this, 5),
-    startpoint_edge_variation(_("Sta_rt edge variance:"), _("The amount of random jitter to move the start points of the stitches inside & outside the guide path"), "startpoint_edge_variation", &wr, this, 0),
-    startpoint_spacing_variation(_("Sta_rt spacing variance:"), _("The amount of random shifting to move the start points of the stitches back & forth along the guide path"), "startpoint_spacing_variation", &wr, this, 0),
-    endpoint_edge_variation(_("End ed_ge variance:"), _("The amount of randomness that moves the end points of the stitches inside & outside the guide path"), "endpoint_edge_variation", &wr, this, 0),
-    endpoint_spacing_variation(_("End spa_cing variance:"), _("The amount of random shifting to move the end points of the stitches back & forth along the guide path"), "endpoint_spacing_variation", &wr, this, 0),
-    prop_scale(_("Scale _width:"), _("Scale the width of the stitch path"), "prop_scale", &wr, this, 1),
-    scale_y_rel(_("Scale _width relative to length"), _("Scale the width of the stitch path relative to its length"), "scale_y_rel", &wr, this, false)
+LPECurveStitch::LPECurveStitch(LivePathEffectObject *lpeobject)
+    : Effect(lpeobject)
+    , strokepath(_("Stitch path:"), _("The path that will be used as stitch."), "strokepath", &wr, this, "M0,0 L1,0")
+    , nrofpaths(_("N_umber of paths:"), _("The number of paths that will be generated."), "count", &wr, this, 5)
+    , startpoint_edge_variation(
+          _("Sta_rt edge variance:"),
+          _("The amount of random jitter to move the start points of the stitches inside &amp; outside the guide path"),
+          "startpoint_edge_variation", &wr, this, 0)
+    , startpoint_spacing_variation(_("Sta_rt spacing variance:"),
+                                   _("The amount of random shifting to move the start points of the stitches back "
+                                     "&amp; forth along the guide path"),
+                                   "startpoint_spacing_variation", &wr, this, 0)
+    , endpoint_edge_variation(
+          _("End ed_ge variance:"),
+          _("The amount of randomness that moves the end points of the stitches inside &amp; outside the guide path"),
+          "endpoint_edge_variation", &wr, this, 0)
+    , endpoint_spacing_variation(_("End spa_cing variance:"),
+                                 _("The amount of random shifting to move the end points of the stitches back &amp; "
+                                   "forth along the guide path"),
+                                 "endpoint_spacing_variation", &wr, this, 0)
+    , prop_scale(_("Scale _width:"), _("Scale the width of the stitch path"), "prop_scale", &wr, this, 1)
+    , scale_y_rel(_("Scale _width relative to length"), _("Scale the width of the stitch path relative to its length"),
+                  "scale_y_rel", &wr, this, false)
 {
     registerParameter(&nrofpaths);
     registerParameter(&startpoint_edge_variation);

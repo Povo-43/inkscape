@@ -6,8 +6,8 @@
   </sodipodi:namedview>
   <g id="format-indent-more" inkscape:label="00385">
       <title id="title43170">format-indent-more</title>
-      <path inkscape:connector-curvature="0" id="indent" d="M 0,0 H 16 V 16 H 0 Z" style="opacity:0;fill:none"/>
-      <path inkscape:connector-curvature="0" id="gtk-indent" d="M 0,0 H 16 V 16 H 0 Z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="indent" d="M 0,0 H 16 V 16 H 0 Z" opacity="0"/>
+      <path inkscape:connector-curvature="0" id="gtk-indent" d="M 0,0 H 16 V 16 H 0 Z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="rect43174" d="m 8,3 h 5 V 5 H 8 Z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect43176" d="m 8,7 h 6 V 9 H 8 Z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect43178" d="m 2,11 h 7 v 2 H 2 Z" style="opacity:1"/>

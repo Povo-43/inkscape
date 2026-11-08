@@ -73,12 +73,12 @@
      inkscape:label="00268"
      id="align-vertical-bottom-to-anchor">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 1098.0001,628.4886 v 24 h -24 v -24 z"
        id="rect22386"
        inkscape:connector-curvature="0" />
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 1098,628.48799 v 24 h -24 v -24 z"
        id="rect22386-9"
        inkscape:connector-curvature="0" />

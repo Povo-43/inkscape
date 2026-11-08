@@ -82,7 +82,7 @@
      id="paint-unknown"
      inkscape:label="00308">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 0,0 h 20 v 20 h -20 z"
        id="rect20390"
        inkscape:connector-curvature="0" />

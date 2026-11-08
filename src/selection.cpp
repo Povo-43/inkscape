@@ -94,18 +94,8 @@ void Selection::_emitModified(guint flags)
 
     auto &pm = _document->getPageManager();
 
-    // If the selected items have been moved to a new page...
-    if (auto item = singleItem()) {
-        pm.selectPage(item, false);
-    } else {
-        SPPage *page = pm.getPageFor(firstItem(), true);
-        for (auto this_item : this->items()) {
-            if (page != pm.getPageFor(this_item, true)) {
-                return;
-            }
-        }
-        pm.selectPage(page);
-    }
+    // If the selected items have been moved to a new page, select the new page
+    pm.selectBestPage(items_vector(), false);
 }
 
 void Selection::_emitChanged(bool persist_selection_context)
@@ -138,7 +128,7 @@ void Selection::_emitChanged(bool persist_selection_context)
             // defaults to true (see src/ui/tools/tool-base)
             if (_change_page) {
                 // This could be more complex if we want to be smarter.
-                _document->getPageManager().selectPage(item, false);
+                _document->getPageManager().selectBestPage(item, false);
             }
         }
         DocumentUndo::resetKey(_document);

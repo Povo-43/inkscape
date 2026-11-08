@@ -616,6 +616,11 @@ add_cli_test(export-clone-group-filtered-mp PARAMETERS --export-type=pdf
                                             OUTPUT_PAGE 1
                                             REFERENCE_FILENAME export-clone-group-filtered-mp_expected.png
                                             FUZZ_PERCENTAGE 3)
+add_cli_test(export-mask-with-filter PARAMETERS
+                                     INPUT_FILENAME export-mask-with-filter.svg
+                                     OUTPUT_FILENAME export-mask-with-filter.pdf
+                                     REFERENCE_FILENAME export-mask-with-filter_expected.pdf
+                                     FUZZ_PERCENTAGE 1)
 add_cli_test(export-text-paintorder PARAMETERS --export-type=pdf
                                     INPUT_FILENAME  export-text-paintorder.svg
                                     OUTPUT_FILENAME export-text-paintorder.pdf
@@ -1136,6 +1141,8 @@ if(WITH_POPPLER)
     add_pdfinput_test(clipping_shift 1 keep)
     add_pdfinput_test(layers-in-xobj 1 substitute EXTRA "--pdf-group-by=layer")
     add_pdfinput_test(negative-font-size 1 draw-all)
+    add_pdfinput_test(ligatures-drawn all draw-all IN_FILE "ligatures")
+    add_pdfinput_test(ligatures-text all keep IN_FILE "ligatures")
 endif()
 
 function(add_pdfoutput_test name)

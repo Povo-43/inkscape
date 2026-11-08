@@ -63,7 +63,7 @@
      id="snap-bounding-box-midpoints"
      transform="translate(-679,-506.42468)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 679,506.48691 h 16 v 15.93774 h -16 z"
        id="rect22519"
        inkscape:connector-curvature="0" />

@@ -123,24 +123,36 @@
   </object>
   <object class="GtkListStore" id="themelist">
     <columns>
+      <!-- column-name id -->
       <column type="gchararray"/>
+      <!-- column-name name -->
       <column type="gchararray"/>
+      <!-- column-name theme_id -->
       <column type="gchararray"/>
+      <!-- column-name icons_id -->
       <column type="gchararray"/>
+      <!-- column-name base_color -->
       <column type="gchararray"/>
+      <!-- column-name base_color_dark -->
       <column type="gchararray"/>
+      <!-- column-name success_color -->
       <column type="gchararray"/>
+      <!-- column-name warn_color -->
       <column type="gchararray"/>
+      <!-- column-name error_color -->
       <column type="gchararray"/>
+      <!-- column-name symbolic_icons -->
       <column type="gboolean"/>
+      <!-- column-name small_icons -->
       <column type="gboolean"/>
+      <!-- column-name enabled -->
       <column type="gboolean"/>
     </columns>
     <data>
       <row>
         <col id="0">colorful</col>
         <col id="1" translatable="yes">Colorful</col>
-        <col id="2">Adwaita</col>
+        <col id="2">Default</col>
         <col id="3">multicolor</col>
         <col id="4">#000000</col>
         <col id="5">#ebebeb</col>
@@ -154,7 +166,7 @@
       <row>
         <col id="0">grayscale</col>
         <col id="1" translatable="yes">Grayscale</col>
-        <col id="2">Adwaita</col>
+        <col id="2">Default</col>
         <col id="3">multicolor</col>
         <col id="4">#000000</col>
         <col id="5">#e5e5e5</col>
@@ -168,7 +180,7 @@
       <row>
         <col id="0">symbolic</col>
         <col id="1" translatable="yes">Classic Symbolic</col>
-        <col id="2">Adwaita</col>
+        <col id="2">Default</col>
         <col id="3">Adwaita</col>
         <col id="4">0</col>
         <col id="5">0</col>
@@ -177,20 +189,6 @@
         <col id="8">0</col>
         <col id="9">True</col>
         <col id="10">False</col>
-        <col id="11">False</col>
-      </row>
-      <row>
-        <col id="0">compacted</col>
-        <col id="1" translatable="yes">Compacted (Small Screens)</col>
-        <col id="2">Minwaita-Inkscape</col>
-        <col id="3">hicolor</col>
-        <col id="4">0</col>
-        <col id="5">0</col>
-        <col id="6">0</col>
-        <col id="7">0</col>
-        <col id="8">0</col>
-        <col id="9">True</col>
-        <col id="10">True</col>
         <col id="11">False</col>
       </row>
       <row>
@@ -210,7 +208,7 @@
       <row>
         <col id="0">classic</col>
         <col id="1" translatable="yes">Classic Inkscape</col>
-        <col id="2">Adwaita</col>
+        <col id="2">Default</col>
         <col id="3">Adwaita</col>
         <col id="4">0</col>
         <col id="5">0</col>
@@ -663,7 +661,9 @@
                                 <property name="sort-order">descending</property>
                                 <property name="sort-column-id">0</property>
                                 <child>
-                                  <object class="GtkCellRendererText"/>
+                                  <object class="GtkCellRendererText">
+                                    <property name="ellipsize">middle</property>
+                                  </object>
                                   <attributes>
                                     <attribute name="text">0</attribute>
                                   </attributes>

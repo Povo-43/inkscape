@@ -27,6 +27,7 @@
 
 #include <glibmm/markup.h>
 #include <gtkmm/menubutton.h>
+#include <gtkmm/notebook.h>
 #include <gtkmm/popover.h>
 #include <gtkmm/searchentry2.h>
 #include <gtkmm/separator.h>
@@ -71,8 +72,12 @@ Glib::ustring const &getSamplePhrase()
 
 } // namespace
 
-TextEdit::TextEdit()
-    : DialogBase("/dialogs/textandfont", "Text")
+TextEdit::TextEdit(bool use_legacy)
+    // This class is two dialogs in one, based off the "use_legacy" flag
+    : DialogBase(
+        use_legacy ? "/dialogs/legacytextandfont" : "/dialogs/textandfont",
+        use_legacy ? "LegacyText" : "Text"
+      )
 
     , builder(create_builder("dialog-text-edit.glade"))
       // Font
@@ -94,15 +99,13 @@ TextEdit::TextEdit()
     , setasdefault_button      (get_widget<Gtk::Button>     (builder, "setasdefault_button"))
     , apply_button             (get_widget<Gtk::Button>     (builder, "apply_button"))
     , _apply_box               (get_widget<Gtk::Box>        (builder, "apply-box"))
+    , _use_legacy{use_legacy}
     , _undo{"doc.undo"}
     , _redo{"doc.redo"}
 {
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    _use_browser = prefs->getInt("/options/font/browser", 1) != 0;
-
-    font_list = _use_browser ?
-        Inkscape::UI::Widget::FontList::create_font_list("/font-selector") :
-        Inkscape::UI::Widget::FontSelector::create_font_selector();
+    font_list = _use_legacy ?
+        Inkscape::UI::Widget::FontSelector::create_font_selector() :
+        Inkscape::UI::Widget::FontList::create_font_list("/font-selector");
 
     auto font_collections = Inkscape::FontCollections::get();
 
@@ -123,7 +126,7 @@ TextEdit::TextEdit()
     auto &text_view_container = get_widget<Gtk::ScrolledWindow>(builder, "text_view_container");
     text_view_container.set_child(*text_view);
 
-    if (_use_browser) {
+    if (!_use_legacy) {
         // hide settings and filter box
         settings_and_filters_box.set_visible(false);
         font_count_label.set_visible(false);
@@ -174,10 +177,10 @@ TextEdit::TextEdit()
 
     change_font_count_label();
 
-    fontFeaturesChangedConn = font_features.connectChanged(sigc::mem_fun(*this, &TextEdit::onChange));
     notebook->signal_switch_page().connect(sigc::mem_fun(*this, &TextEdit::on_page_changed));
-    _font_changed = font_list->signal_changed().connect([this](){ apply_changes(true); });
-    _apply_font = font_list->signal_apply().connect([this](){ onChange(); onSetDefault(); });
+    _fontspec_changed = font_list->signal_fontspec_changed().connect([this](){ onChange(); apply_changes(SPEC, true); });
+    _fontsize_changed = font_list->signal_fontsize_changed().connect([this](){ onChange(); apply_changes(SIZE, true); });
+    _apply_font = font_list->signal_set_default().connect([this](){ onChange(); onSetDefault(); });
     _insert_text = font_list->signal_insert_text().connect([this](const auto& text) {
         if (auto desktop = getDesktop()) {
             if (auto text_tool = dynamic_cast<Tools::TextTool*>(desktop->getTool())) {
@@ -186,8 +189,7 @@ TextEdit::TextEdit()
         }
     });
 
-    set_defocus_target(this, this);
-
+    onChange();
     on_page_changed(nullptr, 0);
 }
 
@@ -298,8 +300,6 @@ void TextEdit::onReadSelection ( bool dostyle, bool /*docontent*/ )
 void TextEdit::setPreviewText (Glib::ustring const &font_spec, Glib::ustring const &font_features,
                                Glib::ustring const &phrase)
 {
-    if (_use_browser) return;
-
     if (font_spec.empty()) {
         preview_label.set_markup("");
         preview_label2.set_markup("");
@@ -414,39 +414,42 @@ void TextEdit::updateObjectText ( SPItem *text )
     }
 }
 
-SPCSSAttr *TextEdit::fillTextStyle ()
+SPCSSAttr *TextEdit::fillTextStyle(guint flags)
 {
-        SPCSSAttr *css = sp_repr_css_attr_new ();
+    SPCSSAttr *css = sp_repr_css_attr_new ();
 
-        Glib::ustring fontspec = font_list->get_fontspec();
-
-        if( !fontspec.empty() ) {
-
-            Inkscape::FontLister *fontlister = Inkscape::FontLister::get_instance();
-            fontlister->fill_css( css, fontspec );
-
-            // TODO, possibly move this to FontLister::set_css to be shared.
-            Inkscape::CSSOStringStream os;
-            Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-            int unit = prefs->getInt("/options/font/unitType", SP_CSS_UNIT_PT);
-            if (prefs->getBool("/options/font/textOutputPx", true)) {
-                os << sp_style_css_size_units_to_px(font_list->get_fontsize(), unit)
-                   << sp_style_get_css_unit_string(SP_CSS_UNIT_PX);
-            } else {
-                os << font_list->get_fontsize() << sp_style_get_css_unit_string(unit);
-            }
-            sp_repr_css_set_property (css, "font-size", os.str().c_str());
+    if (flags & SPEC) {
+        auto fontspec = font_list->get_fontspec();
+        if (!fontspec.empty()) {
+            auto fontlister = Inkscape::FontLister::get_instance();
+            fontlister->fill_css(css, fontspec);
         }
+    }
 
-        // Font features
-        font_features.fill_css( css );
+    if (flags & SIZE) {
+        // TODO, possibly move this to FontLister::set_css to be shared.
+        Inkscape::CSSOStringStream os;
+        auto prefs = Inkscape::Preferences::get();
+        int unit = prefs->getInt("/options/font/unitType", SP_CSS_UNIT_PT);
+        if (prefs->getBool("/options/font/textOutputPx", true)) {
+            os << sp_style_css_size_units_to_px(font_list->get_fontsize(), unit)
+                << sp_style_get_css_unit_string(SP_CSS_UNIT_PX);
+        } else {
+            os << font_list->get_fontsize() << sp_style_get_css_unit_string(unit);
+        }
+        sp_repr_css_set_property(css, "font-size", os.str().c_str());
+    }
 
-        return css;
+    if (flags & FEATURES) {
+        font_features.fill_css(css);
+    }
+
+    return css;
 }
 
 void TextEdit::onSetDefault()
 {
-    SPCSSAttr *css = fillTextStyle ();
+    SPCSSAttr *css = fillTextStyle(SPEC | SIZE | FEATURES);
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
     blocked = true;
@@ -460,17 +463,17 @@ void TextEdit::onSetDefault()
 
 void TextEdit::onApply()
 {
-    apply_changes(false);
+    apply_changes(SPEC | SIZE | FEATURES, false);
 }
 
-void TextEdit::apply_changes(bool continuous) {
+void TextEdit::apply_changes(guint flags, bool continuous) {
     blocked = true;
 
     SPDesktop *desktop = getDesktop();
 
     unsigned items = 0;
     auto item_list = desktop->getSelection()->items();
-    SPCSSAttr *css = fillTextStyle ();
+    SPCSSAttr *css = fillTextStyle(flags);
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     for(auto i : item_list){
         // apply style to the reprs of all text objects in the selection
@@ -581,7 +584,7 @@ void TextEdit::display_font_collections()
 
 void TextEdit::on_page_changed(Gtk::Widget*, int pos)
 {
-    _apply_box.set_visible(pos != 0 || !_use_browser); // font browser doesn't use "Apply" button
+    _apply_box.set_visible(pos != 0 || _use_legacy);
 
     if (pos == 1) {
         Glib::ustring fontspec = font_list->get_fontspec();
@@ -658,12 +661,6 @@ void TextEdit::onChange()
     }
 
     setasdefault_button.set_sensitive ( true);
-}
-
-void TextEdit::onFontChange(Glib::ustring const & /*fontspec*/)
-{
-    // Is not necessary update open type features this done when user click on font features tab
-    onChange();
 }
 
 } // namespace Inkscape::UI::Dialog

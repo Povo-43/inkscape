@@ -6,7 +6,7 @@
   </sodipodi:namedview>
   <g transform="scale(0.666667)" id="mesh-gradient" inkscape:label="00347">
       <title id="title37036">mesh-gradient</title>
-      <path inkscape:connector-curvature="0" id="rect37038" d="M 0,0 H 24 V 24 H 0 Z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect37038" d="M 0,0 H 24 V 24 H 0 Z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="rect37040" d="M 1,1 H 6 V 5.9999499 H 1 Z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect37042" d="m 18,1 h 5 v 5 h -5 z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect37044" d="m 1,18 h 5 v 5 H 1 Z" style="opacity:1"/>

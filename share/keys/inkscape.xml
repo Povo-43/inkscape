@@ -10,7 +10,7 @@ This file contains the default Inkscape keyboard shortcuts.
   modifiers <primary>, <shift>, and/or <alt>. As this is an XML file, '<' and '>' must be
   replaced by &lt; and &gt;, respectively. The first entry will be listed in menus.
 
-- The "gaction" atribute contains the full action name, including the map name (typically
+- The "gaction" attribute contains the full action name, including the map name (typically
   'app' or 'win').
 
 =========== Notes ===========
@@ -134,9 +134,9 @@ override) the bindings in the main default.xml.
   <!-- ROUGHLY IN MENU ORDER -->
 
   <!-- File -->
-  <bind gaction="win.document-new"                       keys="&lt;primary&gt;n" />
-  <bind gaction="win.document-dialog-templates"          keys="&lt;primary&gt;&lt;alt&gt;n" />
-  <bind gaction="win.document-open"                      keys="&lt;primary&gt;o" />
+  <bind gaction="app.document-new"                       keys="&lt;primary&gt;n" />
+  <bind gaction="app.document-dialog-templates"          keys="&lt;primary&gt;&lt;alt&gt;n" />
+  <bind gaction="app.document-open"                      keys="&lt;primary&gt;o" />
   <bind gaction="win.document-revert" />
   <bind gaction="win.document-save"                      keys="&lt;primary&gt;s" />
   <bind gaction="win.document-save-as"                   keys="&lt;primary&gt;&lt;shift&gt;s" />
@@ -284,7 +284,7 @@ override) the bindings in the main default.xml.
   <bind gaction="app.unhide-all" />
 
   <bind gaction="app.object-set-clip"                    keys="&lt;primary&gt;m" /> 
-  <bind gaction="app.object-set-inverse-clip"            keys="&lt;primary&gt;alt&gt;m" /> 
+  <bind gaction="app.object-set-inverse-clip"            keys="&lt;primary&gt;&lt;alt&gt;m" />
   <bind gaction="app.object-release-clip"                keys="&lt;alt&gt;m" /> 
   <bind gaction="app.object-set-mask"/> 
   <bind gaction="app.object-set-inverse-mask" />

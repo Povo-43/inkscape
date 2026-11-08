@@ -143,20 +143,25 @@
           <object class="GtkNotebookPage">
             <property name="position">1</property>
             <property name="child">
-              <object class="GtkBox" id="feat_box">
-                <property name="margin-start">4</property>
-                <property name="margin-end">4</property>
-                <property name="margin-top">4</property>
-                <property name="margin-bottom">4</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkLabel" id="preview_label2">
-                    <property name="valign">center</property>
-                    <property name="label">text</property>
-                    <property name="justify">center</property>
-                    <property name="ellipsize">end</property>
+              <object class="GtkScrolledWindow">
+                <property name="focusable">true</property>
+                <property name="child">
+                  <object class="GtkBox" id="feat_box">
+                    <property name="margin-start">4</property>
+                    <property name="margin-end">4</property>
+                    <property name="margin-top">4</property>
+                    <property name="margin-bottom">4</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLabel" id="preview_label2">
+                        <property name="valign">center</property>
+                        <property name="label">text</property>
+                        <property name="justify">center</property>
+                        <property name="ellipsize">end</property>
+                      </object>
+                    </child>
                   </object>
-                </child>
+                </property>
               </object>
             </property>
             <property name="tab">

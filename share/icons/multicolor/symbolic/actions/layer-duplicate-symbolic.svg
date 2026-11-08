@@ -63,7 +63,7 @@
      transform="translate(-105,-767.3622)">
     <path
        transform="translate(0,512.3622)"
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 105,255 h 16 v 16 h -16 z"
        id="rect9208"
        inkscape:connector-curvature="0" />

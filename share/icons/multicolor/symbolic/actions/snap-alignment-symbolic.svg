@@ -75,7 +75,7 @@
        inkscape:connector-curvature="0"
        id="rect11641"
        d="m 165,667.36218 h 16 v 16 h -16 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <path
        id="rect1358"
        style="opacity:1;stroke-width:0.670894;stroke-linecap:round;stroke-linejoin:round"

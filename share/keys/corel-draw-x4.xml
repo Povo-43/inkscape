@@ -63,8 +63,8 @@ See default.xml for more information.
 
 <!-- File actions -->
 
-  <bind gaction="win.document-new"                      keys="&lt;ctrl&gt;n, &lt;ctrl&gt;N" />
-  <bind gaction="win.document-open"                         keys="&lt;ctrl&gt;o, &lt;ctrl&gt;O" />
+  <bind gaction="app.document-new"                      keys="&lt;ctrl&gt;n, &lt;ctrl&gt;N" />
+  <bind gaction="app.document-open"                     keys="&lt;ctrl&gt;o, &lt;ctrl&gt;O" />
   <bind gaction="win.document-save"                     keys="&lt;ctrl&gt;s, &lt;ctrl&gt;S" />
   <bind gaction="win.document-save-as"                  keys="&lt;ctrl&gt;&lt;shift&gt;s, &lt;ctrl&gt;&lt;shift&gt;S" />
   <bind gaction="win.document-import"                   keys="&lt;ctrl&gt;i, &lt;ctrl&gt;I" />

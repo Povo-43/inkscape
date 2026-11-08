@@ -10,16 +10,18 @@
 
 #include "sp-radial-gradient.h"
 
-#include "attributes.h"                   // for SPAttr
 #include <2geom/rect.h>                   // for Rect
+
+#include "attributes.h"                   // for SPAttr
 #include "style.h"                        // for SPStyle
+#include "style-internal.h"               // for SPIFontSize
 
 #include "display/drawing-paintserver.h"  // for DrawingRadialGradient, Draw...
 #include "object/sp-gradient.h"           // for SPGradient
+#include "object/sp-gradient-reference.h" // for SPGradientReference
 #include "object/sp-item.h"               // for SPItemCtx
 #include "object/sp-object.h"             // for SP_OBJECT_MODIFIED_FLAG
 #include "object/sp-paint-server-data.h"  // for SPGradientVector, SPGradientUnits
-#include "style-internal.h"               // for SPIFontSize
 #include "xml/document.h"                 // for Document
 #include "xml/node.h"                     // for Node
 
@@ -34,7 +36,7 @@ SPRadialGradient::SPRadialGradient() : SPGradient() {
     this->r.unset(SVGLength::PERCENT, 0.5, 0.5);
     this->fx.unset(SVGLength::PERCENT, 0.5, 0.5);
     this->fy.unset(SVGLength::PERCENT, 0.5, 0.5);
-    this->fr.unset(SVGLength::PERCENT, 0.5, 0.5);
+    this->fr.unset(SVGLength::PERCENT, 0.0, 0.0);
 }
 
 SPRadialGradient::~SPRadialGradient() = default;
@@ -65,11 +67,10 @@ void SPRadialGradient::set(SPAttr key, gchar const *value) {
             }
 
             if (!this->fx._set) {
-                this->fx.value = this->cx.value;
-                this->fx.computed = this->cx.computed;
+                fx.unset(cx); // Copy but don't set
             }
 
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::CY:
@@ -78,11 +79,10 @@ void SPRadialGradient::set(SPAttr key, gchar const *value) {
             }
 
             if (!this->fy._set) {
-                this->fy.value = this->cy.value;
-                this->fy.computed = this->cy.computed;
+                fy.unset(cy); // Copy but don't set
             }
 
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::R:
@@ -90,7 +90,7 @@ void SPRadialGradient::set(SPAttr key, gchar const *value) {
                 this->r.unset(SVGLength::PERCENT, 0.5, 0.5);
             }
 
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::FX:
@@ -98,7 +98,7 @@ void SPRadialGradient::set(SPAttr key, gchar const *value) {
                 this->fx.unset(this->cx.unit, this->cx.value, this->cx.computed);
             }
 
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::FY:
@@ -106,14 +106,14 @@ void SPRadialGradient::set(SPAttr key, gchar const *value) {
                 this->fy.unset(this->cy.unit, this->cy.value, this->cy.computed);
             }
 
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::FR:
             if (!this->fr.read(value)) {
                 this->fr.unset(SVGLength::PERCENT, 0.0, 0.0);
             }
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         default:
@@ -127,6 +127,23 @@ SPRadialGradient::update(SPCtx *ctx, guint flags)
 {
     // To do: Verify flags.
     if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) {
+
+        // Walk up the reference tree to find values.
+        if (!cx._set) cx.unset(find_cx());
+        if (!cy._set) cy.unset(find_cy());
+        if (! r._set)  r.unset(find_r());
+        if (!fx._set) fx.unset(find_fx());
+        if (!fy._set) fy.unset(find_fy());
+        if (!fr._set) fr.unset(find_fr());
+
+        // Fallback values, need to be updated in case cx, cy found from referenced gradient,
+        // but only if fx and fy not found in reference gradient.
+        if (!fx._set && !fx._found) fx.unset(cx);
+        if (!fy._set && !fy._found) fy.unset(cy);
+
+        // Reset
+        fx._found = false;
+        fy._found = false;
 
         SPItemCtx const *ictx = reinterpret_cast<SPItemCtx const *>(ctx);
 

@@ -53,22 +53,22 @@ void SPLinearGradient::set(SPAttr key, const gchar* value) {
     switch (key) {
         case SPAttr::X1:
             this->x1.readOrUnset(value, SVGLength::PERCENT, 0.0, 0.0);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::Y1:
             this->y1.readOrUnset(value, SVGLength::PERCENT, 0.0, 0.0);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::X2:
             this->x2.readOrUnset(value, SVGLength::PERCENT, 1.0, 1.0);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::Y2:
             this->y2.readOrUnset(value, SVGLength::PERCENT, 0.0, 0.0);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         default:
@@ -82,6 +82,12 @@ SPLinearGradient::update(SPCtx *ctx, guint flags)
 {
     // To do: Verify flags.
     if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) {
+
+        // Walk up the reference tree to find values.
+        if (!x1._set) x1.unset(find_x1());
+        if (!y1._set) y1.unset(find_y1());
+        if (!x2._set) x2.unset(find_x2());
+        if (!y2._set) y2.unset(find_y2());
 
         SPItemCtx const *ictx = reinterpret_cast<SPItemCtx const *>(ctx);
 

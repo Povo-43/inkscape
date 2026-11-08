@@ -120,9 +120,9 @@ bool InteractiveBooleansTool::is_ready() const
 {
     if (!boolean_builder || !boolean_builder->has_items()) {
         if (_desktop->getSelection()->isEmpty()) {
-            _desktop->showNotice(_("You must select some objects to use the Shape Builder tool."), 5000);
+            _desktop->showNotice(_("You must select some objects to use the Shape Builder tool."));
         } else {
-            _desktop->showNotice(_("The Shape Builder requires regular shapes to be selected."), 5000);
+            _desktop->showNotice(_("The Shape Builder requires regular shapes to be selected."));
         }
         return false;
     }

@@ -45,6 +45,9 @@ public:
     void setDesktop(SPDesktop *desktop) override;
     void setActiveUnit(Util::Unit const *unit) override;
 
+protected:
+    void documentReplaced() override;
+
 private:
     SelectToolbar(Glib::RefPtr<Gtk::Builder> const &builder);
 
@@ -73,7 +76,7 @@ private:
 
     char const *get_action_key(double mh, double sh, double mv, double sv);
     void any_value_changed(Glib::RefPtr<Gtk::Adjustment> const &adj);
-    void layout_widget_update(Selection *sel);
+    void layout_widget_update();
     void toggle_lock();
     void toggle_touch();
     void toggle_stroke();
@@ -87,6 +90,7 @@ private:
     void _selectionModified(Selection *selection, unsigned flags);
     sigc::connection _selection_changed_conn;
     sigc::connection _selection_modified_conn;
+    sigc::scoped_connection _page_origin_conn;
 };
 
 } // namespace Inkscape::UI::Toolbar

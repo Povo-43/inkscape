@@ -65,7 +65,7 @@
        inkscape:connector-curvature="0"
        id="rect22266"
        d="m 1214,929.36322 h 20 v 20 h -20 z"
-       style="opacity:0;fill:none" />
+       opacity="0" />
     <path
        sodipodi:nodetypes="cccccccccc"
        style="opacity:1"

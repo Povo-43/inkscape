@@ -115,6 +115,7 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
     else if (dialog_type == "Find")               return std::make_unique<Find>();
     else if (dialog_type == "FontCollections")    return std::make_unique<FontCollectionsManager>();
     else if (dialog_type == "IconPreview")        return std::make_unique<IconPreviewPanel>();
+    else if (dialog_type == "LegacyText")         return std::make_unique<TextEdit>(true);
     else if (dialog_type == "LivePathEffect")     return std::make_unique<LivePathEffectEditor>();
     else if (dialog_type == "ObjectProperties")   return std::make_unique<ObjectAttributes>();
     else if (dialog_type == "Objects")            return std::make_unique<ObjectsPanel>();
@@ -123,7 +124,7 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
     else if (dialog_type == "SVGFonts")           return std::make_unique<SvgFontsDialog>();
     else if (dialog_type == "Swatches")           return std::make_unique<SwatchesPanel>(SwatchesPanel::Dialog);
     else if (dialog_type == "Symbols")            return std::make_unique<SymbolsDialog>();
-    else if (dialog_type == "Text")               return std::make_unique<TextEdit>();
+    else if (dialog_type == "Text")               return std::make_unique<TextEdit>(false);
     else if (dialog_type == "Trace")              return TraceDialog::create();
     else if (dialog_type == "Transform")          return std::make_unique<Transformation>();
     else if (dialog_type == "UndoHistory")        return std::make_unique<UndoHistory>();
@@ -300,6 +301,16 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
     for (int window_idx = 0; window_idx < windows_count; ++window_idx) {
         Glib::ustring group_name = "Window" + std::to_string(window_idx);
 
+        // Step 3.0: get the window's container columns where we want to create the dialogs
+        DialogWindow *dialog_window = new DialogWindow(inkscape_window, nullptr);
+        DialogContainer *active_container = dialog_window->get_container();
+        DialogMultipaned *active_columns = active_container ? active_container->get_columns() : nullptr;
+
+        if (!active_container || !active_columns) {
+            continue;
+        }
+
+        // Step 3.1: read the window parameters
         bool has_position = keyfile->has_key(group_name, "Position") && keyfile->get_boolean(group_name, "Position");
         window_position_t pos;
         if (has_position) { // floating window position recorded?
@@ -307,22 +318,13 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
             pos.y = keyfile->get_integer(group_name, "y");
             pos.width = keyfile->get_integer(group_name, "width");
             pos.height = keyfile->get_integer(group_name, "height");
+            dm_restore_window_position(*dialog_window, pos);
         }
-        // Step 3.0: read the window parameters
         int column_count = 0;
         try {
             column_count = keyfile->get_integer(group_name, "ColumnCount");
         } catch (Glib::Error const &error) {
             std::cerr << G_STRFUNC << ": " << error.what() << std::endl;
-        }
-
-        // Step 3.1: get the window's container columns where we want to create the dialogs
-        DialogWindow *dialog_window = new DialogWindow(inkscape_window, nullptr);
-        DialogContainer *active_container = dialog_window->get_container();
-        DialogMultipaned *active_columns = active_container ? active_container->get_columns() : nullptr;
-
-        if (!active_container || !active_columns) {
-            continue;
         }
 
         // Step 3.2: for each column, load its state
@@ -387,9 +389,7 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
             }
         }
 
-        if (has_position) {
-            dm_restore_window_position(*dialog_window, pos);
-        } else {
+        if (!has_position) {
             dialog_window->update_window_size_to_fit_children();
         }
 

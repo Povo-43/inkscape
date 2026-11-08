@@ -324,6 +324,12 @@ KnotHolderEntityWidthPatternAlongPath::knot_set(Geom::Point const &p, Geom::Poin
         if (auto c = sp_shape->curveForEdit()) {
             auto curve_before = *c;
             Geom::Path const &path_in = curve_before.front();
+            if (path_in.empty()) {
+                // Path::pointAt would have thrown an exception
+                g_warning("PatternAlongPath::knot_set: path is empty!");
+                return;
+            }
+
             Geom::Point ptA = path_in.pointAt(Geom::PathTime(0, 0.0));
             Geom::Point B = path_in.pointAt(Geom::PathTime(1, 0.0));
             Geom::Curve const *first_curve = &path_in.curveAt(Geom::PathTime(0, 0.0));
@@ -357,6 +363,12 @@ KnotHolderEntityWidthPatternAlongPath::knot_get() const
         if (auto c = sp_shape->curveForEdit()) {
             auto curve_before = *c;
             Geom::Path const &path_in = curve_before.front();
+            if (path_in.empty()) {
+                // Path::pointAt would have thrown an exception
+                g_warning("PatternAlongPath::knot_set: path is empty!");
+                return Geom::Point();
+            }
+
             Geom::Point ptA = path_in.pointAt(Geom::PathTime(0, 0.0));
             Geom::Point B = path_in.pointAt(Geom::PathTime(1, 0.0));
             Geom::Curve const *first_curve = &path_in.curveAt(Geom::PathTime(0, 0.0));

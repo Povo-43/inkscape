@@ -62,7 +62,7 @@
      id="path-tweak-push"
      transform="translate(-255,-567.36218)">
     <path
-       style="opacity:0;fill:none"
+       opacity="0"
        d="m 255,567.36218 h 16 v 16 h -16 z"
        id="rect41487"
        inkscape:connector-curvature="0" />

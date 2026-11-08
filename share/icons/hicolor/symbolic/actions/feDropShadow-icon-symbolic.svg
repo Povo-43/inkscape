@@ -38,7 +38,7 @@
     <path
         id="background"
         d="M 0,0 H 16 V 16 H 0 Z"
-        style="opacity:0;fill:none" />
+        opacity="0" />
 
     <!-- Shadow (offset down-right, with blur appearance using multiple overlapping rects) -->
     <!-- Outer blur layer (most transparent) -->

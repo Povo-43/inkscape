@@ -71,7 +71,7 @@
        id="rect4381"
        transform="translate(0,512.3622)"
        d="m 1180,417 v 20 h 20 v -20 z"
-       style="opacity:0;fill:none"
+       opacity="0"
        inkscape:connector-curvature="0" />
   </g>
 </svg>

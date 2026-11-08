@@ -175,14 +175,14 @@ void DrawContext::paint_item_to_raster(SPItem const *item, Geom::Affine const &t
     auto aa = antialias ? Antialiasing::Good : Antialiasing::None;
 
     auto pb = std::unique_ptr<Pixbuf>{sp_generate_internal_bitmap(doc, *bbox, resolution, items, false, nullptr, 1, aa)};
-    if (!pb) {
+    if (!pb || pb->height() <= 0) {
         return;
     }
 
     auto surface = pb->getSurfaceRaw();
 
     cairo_surface_flush(surface);
-    cairo_surface_write_to_png(surface, "/tmp/out.png");
+    // cairo_surface_write_to_png(surface, "/tmp/out.png");
     auto data = cairo_image_surface_get_data(surface);
     auto width = cairo_image_surface_get_width(surface);
     auto height = cairo_image_surface_get_height(surface);

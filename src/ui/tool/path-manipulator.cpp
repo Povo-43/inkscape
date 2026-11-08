@@ -125,10 +125,13 @@ PathManipulator::PathManipulator(MultiPathManipulator &mpm, SPObject *path,
         sigc::mem_fun(*this, &PathManipulator::_selectionChangedM));
     _desktop->signal_zoom_changed.connect(
         sigc::hide( sigc::mem_fun(*this, &PathManipulator::_updateOutlineOnZoomChange)));
+    _desktop->connectDocumentReplaced(
+        sigc::hide(sigc::hide(sigc::mem_fun(*this, &PathManipulator::_documentReplaced))));
 
     //Define if the path is BSpline on construction
     _recalculateIsBSpline();
     _createControlPointsFromGeometry();
+    _documentReplaced();
 }
 
 PathManipulator::~PathManipulator()
@@ -197,6 +200,14 @@ void PathManipulator::writeXML()
         _path = nullptr;
     }
     _observer->unblock();
+}
+
+void PathManipulator::_documentReplaced()
+{
+    // Detect changes to document transform
+    _doc_modified_conn = _desktop->getDocument()->connectModified([this](unsigned) {
+        _externalChange(PATH_CHANGE_TRANSFORM);
+    });
 }
 
 /** Remove all nodes from the path. */
@@ -422,6 +433,86 @@ void PathManipulator::copySelectedPath(Geom::PathBuilder *builder)
     builder->flush();
 }
 
+void PathManipulator::simplifyInvisible(double threshold)
+{
+    auto tr = _getTransform().inverse();
+    auto is_small = [threshold, tr](NodeList::iterator const &from, NodeList::iterator const &end) {
+        // Build a path for the segment between the two interators and measure it's length
+        Geom::PathBuilder builder;
+        builder.moveTo(from->position());
+        for (auto next_node = from; next_node && next_node != end; next_node.advance()) {
+            next_node->build_segment(builder, &*next_node.next());
+        }
+        builder.flush();
+
+        for (auto &path : builder.peek()) {
+            auto len = Geom::length(Geom::paths_to_pw(path) * tr);
+            return len <= threshold;
+        }
+        return true;
+    };
+
+    if (_selection.size() < 2)
+        return;
+    hideDragPoint();
+
+    for (auto sp : _subpaths) {
+        NodeList::iterator begin = sp->begin();
+
+        if (sp->closed()) {
+            // Find a good starting point by skipping the first node IF it would
+            // join with the end of the path as a tiny segment (and thus be removed)
+            while (begin && begin->selected() && (begin.prev() && is_small(begin.prev(), begin))) {
+                begin++;
+            }
+        }
+
+        while (begin) {
+            NodeList::iterator start;
+            NodeList::iterator end;
+            Geom::OptRect area;
+
+            for (auto node = begin; node != begin.prev() && node->selected() && node.next(); node.advance()) {
+                bool valid = node.next()->selected() && is_small(node, node.next());
+
+                if (valid && !start) {
+                    // The use of OptRect here is needed because there isn't a "Point List" Geom object
+                    // and initalising the Geom::Rect above would cause it to include 0,0
+                    area = Geom::Rect(node->position(), node->position());
+                    start = node;
+                } else if (start) {
+                    area->expandTo(node->position());
+                    if (!valid) {
+                        end = node;
+                        break;
+                    }
+                }
+            }
+
+            if (start && end) {
+                auto new_pos = area->midpoint();
+
+                start->setType(NODE_CUSP, false);
+                start->setPosition(new_pos);
+
+                // do not move handles if they aren't degenerate
+                if (!end->front()->isDegenerate()) {
+                    // This is the exit handle for the bezier, we move it very slightly
+                    // by the same amount as the delta between the sel_end and the new_pos
+                    start->front()->setPosition(end->front()->position() - (end->position() - new_pos));
+                }
+
+                begin = end.next();
+                for (auto to_delete = end; to_delete != start; to_delete = to_delete.prev()) {
+                    sp->erase(to_delete);
+                }
+            } else {
+                begin++;
+            }
+        }
+    }
+}
+
 /** Replace contiguous selections of nodes in each subpath with one node. */
 void PathManipulator::weldNodes(NodeList::iterator preserve_pos)
 {
@@ -644,6 +735,19 @@ void PathManipulator::deleteNodes(NodeDeleteMode delete_mode)
             continue;
         }
 
+        if (sp->closed() && num_unselected == 1) {
+            // Special case for deleting all but one node in a closed path, to avoid a troublesome
+            // empty path.
+            NodeList::iterator keep = sp->begin();
+            while (keep->selected()) {
+                keep = keep.next();
+            }
+
+            _deleteRest(keep);
+            ++i;
+            continue;
+        }
+
         // In closed paths, start from an unselected node - otherwise we might start in the middle
         // of a selected stretch and the resulting bezier fit would be suboptimal
         NodeList::iterator sel_beg = sp->begin(), sel_end;
@@ -677,6 +781,32 @@ double get_angle(const Geom::Point& p0, const Geom::Point& p1, const Geom::Point
     auto a1 = atan2(d1);
     auto a2 = atan2(d2);
     return a1 - a2;
+}
+
+/**
+ * Delete all nodes except for one in a closed subpath.
+ * The given range can cross the beginning of the subpath in closed subpaths.
+ * @param keep       The node not to delete.
+ */
+void PathManipulator::_deleteRest(NodeList::iterator keep)
+{
+    NodeList::iterator cur = keep.next();
+    if (!cur) {
+        // This function should only be called with an iterator on a closed path, where there is
+        // always a next node.
+        return;
+    }
+
+    Geom::Point first_node_position = cur->position();
+    Geom::Point last_node_position;
+
+    NodeList &nl = keep->nodeList();
+    while (cur && cur != keep) {
+        last_node_position = cur->position();
+        NodeList::iterator next = cur.next();
+        nl.erase(cur);
+        cur = next;
+    }
 }
 
 /**
@@ -1257,6 +1387,7 @@ void PathManipulator::_createControlPointsFromGeometry()
 
     // sanitize pathvector and store it in SPCurve,
     // so that _updateDragPoint doesn't crash on paths with naked movetos
+    // note that close paths cannot have naked movetos - they have at least a degenerate closing path
     Geom::PathVector pathv;
     if (_is_bspline) {
         pathv = pathv_to_cubicbezier(_spcurve, false);
@@ -1267,7 +1398,7 @@ void PathManipulator::_createControlPointsFromGeometry()
         // NOTE: this utilizes the fact that Geom::PathVector is an std::vector.
         // When we erase an element, the next one slides into position,
         // so we do not increment the iterator.
-        if (i->empty()) {
+        if (i->empty() && !i->closed()) {
             i = pathv.erase(i);
         } else {
             ++i;
@@ -1280,7 +1411,7 @@ void PathManipulator::_createControlPointsFromGeometry()
 
     pathv *= _getTransform();
 
-    // in this loop, we know that there are no zero-segment subpaths
+    // in this loop, we know that there are no zero-segment open subpaths
     for (auto & pit : pathv) {
         // prepare new subpath
         SubpathPtr subpath(new NodeList(_subpaths));
@@ -1315,19 +1446,21 @@ void PathManipulator::_createControlPointsFromGeometry()
                 previous_node->front()->setPosition((*bezier)[1]);
                 current_node ->back() ->setPosition((*bezier)[2]);
 
-                // Once we have set the position of both handles of a node, normalize that node.
-                if (previous_node != subpath->begin().get_pointer()) {
-                    // Not the first segment, so both handles of previous node are now set.
-                    // This will hit on every segment but the first one, leaving the first node
-                    // to be handled in the check below (or never if we are an open path).
-                    _normalizeBsplineHandles(previous_node);
-                }
-                if (current_node == subpath->begin().get_pointer()) {
-                    // Last segment, so the very first node now has both handles set.
-                    // This will only hit for closed paths, where this will finally close the first
-                    // node after we ignored it above. Open paths won't have their two edge nodes
-                    // finalized because the last segment closing the path isn't in this loop.
-                    _normalizeBsplineHandles(current_node);
+                if (_is_bspline) {
+                    // Once we have set the position of both handles of a node, normalize that node.
+                    if (previous_node != subpath->begin().get_pointer()) {
+                        // Not the first segment, so both handles of previous node are now set.
+                        // This will hit on every segment but the first one, leaving the first node
+                        // to be handled in the check below (or never if we are an open path).
+                        _normalizeBsplineHandles(previous_node);
+                    }
+                    if (current_node == subpath->begin().get_pointer()) {
+                        // Last segment, so the very first node now has both handles set.
+                        // This will only hit for closed paths, where this will finally close the first
+                        // node after we ignored it above. Open paths won't have their two edge nodes
+                        // finalized because the last segment closing the path isn't in this loop.
+                        _normalizeBsplineHandles(current_node);
+                    }
                 }
             }
             previous_node = current_node;
@@ -1482,7 +1615,7 @@ void PathManipulator::_createGeometryFromControlPoints(bool alert_LPE)
         // NOTE: this utilizes the fact that Geom::PathVector is an std::vector.
         // When we erase an element, the next one slides into position,
         // so we do not increment the iterator even though it is theoretically invalidated.
-        if (i->empty()) {
+        if (i->empty() && !i->closed()) {
             i = pathv.erase(i);
         } else {
             ++i;
@@ -1663,8 +1796,13 @@ bool PathManipulator::_nodeClicked(Node *n, ButtonReleaseEvent const &event, boo
         NodeList &nl = iter->nodeList();
 
         if (nl.size() <= 1 || (nl.size() <= 2 && !nl.closed())) {
-            // Removing last node of closed path - delete it
+            // Removing last node of closed path, or one of last two of an open path - delete the
+            // whole path
             nl.kill();
+        } else if (nl.size() == 2 && nl.closed()) {
+            // Removing one of two nodes in a closed path - special case deletion to avoid a single
+            // node with an empty path.
+            _deleteRest(iter.next());
         } else {
             // In other cases, delete the node under cursor
             _deleteStretch(iter, iter.next(), NodeDeleteMode::curve_fit);

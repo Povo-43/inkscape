@@ -59,13 +59,15 @@ public:
     SPPage *getViewportPage() const;
     std::vector<SPPage *> getPagesFor(SPItem *item, bool contains) const;
     SPPage *getPageFor(SPItem *item, bool contains) const;
+    SPPage *getPageFor(std::vector<SPItem *> const &item, bool contains) const;
     Geom::OptRect getDesktopRect() const;
     bool hasPages() const { return !_pages.empty(); }
     int getPageCount() const { return _pages.size(); }
     int getPageIndex(const SPPage *page) const;
     int getSelectedPageIndex() const;
     Geom::Rect getSelectedPageRect() const;
-    Geom::Affine getSelectedPageAffine() const;
+    Geom::Point getSelectedPageOrigin() const;
+    Geom::Translate getSelectedPageOriginAffine() const;
     Geom::Point nextPageLocation() const;
     SPPage *findPageAt(Geom::Point pos) const;
 
@@ -73,8 +75,9 @@ public:
     void disablePages();
     void pagesChanged(SPPage *new_page);
     bool selectPage(SPPage *page);
-    bool selectPage(SPItem *item, bool contains);
     bool selectPage(int index) { return selectPage(getPage(index)); }
+    bool selectBestPage(SPItem *item, bool contains);
+    bool selectBestPage(std::vector<SPItem *> const &items, bool contains);
     bool selectNextPage() { return selectPage(getSelectedPageIndex() + 1); }
     bool selectPrevPage() { return selectPage(getSelectedPageIndex() - 1); }
     bool hasNextPage() const { return getSelectedPageIndex() + 1 < _pages.size(); }
@@ -118,6 +121,9 @@ public:
     {
         return _page_selected_signal.connect(slot);
     }
+    /**
+    * connectPageModified tracks changes to the selected page only.
+    */
     sigc::connection connectPageModified(const sigc::slot<void (SPPage *)> &slot)
     {
         return _page_modified_signal.connect(slot);
@@ -125,6 +131,14 @@ public:
     sigc::connection connectPagesChanged(const sigc::slot<void (SPPage *)> &slot)
     {
         return _pages_changed_signal.connect(slot);
+    }
+    /**
+    * connectSelectedPageOriginChanged notifies you if the result of getSelectedPageOrigin() may have changed.
+    * A lot of conditions feed into this (page location, document-wide preferences, etc), so use this to track it.
+    */
+    sigc::connection connectSelectedPageOriginChanged(const sigc::slot<void ()> &slot)
+    {
+        return _selected_page_origin_changed_signal.connect(slot);
     }
 
     Colors::Color const &getBackgroundColor() const { return background_color; }
@@ -155,9 +169,11 @@ private:
     sigc::signal<void (SPPage *)> _page_selected_signal;
     sigc::signal<void (SPPage *)> _page_modified_signal;
     sigc::signal<void (SPPage *)> _pages_changed_signal;
+    sigc::signal<void ()> _selected_page_origin_changed_signal;
 
     sigc::connection _page_modified_connection;
     sigc::scoped_connection _resources_changed;
+    sigc::scoped_connection _doc_modified_conn;
 
     Colors::Color background_color;
     Colors::Color margin_color;

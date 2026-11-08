@@ -808,6 +808,11 @@ void SingleExport::onBrowse()
     // We cannot distinguish between them.
     std::string basename = Glib::path_get_basename(filename);
     std::string dirname = Glib::path_get_dirname(filename);
+
+    // Set extension to match selected export type.
+    si_extension_cb.removeExtension(basename);
+    basename += omod->get_extension();
+
     auto file = choose_file_save( _("Select a filename for exporting"), window,
                                   create_export_filters(), // {}, // mimetype
                                   basename,
@@ -1043,7 +1048,7 @@ unsigned int SingleExport::onProgressCallback(float value, void *data)
 
 void SingleExport::refreshPreview()
 {
-    if (!_desktop) {
+    if (!_desktop || !_document) {
         preview.resetPixels();
         return;
     }
@@ -1087,6 +1092,7 @@ void SingleExport::setDesktop(SPDesktop *desktop)
     if (desktop != _desktop) {
         _page_selected_connection.disconnect();
         _desktop = desktop;
+        refreshPreview();
     }
 }
 

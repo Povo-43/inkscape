@@ -2,11 +2,6 @@
 <interface>
   <placeholder width="238" height="152"></placeholder>
   <requires lib="gtk" version="4.0"></requires>
-  <object class="GtkAdjustment" id="adjustment-font-size">
-    <property name="upper">20</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">2</property>
-  </object>
   <object class="GtkAdjustment" id="adjustment-size">
     <property name="lower">100</property>
     <property name="upper">400</property>
@@ -235,7 +230,7 @@
             <property name="hexpand">true</property>
             <property name="hexpand-set">false</property>
             <property name="halign">end</property>
-            <property name="tooltip-text" translatable="yes">Dialog options</property>
+            <property name="tooltip-text" translatable="yes">Font preview options</property>
             <property name="focusable">True</property>
             <property name="focus-on-click">False</property>
             <property name="receives-default">True</property>
@@ -340,7 +335,6 @@
         <property name="focusable">True</property>
         <property name="hexpand">true</property>
         <property name="vexpand">true</property>
-        <property name="hscrollbar-policy">never</property>
         <property name="child">
           <object class="GtkListView" id="font-list">
             <property name="vexpand">true</property>
@@ -415,17 +409,6 @@
             <property name="margin-top">2</property>
             <property name="margin-bottom">2</property>
             <property name="valign">center</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkScale" id="font-size-scale">
-            <property name="hexpand">True</property>
-            <property name="focusable">True</property>
-            <property name="adjustment">adjustment-font-size</property>
-            <property name="round-digits">1</property>
-            <style>
-              <class name="small-slider"></class>
-            </style>
           </object>
         </child>
         <layout>
@@ -524,28 +507,22 @@
                 <property name="hexpand">true</property>
                 <property name="hexpand-set">true</property>
                 <property name="halign">fill</property>
-                <property name="draw-value">True</property>
+                <property name="draw-value">False</property>
                 <property name="focusable">True</property>
                 <property name="adjustment">adjustment-size</property>
                 <property name="show-fill-level">True</property>
                 <property name="round-digits">0</property>
                 <property name="digits">0</property>
-                <property name="value-pos">right</property>
+                <property name="width-request">150</property>
               </object>
             </child>
             <child>
-              <object class="GtkScale" id="grid-font-size">
-                <property name="hexpand">true</property>
-                <property name="hexpand-set">true</property>
-                <property name="halign">fill</property>
-                <property name="draw-value">True</property>
-                <property name="focusable">True</property>
-                <property name="adjustment">adjustment-grid-size</property>
-                <property name="show-fill-level">True</property>
-                <property name="round-digits">0</property>
-                <property name="digits">0</property>
-                <property name="value-pos">right</property>
-              </object>
+              <object class="GtkSpinButton" id="preview-font-size-value">
+               <property name="adjustment">adjustment-size</property>
+               <property name="numeric">True</property>
+               <property name="width-chars">5</property>
+               <property name="focusable">True</property>
+             </object>
             </child>
             <layout>
               <property name="column">1</property>

@@ -5,8 +5,8 @@
     <inkscape:grid type="xygrid" id="grid"/>
   </sodipodi:namedview>
   <g transform="matrix(0.996066,0,0,0.998048,-556.80064,-504.35705)" id="snap" inkscape:label="00320">
-      <path inkscape:connector-curvature="0" id="rect22340" d="m 559,505.36209 h 16 v 16 h -16 z" style="opacity:0;fill:none"/>
-      <path inkscape:connector-curvature="0" id="rect22342" d="m 559,505.3627 h 16 v 16 h -16 z" style="opacity:0;fill:none"/>
+      <path inkscape:connector-curvature="0" id="rect22340" d="m 559,505.36209 h 16 v 16 h -16 z" opacity="0"/>
+      <path inkscape:connector-curvature="0" id="rect22342" d="m 559,505.3627 h 16 v 16 h -16 z" opacity="0"/>
       <path inkscape:connector-curvature="0" id="rect22373" d="m 562.5,505.36209 c 0.831,0 1.5,0.669 1.5,1.5 0,0.831 -0.669,1.5 -1.5,1.5 -0.831,0 -1.5,-0.669 -1.5,-1.5 0,-0.831 0.669,-1.5 1.5,-1.5 z" style="opacity:1"/>
       <path inkscape:connector-curvature="0" id="rect22375" d="m 562.5,518.36212 c 0.831,0 1.5,0.669 1.5,1.5 0,0.831 -0.669,1.5 -1.5,1.5 -0.831,0 -1.5,-0.669 -1.5,-1.5 0,-0.831 0.669,-1.5 1.5,-1.5 z" style="opacity:1"/>
       <path style="opacity:1" d="m 561,510.3622 -2,2 2,2 -2,2 h 2 l 2,-2 -2,-2 2,-2 z" id="path22386" inkscape:connector-curvature="0"/>
