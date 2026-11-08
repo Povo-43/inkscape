@@ -20,7 +20,8 @@
 #include "style.h"
 
 #include "io/resource.h"
-#include "libnrtype/font-factory.h" // For font-rule
+#include "libnrtype/document-font-map.h"
+#include "libnrtype/document-font-prefs.h"
 #include "xml/document.h"                               // for Document
 #include "xml/node.h"                                   // for Node, NodeType
 
@@ -302,55 +303,22 @@ end_font_face_cb(CRDocHandler *a_handler)
                   unsigned(font_face_rule->type));
     }
 
-    g_warning("end_font_face_cb: font face rule limited support.");
-    cr_declaration_dump(font_face_rule->kind.font_face_rule->decl_list, stderr, 2, TRUE);
-    std::cerr << std::endl;
-
-    // Get document
-    SPDocument* document = parse_tmp.document;
+    SPDocument *document = parse_tmp.document;
     if (!document) {
-        std::cerr << "end_font_face_cb: No document!" << std::endl;
+        g_warning("end_font_face_cb: No document!");
+        parse_tmp.currStmt = nullptr;
+        parse_tmp.stmtType = NO_STMT;
         return;
     }
-    if (!document->getDocumentFilename()) {
-        std::cerr << "end_font_face_cb: Document filename is NULL" << std::endl;
+
+    if (!Inkscape::DocumentFontPrefs::enabled()) {
+        parse_tmp.currStmt = nullptr;
+        parse_tmp.stmtType = NO_STMT;
         return;
     }
-
-    // Add ttf or otf fonts.
-    CRDeclaration const *cur = nullptr;
-    for (cur = font_face_rule->kind.font_face_rule->decl_list; cur; cur = cur->next) {
-        if (cur->property &&
-            cur->property->stryng &&
-            cur->property->stryng->str &&
-            strcmp(cur->property->stryng->str, "src") == 0 ) {
-
-            if (cur->value &&
-                cur->value->content.str &&
-                cur->value->content.str->stryng &&
-                cur->value->content.str->stryng->str) {
-
-                Glib::ustring value = cur->value->content.str->stryng->str;
-
-                if (value.rfind("ttf") == (value.length() - 3) ||
-                    value.rfind("otf") == (value.length() - 3)) {
-
-                    // Get file
-                    Glib::ustring ttf_file =
-                        Inkscape::IO::Resource::get_filename (document->getDocumentFilename(), value);
-
-                    if (!ttf_file.empty()) {
-                        FontFactory::get().AddFontFile(ttf_file.c_str());
-                        g_info("end_font_face_cb: Added font: %s", ttf_file.c_str());
-
-                        // FIX ME: Need to refresh font list.
-                    } else {
-                        g_warning("end_font_face_cb: Failed to add: %s", value.c_str());
-                    }
-                }
-            }
-        }
-    }
+    DFM_MSG("DocumentFontMap: end_font_face_cb: ingesting @font-face for '%s'",
+            document->getDocumentName() ? document->getDocumentName() : "(unnamed)");
+    document->getDocumentFontMap().add_font_face_rule(font_face_rule->kind.font_face_rule->decl_list);
 
     parse_tmp.currStmt = nullptr;
     parse_tmp.stmtType = NO_STMT;

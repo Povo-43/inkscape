@@ -19,9 +19,13 @@
 #endif
 
 #include "Layout-TNG.h"
+#include "document.h"
+#include "font-factory.h"
+#include "libnrtype/document-font-map.h"
+#include "libnrtype/document-font-prefs.h"
+#include "object/sp-object.h"
 #include "style-text.h"
 #include "svg/svg-length.h"
-#include "font-factory.h"
 
 
 namespace Inkscape {
@@ -201,7 +205,8 @@ std::shared_ptr<FontInstance> Layout::InputStreamTextSource::styleGetFontInstanc
 {
     PangoFontDescription *descr = styleGetFontDescription();
     if (descr == nullptr) return nullptr;
-    auto res = FontFactory::get().Face(descr);
+    SPDocument *doc = source ? source->document : nullptr;
+    auto res = FontFactory::get().Face(descr, true, doc);
     pango_font_description_free(descr);
     return res;
 }
@@ -214,6 +219,12 @@ PangoFontDescription *Layout::InputStreamTextSource::styleGetFontDescription() c
     // Font size not yet set
     // mandatory huge size (hinting workaround)
     pango_font_description_set_size(descr, FontFactory::get().fontSize * PANGO_SCALE);
+
+    if (Inkscape::DocumentFontPrefs::enabled() && source && source->document) {
+        if (auto *dfm = source->document->peekDocumentFontMap()) {
+            dfm->rewrite_description(descr);
+        }
+    }
 
     return descr;
 }

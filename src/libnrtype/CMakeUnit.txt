@@ -26,6 +26,10 @@ function(get_libnrtype_unit_lib)
                                  "util/statics.cpp"
                  )
     list(TRANSFORM libnrtype_unit_SRC PREPEND "${CMAKE_SOURCE_DIR}/src/")
+    # font-factory.cpp routes through DocumentFontMap. Isolated unit tests
+    # do not link SPDocument; this stub supplies the symbols they need.
+    list(APPEND libnrtype_unit_SRC
+        "${CMAKE_SOURCE_DIR}/testfiles/src/libnrtype/document-font-map-unit-stubs.cpp")
     add_library(libnrtype_unit_lib SHARED "${libnrtype_unit_SRC}")
     pkg_check_modules(NRTYPE_UNIT_DEPS REQUIRED IMPORTED_TARGET zlib fontconfig freetype2 pangoft2 cairomm-1.16 pangomm-2.48)
     target_link_libraries(libnrtype_unit_lib 2Geom::2geom GLibmm::GLibmm PkgConfig::NRTYPE_UNIT_DEPS)

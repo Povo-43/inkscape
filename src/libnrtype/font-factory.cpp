@@ -38,6 +38,9 @@
 #include "io/sys.h"
 #include "io/resource.h"
 
+#include "document.h"
+#include "libnrtype/document-font-map.h"
+#include "libnrtype/document-font-prefs.h"
 #include "libnrtype/font-factory.h"
 #include "libnrtype/font-instance.h"
 #include "libnrtype/font-utils.h"
@@ -469,8 +472,15 @@ std::unique_ptr<FontInstance> FontFactory::create_face(PangoFontDescription* des
     return std::make_unique<FontInstance>(pango_font_map_load_font(fontServer, fontContext, descr), descr_copy);
 }
 
-std::shared_ptr<FontInstance> FontFactory::Face(PangoFontDescription *descr, bool canFail)
+std::shared_ptr<FontInstance> FontFactory::Face(PangoFontDescription *descr, bool canFail, SPDocument *document)
 {
+    if (document && Inkscape::DocumentFontPrefs::enabled()) {
+        auto &dfm = document->getDocumentFontMap();
+        if (dfm.has_faces()) {
+            return dfm.face(descr, canFail);
+        }
+    }
+
     // Mandatory huge size (hinting workaround).
     pango_font_description_set_size(descr, fontSize * PANGO_SCALE);
 
@@ -583,31 +593,6 @@ void FontFactory::AddFontsDir(char const *utf8dir)
     }
 
     g_free(dir);
-}
-
-void FontFactory::AddFontFile(char const *utf8file)
-{
-    if (!Inkscape::IO::file_test(utf8file, G_FILE_TEST_IS_REGULAR)) {
-        g_warning("Font file '%s' does not exist and will be ignored.", utf8file);
-        return;
-    }
-
-    gchar *file;
-# ifdef _WIN32
-    file = g_win32_locale_filename_from_utf8(utf8file);
-# else
-    file = g_filename_from_utf8(utf8file, -1, nullptr, nullptr, nullptr);
-# endif
-
-    FcBool res = FcConfigAppFontAddFile(fontConfig, (FcChar8 const *)file);
-    if (res == FcTrue) {
-        g_info("Font file '%s' added successfully.", utf8file);
-        pango_fc_font_map_config_changed(PANGO_FC_FONT_MAP(fontServer));
-    } else {
-        g_warning("Could not add font file '%s'.", utf8file);
-    }
-
-    g_free(file);
 }
 
 void FontFactory::AddFontConfig(char const *utf8file)

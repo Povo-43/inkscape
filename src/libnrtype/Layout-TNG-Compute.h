@@ -19,6 +19,7 @@
 #include "Layout-TNG.h"
 
 class LibnrtypeLayoutTNGComputeTest;
+class SPDocument;
 
 namespace Inkscape {
 namespace Text {
@@ -60,6 +61,7 @@ class Layout::Calculator
     ScanlineMaker *_scanline_maker;
     unsigned _current_shape_index;     /// index into Layout::_input_wrap_shapes
     PangoContext *_pango_context;
+    SPDocument *_document = nullptr;
     Direction _block_progression;
 
     /**

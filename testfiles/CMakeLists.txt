@@ -58,6 +58,7 @@ endif()
 set(LIBNRTYPE_TESTS
     libnrtype/Layout-TNG-Compute
     libnrtype/Layout-TNG-Compute-lang
+    libnrtype/document-font-map
     )
 
 # Integration tests (linking all of Inkscape)

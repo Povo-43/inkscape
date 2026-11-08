@@ -16,8 +16,11 @@
 #include <limits>
 
 #include "Layout-TNG-Scanline-Maker.h"
+#include "document.h"
 #include "font-factory.h"
 #include "font-instance.h"
+#include "libnrtype/document-font-map.h"
+#include "libnrtype/document-font-prefs.h"
 #include "livarot/Shape.h"
 
 #include "object/sp-flowdiv.h"
@@ -1155,7 +1158,7 @@ void  Layout::Calculator::_buildPangoItemizationForPara(ParagraphInfo *para) con
         PangoItemInfo new_item;
         new_item.item = (PangoItem*)current_pango_item->data;
         PangoFontDescription *font_description = pango_font_describe(new_item.item->analysis.font);
-        new_item.font = FontFactory::get().Face(font_description);
+        new_item.font = FontFactory::get().Face(font_description, true, _document);
         pango_font_description_free(font_description);   // Face() makes a copy
         para->pango_items.push_back(new_item);
     }
@@ -1904,7 +1907,17 @@ bool Layout::Calculator::calculate()
 
     _flow._clearOutputObjects();
 
+    _document = nullptr;
+    if (!_flow._input_stream.empty() && _flow._input_stream.front()->source) {
+        _document = _flow._input_stream.front()->source->document;
+    }
+
     _pango_context = FontFactory::get().get_font_context();
+    if (Inkscape::DocumentFontPrefs::enabled() && _document &&
+        _document->getDocumentFontMap().has_faces()) {
+        _pango_context = _document->getDocumentFontMap().context();
+        DFM_MSG("DocumentFontMap: layout using document PangoContext");
+    }
 
     _font_factory_size_multiplier = FontFactory::get().fontSize;
 

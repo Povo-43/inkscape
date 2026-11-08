@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 set(libnrtype_SRC
+        document-font-map.cpp
+        document-font-prefs.cpp
         font-lister.cpp
         font-utils.cpp
 	Layout-TNG.cpp
@@ -13,6 +15,8 @@ set(libnrtype_SRC
 
 	# -------
 	# Headers
+	document-font-map.h
+	document-font-prefs.h
 	font-lister.h
         font-utils.h
 	Layout-TNG-Scanline-Maker.h

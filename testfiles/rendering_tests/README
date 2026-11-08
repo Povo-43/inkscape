@@ -22,3 +22,8 @@ HOWTO
 # Fix a failing test (due to a change in pixman or cairo):
   - update renderings. Use a *stable* version to generate the renderings, NOT TRUNK
   - manually check appearances
+
+# Manual document-font-map SVGs (open in the GUI; do not add_rendering_test)
+  same-names-a.svg / same-names-b.svg share CSS names Logo, Bogo, Fogo bound to different files.
+  mixed-fonts-caret.svg uses relative fonts/*.ttf on mixed spans.
+  All faces are SIL OFL 1.1. Pacifico and UnifrakturCook live only as data: inside same-names-b.svg.

@@ -83,6 +83,7 @@ namespace Inkscape {
     namespace Colors {
         class DocumentCMS;
     }
+    class DocumentFontMap;
     class Selection;
     class UndoStackObserver;
     namespace XML {
@@ -181,12 +182,16 @@ public:
     Inkscape::Colors::DocumentCMS &getDocumentCMS() { return *_cms_manager; }
     const Inkscape::Colors::DocumentCMS &getDocumentCMS() const { return *_cms_manager; }
 
+    Inkscape::DocumentFontMap &getDocumentFontMap();
+    Inkscape::DocumentFontMap *peekDocumentFontMap() const { return _document_font_map.get(); }
+
 private:
     void _importDefsNode(SPDocument *source, Inkscape::XML::Node *defs, Inkscape::XML::Node *target_defs);
     SPObject *_activexmltree;
 
     std::unique_ptr<Inkscape::PageManager> _page_manager;
     std::unique_ptr<Inkscape::Colors::DocumentCMS> _cms_manager;
+    std::unique_ptr<Inkscape::DocumentFontMap> _document_font_map;
 
     std::queue<GQuark> pending_resource_changes;
 

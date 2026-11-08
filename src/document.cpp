@@ -52,6 +52,7 @@
 #include "actions/actions-svg-processing.h"
 #include "actions/actions-undo-document.h"
 #include "colors/document-cms.h"
+#include "libnrtype/document-font-map.h"
 #include "debug/console-output-undo-observer.h"
 #include "desktop.h"
 #include "display/control/canvas-item-drawing.h"
@@ -151,6 +152,14 @@ SPDocument::SPDocument()
 
     _page_manager = std::make_unique<Inkscape::PageManager>(this);
     _cms_manager = std::make_unique<Inkscape::Colors::DocumentCMS>(this);
+}
+
+Inkscape::DocumentFontMap &SPDocument::getDocumentFontMap()
+{
+    if (!_document_font_map) {
+        _document_font_map = std::make_unique<Inkscape::DocumentFontMap>(this);
+    }
+    return *_document_font_map;
 }
 
 SPDocument::~SPDocument() {
