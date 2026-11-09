@@ -1315,10 +1315,9 @@ void PathManipulator::updatePath()
 /** Called by the XML observer when something else than us modifies the path. */
 void PathManipulator::_externalChange(unsigned type)
 {
-    hideDragPoint();
-
     switch (type) {
     case PATH_CHANGE_D: {
+        hideDragPoint();
         _getGeometry();
 
         // ugly: stored offsets of selected nodes in a vector
