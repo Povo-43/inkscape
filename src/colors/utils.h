@@ -89,6 +89,7 @@ std::string color_to_id(std::optional<Color> const &color);
 std::string desc_to_id(std::string const &desc);
 
 Color make_contrasted_color(Color const &orig, double amount);
+Color make_contrasted_color(Color orig);
 Color make_theme_color(Color const &orig, bool dark);
 Color make_disabled_color(Color const &orig, bool dark);
 
@@ -100,7 +101,7 @@ std::pair<double, double> get_contrasting_color(double l);
 /// Premultiply a vector of colour channels, assuming alpha is last.
 constexpr void premultiply(std::span<double> vec) {
     auto const alpha = vec.back();
-    for (int i = 0; i < vec.size() - 1; i++) {
+    for (int i = 0; i < (int)vec.size() - 1; i++) {
         vec[i] *= alpha;
     }
 }
@@ -115,7 +116,7 @@ constexpr void unpremultiply(std::span<double> vec) {
     if (alpha == 0) {
         return;
     }
-    for (int i = 0; i < vec.size() - 1; i++) {
+    for (int i = 0; i < (int)vec.size() - 1; i++) {
         vec[i] /= alpha;
     }
 }

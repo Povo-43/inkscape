@@ -41,7 +41,6 @@ protected:
         auto &cms = Inkscape::Colors::CMS::System::get();
         cms.clearDirectoryPaths();
         cms.addDirectoryPath(icc_dir, false);
-        cms.refreshProfiles();
 
         // Load the test svg file with a bunch of icc profiles
         doc = SPDocument::createNewDoc(getDocFilename().c_str());
@@ -292,6 +291,40 @@ TEST_F(ColorDocumentCMSObjsTest, findSvgAttribute)
     EXPECT_TRUE(tr.findSvgColorSpace("linearRGB"));
 }
 
+TEST_F(ColorDocumentCMSObjsTest, getDocumentColorSpace)
+{
+    auto &tr = doc->getDocumentCMS();
+    EXPECT_EQ(tr.getDocumentColorSpace()->getName(), "cmyk-acm");
+
+    tr.setDocumentColorSpace(tr.getSpace("grb"));
+    EXPECT_EQ(std::string(doc->getReprRoot()->attribute("style")), "color-interpolation:Swapped-Red-and-Green");
+    EXPECT_EQ(tr.getDocumentColorSpace()->getName(), "Swapped-Red-and-Green");
+
+    tr.setDocumentColorSpace({});
+    EXPECT_FALSE(doc->getReprRoot()->attribute("style"));
+    EXPECT_EQ(tr.getDocumentColorSpace()->getName(), "RGB");
+}
+
+TEST_F(ColorDocumentCMSObjsTest, toDocumentColorString)
+{
+    auto &tr = doc->getDocumentCMS();
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "#cf2c2d icc-color(cmyk-acm, 0, 1, 1, 0)");
+
+    tr.setDocumentColorSpace(tr.getSpace("grb"));
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "#ff0000 icc-color(Swapped-Red-and-Green, 0, 1, 0)");
+
+    tr.setDocumentColorSpace({});
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "#ff0000");
+}
+
+TEST_F(ColorDocumentCMSObjsTest, mapToStorageFormat)
+{
+    auto &tr = doc->getDocumentCMS();
+    EXPECT_EQ(tr.mapToStorageFormat(Manager::get().find(Colors::Space::Type::RGB))->getName(), "cmyk-acm");
+    EXPECT_EQ(tr.mapToStorageFormat(Manager::get().find(Colors::Space::Type::HSL))->getName(), "cmyk-acm");
+    EXPECT_EQ(tr.mapToStorageFormat(tr.getSpace("cmyk-acm"))->getName(), "cmyk-acm");
+}
+
 class ColorDocumentCMSDefsTest : public ColorDocumentCMSObjsTest
 {
     std::string const &getDocFilename() const override
@@ -318,7 +351,11 @@ TEST_F(ColorDocumentCMSDefsTest, loadDocument)
     auto color = stop->getColor();
 
     // Test the expected values actually return
+#if LCMS_VERSION >= 2180
     std::string expected = "#2b292a icc-color(Artifex-CMYK-SWOP-Profile, 0, 0, 0, 1)";
+#else
+    std::string expected = "#2c292a icc-color(Artifex-CMYK-SWOP-Profile, 0, 0, 0, 1)";
+#endif
     EXPECT_TRUE(tracker.parse(expected)->getSpace()->hasValidCmsProfile());
     EXPECT_EQ(tracker.parse(expected)->toString(), expected);
     EXPECT_EQ(color.toString(), expected);
@@ -332,6 +369,25 @@ TEST_F(ColorDocumentCMSDefsTest, loadDocument)
     EXPECT_NEAR(color[3], 1, 0.01);
 }
 
+TEST_F(ColorDocumentCMSDefsTest, getDocumentColorSpace)
+{
+    auto &tr = doc->getDocumentCMS();
+
+    auto space = tr.getDocumentColorSpace();
+    EXPECT_EQ(space->getName(), "RGB");
+}
+
+TEST_F(ColorDocumentCMSDefsTest, toDocumentColorString)
+{
+    auto &tr = doc->getDocumentCMS();
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "#ff0000");
+
+    tr.setDocumentColorSpace(Manager::get().find(Space::Type::HSL));
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "hsl(0, 100%, 50%)");
+
+    tr.setDocumentColorSpace(Manager::get().find(Space::Type::CMYK));
+    EXPECT_EQ(tr.toDocumentColorString(*Color::parse("red")), "device-cmyk(0 1 1 0)");
+}
 } // namespace
 
 /*

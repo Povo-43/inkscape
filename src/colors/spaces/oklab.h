@@ -64,7 +64,7 @@ public:
     constexpr static double MIN_SCALE = -0.4;
     constexpr static double MAX_SCALE = 0.4;
 
-    OkLab(): RGBBase(Type::OKLAB, "OkLab", "OkLab", "color-selector-oklab", true) {
+    OkLab(): RGBBase(Type::OKLAB, "OkLab", "OkLab", "oklab", true) {
         _svgNames.emplace_back("oklab");
     }
     ~OkLab() override = default;
@@ -103,9 +103,6 @@ public:
         }
     }
 
-    std::string toString(std::vector<double> const &values, bool opacity) const override;
-
-public:
     class Parser : public Colors::Parser
     {
     public:
@@ -145,6 +142,9 @@ public:
             o[c] = dot3(M2[c], cones);
         }
     }
+
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity) const override;
 };
 
 } // namespace Inkscape::Colors::Space

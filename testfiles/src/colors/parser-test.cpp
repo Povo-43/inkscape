@@ -122,7 +122,7 @@ TEST(ColorsParser, parse_append_css_value)
 
 TEST(ColorsParser, parse_hex)
 {
-    auto parser = HexParser();
+    auto parser = HexParser(false);
     ASSERT_EQ(parser.getPrefix(), "#");
 
     bool more = false;
@@ -131,6 +131,19 @@ TEST(ColorsParser, parse_hex)
 
     ASSERT_EQ(parser.parseColor(p, output, more), "");
     ASSERT_TRUE(more);
+}
+
+TEST(ColorsParser, parse_hex_forgiving)
+{
+    auto parser = HexParser(true);
+    ASSERT_EQ(parser.getPrefix(), "");
+
+    bool more = false;
+    std::vector<double> output;
+    std::istringstream p("000001");
+
+    ASSERT_EQ(parser.parseColor(p, output, more), "");
+    ASSERT_FALSE(more);
 }
 
 TEST(ColorsParser, parse)
@@ -145,6 +158,29 @@ TEST(ColorsParser, parse)
      ASSERT_EQ(cms_name, "");
      ASSERT_EQ(fallback.size(), 0);
      EXPECT_TRUE(VectorIsNear(values, {0.5, 1.0, 1.0}, 0.01));
+}
+
+TEST(ColorsParser, parse_strict)
+{
+     Space::Type space_type;
+     std::string cms_name;
+     std::vector<double> values;
+     std::vector<double> fallback;
+     ASSERT_FALSE(StrictParsers::get().parse("88ff88aa", space_type, cms_name, values, fallback));
+}
+
+TEST(ColorsParser, parse_forgiving)
+{
+     Space::Type space_type;
+     std::string cms_name;
+     std::vector<double> values;
+     std::vector<double> fallback;
+     ASSERT_TRUE(ForgivingParsers::get().parse("88ff88aa", space_type, cms_name, values, fallback));
+
+     ASSERT_EQ(space_type, Space::Type::RGB);
+     ASSERT_EQ(cms_name, "");
+     ASSERT_EQ(fallback.size(), 0);
+     EXPECT_TRUE(VectorIsNear(values, {0.53, 1.0, 0.53, 0.66}, 0.01));
 }
 
 } // namespace

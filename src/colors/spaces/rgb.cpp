@@ -24,7 +24,7 @@ namespace Inkscape::Colors::Space {
  * @arg values - A vector of doubles for each channel in the RGB space
  * @arg opacity - True if the opacity should be included in the output.
  */
-std::string RGB::toString(std::vector<double> const &values, bool opacity) const
+std::string RGB::_to_string(std::vector<double> const &values, bool opacity) const
 {
     return rgba_to_hex(toRGBA(values), values.size() == 4 && opacity);
 }
@@ -37,7 +37,7 @@ bool RGB::Parser::parse(std::istringstream &ss, std::vector<double> &output) con
     // Modern CSS syntax
     char sep0 = 0x0;
     char sep1 = '/'; // alpha separator
-    int max_count = 4;
+    unsigned max_count = 4;
 
     // Legacy CSS syntax
     if (ss.str().find(',') != std::string::npos) {

@@ -4,12 +4,12 @@
 <svg
    version="2.0"
    id="svg1"
+   inkscape:version="1.5-dev (b9abfcf1c8, 2026-10-23, custom)"
    width="563.61248"
    height="923.5378133"
    viewBox="0 0 563.61248 923.5378133"
    sodipodi:docname="Annot_w_AP.pdf"
    standalone="no"
-   inkscape:version="1.5-dev (6f35fa1fa1, 2026-06-26, custom)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -79,7 +79,7 @@
      id="namedview1"
      pagecolor="#ffffff"
      bordercolor="#000000"
-     borderopacity="0.25"
+     borderopacity="0.1"
      inkscape:showpageshadow="2"
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
@@ -148,7 +148,7 @@
          transform="matrix(1.333333333,0,0,1.333333333,283.03248,454.6538133)"
          clip-path="url(#clipPath9)"
          id="text9"><tspan
-           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
            x="0"
            y="0"
            id="tspan9">2,00 mm</tspan></text>
@@ -185,7 +185,7 @@
          transform="matrix(0,1.333333333,-1.333333333,0,246.46968,438.42808)"
          clip-path="url(#clipPath15)"
          id="text15"><tspan
-           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
            x="0"
            y="0"
            id="tspan15">3,00 mm</tspan></text>
@@ -222,7 +222,7 @@
          transform="matrix(1.333333333,0,0,1.333333333,251.7911467,42.16581333)"
          clip-path="url(#clipPath21)"
          id="text21"><tspan
-           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
            x="0"
            y="0"
            id="tspan21">135,00 mm</tspan></text>
@@ -264,7 +264,7 @@
          transform="matrix(0,1.333333333,-1.333333333,0,11.36434667,431.7546133)"
          clip-path="url(#clipPath28)"
          id="text28"><tspan
-           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
            x="0"
            y="0"
            id="tspan28">217,00 mm</tspan></text>
@@ -306,7 +306,7 @@
          transform="matrix(1.333333333,0,0,1.333333333,396.8618133,121.0778133)"
          clip-path="url(#clipPath35)"
          id="text35"><tspan
-           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
            x="0"
            y="0"
            id="tspan35">60,00 mm</tspan></text>
@@ -353,7 +353,7 @@
          transform="matrix(1.333333333,0,0,1.333333333,159.29648,109.5178133)"
          clip-path="url(#clipPath42)"
          id="text43"><tspan
-           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
            x="0"
            y="0"
            id="tspan43">73,00 mm</tspan></text>
@@ -390,7 +390,7 @@
          transform="matrix(0,1.333333333,-1.333333333,0,461.47248,223.8802133)"
          clip-path="url(#clipPath49)"
          id="text49"><tspan
-           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill-opacity:1;fill-rule:nonzero;stroke:none"
+           style="font-variant:normal;font-weight:normal;font-size:9px;font-family:Helvetica;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
            x="0"
            y="0"
            id="tspan49">107,00 mm</tspan></text>

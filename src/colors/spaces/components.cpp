@@ -26,7 +26,7 @@ static const std::vector<Components> get_color_spaces() {
 
 static const std::vector<Components> color_spaces = {
     {
-        Type::RGB, Type::RGB, Traits::Picker,
+        Type::RGB,
         {
             { "r", _("_R"), _("Red"), Unit::EightBit },
             { "g", _("_G"), _("Green"), Unit::EightBit },
@@ -34,7 +34,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::linearRGB, Type::NONE, Traits::Internal,
+        Type::linearRGB,
         {
             { "r", _("<sub>l</sub>_R"), _("Linear Red"), Unit::EightBit },
             { "g", _("<sub>l</sub>_G"), _("Linear Green"), Unit::EightBit },
@@ -42,7 +42,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::HSL, Type::HSL, Traits::Picker,
+        Type::HSL,
         {
             { "h", _("_H"), _("Hue"), Unit::Degree },
             { "s", _("_S"), _("Saturation"), Unit::Percent },
@@ -50,7 +50,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::HSV, Type::HSV, Traits::Picker,
+        Type::HSV,
         {
             { "h", _("_H"), _("Hue"), Unit::Degree },
             { "s", _("_S"), _("Saturation"), Unit::Percent },
@@ -58,7 +58,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::CMYK, Type::NONE, Traits::Picker,
+        Type::CMYK,
         {
             { "c", _("_C"), C_("CMYK", "Cyan"), Unit::Percent },
             { "m", _("_M"), C_("CMYK", "Magenta"), Unit::Percent },
@@ -67,7 +67,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::CMY, Type::NONE, Traits::Picker,
+        Type::CMY,
         {
             { "c", _("_C"), C_("CMYK", "Cyan"), Unit::Percent },
             { "m", _("_M"), C_("CMYK", "Magenta"), Unit::Percent },
@@ -75,7 +75,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::HSLUV, Type::HSLUV, Traits::Picker,
+        Type::HSLUV,
         {
             { "h", _("_H*"), _("Hue"), Unit::Degree },
             { "s", _("_S*"), _("Saturation"), Unit::Percent },
@@ -83,7 +83,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::OKHSL, Type::OKHSL, Traits::Picker,
+        Type::OKHSL,
         {
             { "h", _("_H<sub>ok</sub>"), _("Hue"), Unit::Degree },
             { "s", _("_S<sub>ok</sub>"), _("Saturation"), Unit::Percent },
@@ -91,7 +91,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::OKHSV, Type::OKHSV, Traits::Internal,
+        Type::OKHSV,
         {
             { "h", _("_H<sub>ok</sub>"), _("Hue"), Unit::Degree },
             { "s", _("_S<sub>ok</sub>"), _("Saturation"), Unit::Percent },
@@ -99,7 +99,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::LCH, Type::NONE, Traits::Internal,
+        Type::LCH,
         {
             { "l", _("_L"), _("Luminance"), Unit::EightBit },
             { "c", _("_C"), _("Chroma"), Unit::EightBit },
@@ -107,7 +107,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::LUV, Type::NONE, Traits::Internal,
+        Type::LUV, 
         {
             { "l", _("_L"), _("Luminance"), Unit::Percent },
             { "u", _("_U"), _("Chroma U"), Unit::Percent },
@@ -115,7 +115,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::OKLAB, Type::NONE, Traits::Internal,
+        Type::OKLAB,
         {
             { "l", _("_L<sub>ok</sub>"), _("Lightness"), Unit::Percent },
             { "a", _("_A<sub>ok</sub>"), _("Component A"), Unit::Percent },
@@ -123,7 +123,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::OKLCH, Type::OKHSL, Traits::Picker,
+        Type::OKLCH,
         {
             { "l", _("_L<sub>ok</sub>"), _("Lightness"), Unit::Percent },
             { "c", _("_C<sub>ok</sub>"), _("Chroma"), Unit::Chroma40 }, // 100% is 0.4
@@ -131,7 +131,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::LAB, Type::NONE, Traits::Internal,
+        Type::LAB,
         {
             { "l", _("_L"), _("Lightness"), Unit::Percent },
             { "a", _("_A"), _("Component A"), Unit::EightBit },
@@ -139,7 +139,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::YCbCr, Type::NONE, Traits::CMS,
+        Type::YCbCr,
         {
             { "y", _("_Y"), _("Y"), Unit::EightBit },
             { "cb", _("C_r"), _("Cb"), Unit::EightBit },
@@ -147,7 +147,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::XYZ, Type::NONE, Traits::Internal,
+        Type::XYZ,
         {
             { "x", "_X", "X", Unit::EightBit },
             { "y", "_Y", "Y", Unit::EightBit },
@@ -155,7 +155,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::XYZ50, Type::NONE, Traits::Internal,
+        Type::XYZ50,
         {
             { "x", "_X", "X", Unit::EightBit },
             { "y", "_Y", "Y", Unit::EightBit },
@@ -163,7 +163,7 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::YXY, Type::NONE, Traits::Internal,
+        Type::YXY,
         {
             { "y1", "_Y", "Y", Unit::EightBit },
             { "x", "_x", "x", Unit::EightBit },
@@ -171,13 +171,13 @@ static const std::vector<Components> color_spaces = {
         }
     },
     {
-        Type::Gray, Type::NONE, Traits::Internal,
+        Type::Gray,
         {
             { "gray", _("G"), _("Gray"), Unit::Linear1024 }
         }
     },
     {
-        Type::Alpha, Type::NONE, Traits::Internal,
+        Type::Alpha,
         {
         }
     }
@@ -268,10 +268,6 @@ Components const &Components::get(Type space, bool alpha)
         return search->second;
     }
     return lookup_set[Type::NONE];
-}
-
-Type Components::get_wheel_type() const {
-    return _wheel_type;
 }
 
 } // namespace Inkscape::Colors::Space

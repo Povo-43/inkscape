@@ -22,15 +22,27 @@ namespace Space {
 class AnySpace;
 } // namespace Space
 
+class ColorError : public std::exception
+{
+public:
+    ColorError(std::string &&msg)
+        : _msg(msg)
+    {}
+    char const *what() const noexcept override { return _msg.c_str(); }
+
+private:
+    std::string _msg;
+};
+
 class Color final
 {
 public:
-    Color(std::shared_ptr<Space::AnySpace> space, std::vector<double> colors);
+    Color(std::shared_ptr<Space::AnySpace> space, std::vector<double> values = {});
     Color(Space::Type space_type, std::vector<double> values);
     explicit Color(uint32_t color, bool alpha = true);
 
-    static std::optional<Color> parse(char const *value);
-    static std::optional<Color> parse(std::string const &value);
+    static std::optional<Color> parse(char const *value, bool forgiving = false);
+    static std::optional<Color> parse(std::string const &value, bool forgiving = false);
     static std::optional<Color> ifValid(Space::Type space_type, std::vector<double> values);
 
     bool operator==(Color const &other) const;
@@ -55,6 +67,7 @@ public:
     bool setOpacity(double opacity);
     bool addOpacity(double opacity = 1.0) { return setOpacity(opacity * getOpacity()); }
     Color withOpacity(double opacity) const;
+    Color withoutOpacity() const;
 
     unsigned int getPin(unsigned int channel) const;
 
@@ -75,6 +88,13 @@ public:
     uint32_t toRGBA(double opacity = 1.0) const;
     uint32_t toARGB(double opacity = 1.0) const;
     uint32_t toABGR(double opacity = 1.0) const;
+
+    template <typename T = double, int C = 4>
+    std::array<T, C> toArray() const {
+        std::array<T, C> ret;
+        std::copy_n(_values.begin(), std::min(C, (int)_values.size()), ret.begin());
+        return ret;
+    }
 
     std::string getName() const { return _name; }
     void setName(std::string name) { _name = std::move(name); }
@@ -104,18 +124,6 @@ private:
     void _color_mutate_inplace(Color const &other, unsigned int pin, Func avgFunc);
 
     bool _isnear(std::vector<double> const &other, double epsilon = 0.001) const;
-};
-
-class ColorError : public std::exception
-{
-public:
-    ColorError(std::string &&msg)
-        : _msg(msg)
-    {}
-    char const *what() const noexcept override { return _msg.c_str(); }
-
-private:
-    std::string _msg;
 };
 
 } // namespace Inkscape::Colors

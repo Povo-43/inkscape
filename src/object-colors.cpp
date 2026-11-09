@@ -2,6 +2,7 @@
 
 #include "object-colors.h"
 
+#include "colors/spaces/base.h"
 #include "desktop-style.h"
 #include "document.h"
 #include "gradient-chemistry.h"
@@ -118,7 +119,12 @@ void ObjectColorSet::populateMap(Color color, SPObject *item, ObjectStyleType ty
 
 void ObjectColorSet::changeObjectColor(ColorRef const &item, Color const &color)
 {
-    std::string c = color.toString(true);
+    std::string c;
+    try {
+        c = color.toString(true);
+    } catch (Colors::Space::ColorSpaceError &e) {
+        c = ""; // Why?
+    }
     if (item.kind == "stop") {
         return;
     }

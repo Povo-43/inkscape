@@ -11,7 +11,6 @@
 #include <gtkmm/overlay.h>
 
 #include "actions/actions-tools.h"
-#include "color-notebook.h"
 #include "desktop.h"
 #include "document-undo.h"
 #include "multi-marker-color-plate.h"
@@ -22,6 +21,7 @@
 #include "seltrans.h"
 #include "selection.h" 
 #include "ui/tools/select-tool.h"
+#include "ui/widget/color-picker-panel.h"
 
 namespace Inkscape::UI::Widget {
 
@@ -220,6 +220,9 @@ void RecolorArt::setDesktop(SPDesktop *desktop)
         return;
     }
 
+    _color_picker_wdgt->set_desktop(desktop);
+    _color_picker_wdgt->set_document(desktop ? desktop->getDocument() : nullptr);
+
     if (_desktop) {
         _sel_changed_conn.disconnect();
         _sel_modified_conn.disconnect();
@@ -272,9 +275,7 @@ void RecolorArt::generateVisualList()
  */
 void RecolorArt::layoutColorPicker(std::shared_ptr<Colors::ColorSet> updated_color)
 {
-    _color_picker_wdgt = Gtk::make_managed<ColorNotebook>(_solid_colors);
-    _color_picker_wdgt->set_label(_("<b>Selected Color</b>"));
-
+    _color_picker_wdgt = ColorPickerPanel::make_managed(Colors::Space::Type::RGB, ColorPickerPanel::Rect, _solid_colors);
     _solid_colors->signal_changed.connect([this]() { onColorPickerChanged(); });
 
     for (auto child : _color_picker_container.get_children()) {
@@ -394,10 +395,7 @@ void RecolorArt::onOriginalColorClicked(uint32_t color_id)
     }
     _current_color_id = color_id;
     if (auto color = _manager.getSelectedNewColor(color_id)) {
-        _solid_colors->set(*color);                          // update sliders under the colorwheel in the colorlist page
-        _color_picker_wdgt->setCurrentColor(_solid_colors); /* solves the issue of needing to create new
-         colornotebook every time the _solid_colors changes because it only changes the sliders not the
-         color wheel it self in colornotebook */
+        _solid_colors->set(*color);
     }
 }
 

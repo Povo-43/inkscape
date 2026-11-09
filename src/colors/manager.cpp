@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Manager - Look after all a document's icc profiles.
+ * Colors::Manager - Look after the systems in built color spaces
  *
- * Copyright 2023 Martin Owens <doctormo@geek-2.com>
+ * Copyright 2023-2026
+ *    * Martin Owens <doctormo@geek-2.com>
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
@@ -13,10 +14,10 @@
 #include <glib.h>
 
 #include "colors/color.h"
-#include "colors/parser.h"
 
 // Each Internal space should be imported here.
 #include "spaces/alpha.h"
+#include "spaces/cms.h"
 #include "spaces/cmyk.h"
 #include "spaces/gray.h"
 #include "spaces/hsl.h"
@@ -33,35 +34,40 @@
 #include "spaces/oklch.h"
 #include "spaces/rgb.h"
 #include "spaces/xyz.h"
-#include "util/reference.h"
 
 namespace Inkscape::Colors {
 
 Manager::Manager()
 {
     // Regular SVG 1.1 Colors
-    addSpace(new Space::RGB());
+    addSpaceAndPicker(new Space::RGB(), Space::Type::RGB);
     addSpace(new Space::NamedColor());
 
     // Color module 4 and 5 support
-    addSpace(new Space::DeviceCMYK());
+    addSpaceAndPicker(new Space::HSL(), Space::Type::HSL);
+    addSpaceAndPicker(new Space::HSV(), Space::Type::HSV);
+    addSpaceAndPicker(new Space::DeviceCMYK(), Space::Type::NONE);
+    addSpaceAndPicker(new Space::HSLuv(), Space::Type::HSLUV);
+    addSpaceAndPicker(new Space::OkHsl(), Space::Type::OKHSL);
+    addSpaceAndPicker(new Space::OkLch(), Space::Type::OKHSL);
+
+    // Color pickers not available for these
     addSpace(new Space::Gray());
-    addSpace(new Space::HSL());
-    addSpace(new Space::HSLuv());
-    addSpace(new Space::HSV());
     addSpace(new Space::Lab());
     addSpace(new Space::LinearRGB());
     addSpace(new Space::Lch());
     addSpace(new Space::Luv());
-    addSpace(new Space::OkHsl());
     addSpace(new Space::OkHsv());
     addSpace(new Space::OkLab());
-    addSpace(new Space::OkLch());
     addSpace(new Space::XYZ());
     addSpace(new Space::XYZ50());
 
     // Image rendering spaces
     addSpace(new Space::Alpha());
+
+    // CMS empty which is just for registering a color picker type
+    auto cms = Space::CMS("cms", 0);
+    addPicker(&cms, Space::Type::NONE);
 }
 
 /**
@@ -70,9 +76,8 @@ Manager::Manager()
  * @arg space - A pointer to the new Color Space object.
  * @arg svg_matches - A list of matching strings for looking up this space as an attribute, first item is used in output.
  *
- * @returns The shared ptr which is now a global that can be used everywhere.
  */
-std::shared_ptr<Space::AnySpace> Manager::addSpace(Space::AnySpace *space)
+void Manager::addSpace(Space::AnySpace *space)
 {
     if (find(space->getType())) {
         throw ColorError("Can not add the same color space twice.");
@@ -84,27 +89,29 @@ std::shared_ptr<Space::AnySpace> Manager::addSpace(Space::AnySpace *space)
         }
         _svg_names_lookup[match] = _spaces.back();
     }
-    return _spaces.back();
 }
 
 /**
- * Removes the given space from the list of available spaces.
+ * Add the given space as a template for a color picker, allowing the user to choose
+ * colors using this color space format in the user interface.
+ *
+ * These pickers are actually categories, but for most of all of the pickers there
+ * is a one to one correspondence between the internal color space and the picker.
+ *
+ * Only for CMS spaces so far would the same picker be used for multiple spaces.
  */
-bool Manager::removeSpace(std::shared_ptr<Space::AnySpace> space)
+void Manager::addPicker(Space::AnySpace *space, Space::Type wheel)
 {
-    std::erase_if(_svg_names_lookup, [space](const auto& item)
-    {
-        return item.second == space;
-    });
-    return std::erase(_spaces, space);
+    _pickers.emplace_back(new Picker(space->getType(), wheel, space->getName(), space->getIcon()));
 }
 
-std::vector<std::shared_ptr<Space::AnySpace>> Manager::spaces(Space::Traits traits) {
-    std::vector<std::shared_ptr<Space::AnySpace>> out;
-    std::copy_if(_spaces.begin(), _spaces.end(), std::back_inserter(out), [=](auto& p) {
-        return (p->getComponents().traits() & traits) != Space::Traits::None;
-    });
-    return out;
+/**
+ * Combined call to addSpace and addPicker
+ */
+void Manager::addSpaceAndPicker(Space::AnySpace *space, Space::Type wheel)
+{
+    addSpace(space);
+    addPicker(space, wheel);
 }
 
 /**
@@ -143,6 +150,25 @@ std::shared_ptr<Space::AnySpace> Manager::findSvgColorSpace(std::string const &i
         return it->second;
     }
     return {};
+}
+
+/**
+ * Find any color space by a unique integer id attached at creation time. Used for
+ * some historical data-model driven UI which can't use void pointers.
+ */
+std::shared_ptr<Space::AnySpace> Manager::findById(int id) const
+{
+    auto it = std::find_if(_spaces.begin(), _spaces.end(), [id](auto &v) { return v->getId() == id; });
+    return it != _spaces.end() ? *it : nullptr;
+}
+
+/**
+ * Finds the color picker with this color type, there should only ever be one
+ */
+std::shared_ptr<Picker> Manager::findPicker(Space::Type type) const
+{
+    auto it = std::find_if(_pickers.begin(), _pickers.end(), [type](auto &v) { return v->getType() == type; });
+    return it != _pickers.end() ? *it : nullptr;
 }
 
 } // namespace Inkscape::Colors

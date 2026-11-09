@@ -19,6 +19,7 @@
 #include "object/color-profile.h"
 #include "object/sp-defs.h"
 #include "object/sp-root.h"
+#include "preferences.h"
 
 namespace Inkscape::Colors {
 
@@ -108,9 +109,10 @@ bool ColorProfileLink::updateSpace()
 DocumentCMS::DocumentCMS(SPDocument *document)
     : _document(document)
 {
-    if (document)
+    if (document) {
         _resource_connection =
-            _document->connectResourcesChanged("iccprofile", sigc::mem_fun(*this, &DocumentCMS::refreshResources));
+            _document->connectResourcesChanged("iccprofile", sigc::mem_fun(*this, &DocumentCMS::_refresh_resources));
+    }
 }
 
 DocumentCMS::~DocumentCMS()
@@ -163,7 +165,7 @@ std::optional<Color> DocumentCMS::parse(std::string const &value) const
  * Make sure the icc-profile resource list is linked and up to date
  * with the color manager's list of available color spaces.
  */
-void DocumentCMS::refreshResources()
+void DocumentCMS::_refresh_resources()
 {
     bool changed = false;
 
@@ -197,6 +199,9 @@ void DocumentCMS::refreshResources()
     if (changed) {
         _changed_signal.emit();
     }
+
+    // 4. Invalidate caches for map and document_profile
+    _invalidate_caches();
 }
 
 /**
@@ -232,8 +237,10 @@ void DocumentCMS::removeProfile(std::shared_ptr<Space::CMS> space)
 {
     auto result = std::find_if(_spaces.begin(), _spaces.end(), [space](const auto &it) { return it.second == space; });
 
-    if (result != _spaces.end())
+    if (result != _spaces.end()) {
         _spaces.erase(result);
+    }
+    _invalidate_caches();
 }
 
 /**
@@ -269,6 +276,19 @@ std::pair<std::string, bool> DocumentCMS::checkProfileName(Colors::CMS::Profile 
         }
     }
     return std::make_pair(std::move(new_name), (bool)getSpace(new_name));
+}
+
+/**
+ * Ensure that the given color space is available in the current document.
+ */
+std::shared_ptr<Inkscape::Colors::Space::AnySpace> DocumentCMS::ensureColorSpaceIsInstalled(std::shared_ptr<Inkscape::Colors::Space::AnySpace> const &space)
+{
+    // Only cms profiles need to be made available
+    if (auto cms = std::dynamic_pointer_cast<Space::CMS>(space)) {
+        auto new_name = attachProfileToDoc(*cms->getProfile(), ColorProfileStorage::HREF_DATA, Colors::RenderingIntent::AUTO);
+        return findSvgColorSpace(new_name);
+    }
+    return space;
 }
 
 /**
@@ -322,6 +342,21 @@ std::shared_ptr<Space::CMS> DocumentCMS::getSpace(std::string const &name) const
     auto it = _spaces.find(name);
     if (it != _spaces.end())
         return it->second;
+    return nullptr;
+}
+
+/**
+ * Get the specific color space using a unique id int.
+ *
+ * @arg id - The unique id of the color space from space->getId()
+ */
+std::shared_ptr<Space::CMS> DocumentCMS::getSpace(int id) const
+{
+    for (auto &link : _links) {
+        if (link->space && link->space->getId() == id) {
+            return link->space;
+        }
+    }
     return nullptr;
 }
 
@@ -401,6 +436,76 @@ std::vector<ColorProfile *> DocumentCMS::getObjects() const
         }
     }
     return ret;
+}
+
+std::shared_ptr<Space::AnySpace> DocumentCMS::getDocumentColorSpace() const
+{
+    if (!_document_space) {
+        static auto rgb = Manager::get().find(Space::Type::RGB);
+        auto space = _document->getRoot()->getColorSpace();
+        _document_space = space ? space : rgb;
+    }
+    return _document_space;
+}
+
+bool DocumentCMS::setDocumentColorSpace(std::shared_ptr<Space::AnySpace> const &space)
+{
+    _invalidate_caches();
+    return _document->getRoot()->setColorSpace(space);
+}
+
+/**
+ * Print the color out to a string suitable for this document using the configured storage format
+ */
+std::string DocumentCMS::toDocumentColorString(Color const &color)
+{
+    auto target = mapToStorageFormat(color.getSpace());
+    if (target != color.getSpace()) {
+        return color.converted(target)->toString(false);
+    }
+    return color.toString(false);
+}
+
+/**
+ * Map the given space from a color picker, to the best storage color space which
+ * will be used to encode the color into a string.
+ */
+std::shared_ptr<Space::AnySpace> DocumentCMS::mapToStorageFormat(std::shared_ptr<Space::AnySpace> const &space) const
+{
+    if (!space) {
+        throw Colors::Space::ColorSpaceError("Color space must exist to be mapped.");
+    }
+    auto id = space->getId();
+    auto iter = _storage_map_cache.find(id);
+    if (iter == _storage_map_cache.end()) {
+        _storage_map_cache[id] = _map_storage_format(space);
+    }
+    return _storage_map_cache[id];
+}
+
+std::shared_ptr<Space::AnySpace> DocumentCMS::_map_storage_format(std::shared_ptr<Space::AnySpace> const &space) const
+{
+    if (auto picker = Manager::get().findPicker(space->getType())) {
+        auto prefs = Preferences::get();
+        auto format_str = prefs->getString(picker->getPrefPath("format"), "");
+        if (format_str.empty()) {
+            if (picker->getType() == Space::Type::CMS) {
+                return space;
+            }
+        } else if (auto found = Manager::get().find(format_str)) {
+            return found;
+        }
+    }
+    return getDocumentColorSpace();
+}
+
+/**
+ * Remove any cached data as the properties of the color space settings has changed.
+ */
+void DocumentCMS::_invalidate_caches()
+{
+    _storage_map_cache.clear();
+    _document_space.reset();
 }
 
 } // namespace Inkscape::Colors

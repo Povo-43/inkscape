@@ -44,7 +44,7 @@ public:
     static constexpr double MIN_SCALE = -128;
     static constexpr double MAX_SCALE = 127;
 
-    Lab(): ProfileSpace(Type::LAB, 3, "Lab", "Lab", "color-selector-lab", true) {
+    Lab(): ProfileSpace(Type::LAB, 3, "Lab", "Lab", "lab", true) {
         _svgNames.emplace_back("lab");
         _intent = RenderingIntent::ABSOLUTE_COLORIMETRIC;
         _intent_priority = 10;
@@ -52,9 +52,7 @@ public:
     ~Lab() override = default;
 
     std::shared_ptr<Inkscape::Colors::CMS::Profile> const getProfile() const override { return getLabProfile(); }
-
-    std::string toString(std::vector<double> const &values, bool opacity) const override;
-
+    
     class Parser : public Colors::Parser
     {
     public:
@@ -66,6 +64,8 @@ public:
 
     static void scaleDown(std::vector<double> &in_out);
     static void scaleUp(std::vector<double> &in_out);
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity) const override;
 };
 
 } // namespace Inkscape::Colors::Space

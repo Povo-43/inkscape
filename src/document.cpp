@@ -150,7 +150,6 @@ SPDocument::SPDocument()
     add_document_actions_effect(this);
 
     _page_manager = std::make_unique<Inkscape::PageManager>(this);
-    _cms_manager = std::make_unique<Inkscape::Colors::DocumentCMS>(this);
 }
 
 SPDocument::~SPDocument() {
@@ -384,6 +383,9 @@ std::unique_ptr<SPDocument> SPDocument::createDoc(
     	// fixme: what to do here?
     	throw;
     }
+
+    // Set cms manager after root but before anything is built out
+    document->_cms_manager = std::make_unique<Inkscape::Colors::DocumentCMS>(document.get());
 
     // Recursively build object tree
     document->root->invoke_build(document.get(), rroot, false);

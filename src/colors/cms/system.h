@@ -34,7 +34,7 @@ public:
     // Access the singleton CMS::System object.
     static System &get();
 
-    DirPaths const &getDirectoryPaths();
+    DirPaths const &getDirectoryPaths() const;
     void addDirectoryPath(std::string path, bool is_user);
     void clearDirectoryPaths();
 
@@ -47,8 +47,6 @@ public:
 
     std::vector<std::shared_ptr<Profile>> getOutputProfiles() const;
 
-    void refreshProfiles();
-
     System();
     ~System() = default;
 
@@ -56,11 +54,15 @@ public:
     void addProfile(std::shared_ptr<Profile> profile) { _profiles.emplace_back(profile); }
 
 private:
+    void ensureProfiles() const;
+    void loadProfiles() const;
+    void refreshProfiles() const;
+
     // List of ICC profiles found on system
-    std::vector<std::shared_ptr<Profile>> _profiles;
+    mutable std::vector<std::shared_ptr<Profile>> _profiles;
 
     // Paths to search for icc profiles
-    DirPaths _paths;
+    mutable DirPaths _paths;
 
     // We track last display transform settings. If there is a change, we delete create new transform.
     std::shared_ptr<Profile> _display_profile;

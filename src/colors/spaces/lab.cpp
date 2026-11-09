@@ -23,7 +23,7 @@ namespace Inkscape::Colors::Space {
  * @arg values - A vector of doubles for each channel in the Lab space
  * @arg opacity - True if the opacity should be included in the output.
  */
-std::string Lab::toString(std::vector<double> const &values, bool opacity) const
+std::string Lab::_to_string(std::vector<double> const &values, bool opacity) const
 {
     auto os = CssFuncPrinter(3, "lab");
 

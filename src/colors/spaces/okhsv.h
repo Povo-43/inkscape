@@ -23,10 +23,10 @@ public:
     constexpr static int ProfileChannels = 3;
     constexpr static int OutputChannels = 3;
 
-    OkHsv(): RGBBase(Type::OKHSV, "OkHsv", "OkHsv", "color-selector-okhsv") {}
+    OkHsv(): RGBBase(Type::OKHSV, "OkHsv", "OkHsv", "okhsv") {}
     ~OkHsv() override = default;
 
-    std::string toString(std::vector<double> const &values, bool opacity) const override { return ""; }
+    bool canToString() const override { return false; }
 
     template <typename T, bool PremultipliedAlpha = false>
     inline static void spaceToProfile(T const *i, T *o)

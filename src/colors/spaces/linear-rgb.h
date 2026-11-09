@@ -20,7 +20,7 @@ namespace Inkscape::Colors::Space {
 class LinearRGB : public ProfileSpace<true>
 {
 public:
-    LinearRGB(): ProfileSpace(Type::linearRGB, 3, "linearRGB", "linearRGB", "color-selector-linear-rgb") {
+    LinearRGB(): ProfileSpace(Type::linearRGB, 3, "linearRGB", "linearRGB", "linear-rgb") {
         _svgNames.emplace_back("linearRGB");
         _svgNames.emplace_back("srgb-linear");
         _intent = RenderingIntent::RELATIVE_COLORIMETRIC;
@@ -29,8 +29,6 @@ public:
     ~LinearRGB() override = default;
 
     std::shared_ptr<Colors::CMS::Profile> const getProfile() const override;
-
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
 
     // NOTE: the following conversions are used by OkLab to avoid being based in the linearRGB icc profile
     /**
@@ -67,6 +65,8 @@ public:
         o[2] = to_linear(i[2]);
     }
 
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 } // namespace Inkscape::Colors::Space

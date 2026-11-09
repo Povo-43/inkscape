@@ -21,7 +21,9 @@ public:
     constexpr static int OutputChannels = 1;
     constexpr static int ProfileChannels = 3;
 
-    Gray(): RGBBase(Type::Gray, "Gray", "Gray", "color-selector-gray") {}
+    Gray(): RGBBase(Type::Gray, "Gray", "Gray", "gray") {}
+
+    bool canToString() const override { return false; }
 
     /**
      * Convert a single gray channel into an RGB
@@ -55,8 +57,6 @@ public:
             o[1] = i[3];
         }
     }
-
-    std::string toString(std::vector<double> const &values, bool opacity) const override { return ""; }
 };
 
 } // namespace Inkscape::Colors::Space

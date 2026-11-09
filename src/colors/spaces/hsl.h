@@ -36,10 +36,12 @@ public:
     constexpr static int OutputChannels = 3;
     constexpr static int ProfileChannels = 3;
 
-    HSL(): RGBBase(Type::HSL, "HSL", "HSL", "color-selector-hsx") {
+    HSL(): RGBBase(Type::HSL, "HSL", "HSL", "hsl") {
         _svgNames.emplace_back("hsl");
     }
     ~HSL() override = default;
+
+    std::string const getIcon() const override { return "color-selector-hsx"; }
 
     /**
      * Convert the HSL color into sRGB components used in the sRGB icc profile.
@@ -131,8 +133,6 @@ public:
         }
     }
 
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
-
     class Parser : public HueParser
     {
     public:
@@ -140,6 +140,9 @@ public:
 	     : HueParser("hsl", Type::HSL, alpha, 100.0)
         {}
     };
+
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 } // namespace Inkscape::Colors::Space

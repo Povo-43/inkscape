@@ -30,7 +30,7 @@
 #include "util/theme-utils.h"
 
 constexpr int THUMB_SPACE = 16;
-constexpr int TRACK_HEIGHT = 8;
+constexpr int TRACK_HEIGHT = 12;
 constexpr int THUMB_SIZE = TRACK_HEIGHT + 2;
 constexpr int RING_THICKNESS = 2;
 constexpr int CHECKERBOARD_TILE = TRACK_HEIGHT / 2;

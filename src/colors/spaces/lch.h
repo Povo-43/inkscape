@@ -31,7 +31,7 @@ public:
     constexpr static double CHROMA_SCALE = 150;
     constexpr static double HUE_SCALE = 360;
 
-    Lch(): LabBase(Type::LCH, "Lch", "Lch", "color-selector-lch", true) {
+    Lch(): LabBase(Type::LCH, "Lch", "Lch", "lch", true) {
         _svgNames.emplace_back("lch");
     }
     ~Lch() override = default;
@@ -104,8 +104,6 @@ public:
         }
     }
 
-    std::string toString(std::vector<double> const &values, bool opacity) const override;
-
     class Parser : public Colors::Parser
     {
     public:
@@ -114,6 +112,8 @@ public:
         {}
         bool parse(std::istringstream &input, std::vector<double> &output) const override;
     };
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity) const override;
 };
 
 } // namespace Inkscape::Colors::Space

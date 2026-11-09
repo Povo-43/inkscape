@@ -4,12 +4,12 @@
 <svg
    version="2.0"
    id="svg1"
+   inkscape:version="1.5-dev (b9abfcf1c8, 2026-10-23, custom)"
    width="816"
    height="1056"
    viewBox="0 0 816 1056"
    sodipodi:docname="clipping_shift.pdf"
    standalone="no"
-   inkscape:version="1.5-dev (6f35fa1fa1, 2026-06-26, custom)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -69,7 +69,7 @@
      id="namedview1"
      pagecolor="#ffffff"
      bordercolor="#000000"
-     borderopacity="0.25"
+     borderopacity="0.1"
      inkscape:showpageshadow="2"
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
@@ -81,7 +81,7 @@
     <path
        id="path1"
        d="M 100,100 H 400 V 400 H 100 Z"
-       style="fill:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
        transform="matrix(1.333333333,0,0,-1.333333333,0,1056)" />
     <path
        id="path2"
@@ -150,7 +150,7 @@
     <path
        id="path13"
        d="M 300.852,324 171.863,312.695 128.094,366.84 162,270 85.254,194.086 c 92.742,59.496 150.328,45.219 172.754,-42.84 -3.305,70.168 -33.891,159.852 42.844,172.754 z m 0,0 z"
-       style="fill:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
        transform="matrix(1.333333333,0,0,-1.333333333,0,656)" />
     <path
        id="path14"
@@ -164,7 +164,7 @@
        transform="matrix(1.333333333,0,0,1.333333333,266.6666667,256)"
        clip-path="url(#clipPath16)"><tspan
          id="tspan15"
-         style="font-variant:normal;font-weight:normal;font-size:12px;font-family:Helvetica;writing-mode:lr-tb;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         style="font-variant:normal;font-weight:normal;font-size:12px;font-family:Helvetica;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
          x="0"
          y="0"> Clipped by curve </tspan></text>
     <path
@@ -179,7 +179,7 @@
        transform="matrix(1.333333333,0,0,1.333333333,133.3333333,322.6666667)"
        clip-path="url(#clipPath19)"><tspan
          id="tspan18"
-         style="font-variant:normal;font-weight:normal;font-size:12px;font-family:Helvetica;writing-mode:lr-tb;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         style="font-variant:normal;font-weight:normal;font-size:12px;font-family:Helvetica;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
          x="0"
          y="0"> Clipped by straight line </tspan></text>
     <path
@@ -192,7 +192,7 @@
        xml:space="preserve"
        transform="matrix(1.333333333,0,0,1.333333333,533.3333333,96)"><tspan
          id="tspan20"
-         style="font-variant:normal;font-weight:normal;font-size:12px;font-family:Helvetica;writing-mode:lr-tb;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         style="font-variant:normal;font-weight:normal;font-size:12px;font-family:Helvetica;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
          x="0"
          y="0"> Black: Clipping paths </tspan></text>
     <text

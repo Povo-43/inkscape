@@ -66,6 +66,16 @@ TEST(ColorUtils, test_make_contrasted_color)
     EXPECT_EQ(make_contrasted_color(Color(0xa1a1a1ff), 0.2).toRGBA(), 0x9d9d9dff);
     EXPECT_EQ(make_contrasted_color(Color(0x1a1a1aff), 0.4).toRGBA(), 0x121212ff);
     EXPECT_EQ(make_contrasted_color(Color(0x808080ff), 0.6).toRGBA(), 0x747474ff);
+
+    EXPECT_EQ(make_contrasted_color(Color(0x000000cc)).toString(), "#040404");
+    EXPECT_EQ(make_contrasted_color(Color(0x00000099)).toString(), "#080808");
+    EXPECT_EQ(make_contrasted_color(Color(0x00000066)).toString(), "#0c0c0c");
+    EXPECT_EQ(make_contrasted_color(Color(0xffffffcc)).toString(), "#fbfbfb");
+    EXPECT_EQ(make_contrasted_color(Color(0xffffff99)).toString(), "#f7f7f7");
+    EXPECT_EQ(make_contrasted_color(Color(0xffffff66)).toString(), "#f3f3f3");
+    EXPECT_EQ(make_contrasted_color(Color(0xa1a1a1cc)).toString(), "#9d9d9d");
+    EXPECT_EQ(make_contrasted_color(Color(0x1a1a1a99)).toString(), "#121212");
+    EXPECT_EQ(make_contrasted_color(Color(0x80808066)).toString(), "#747474");
 }
 
 TEST(ColorUtils, test_get_perceptual_lightness)

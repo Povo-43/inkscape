@@ -145,6 +145,15 @@ Color make_contrasted_color(Color const &orig, double amount)
 }
 
 /**
+ * Same as above but steals the opacity for the amount of difference.
+ */
+Color make_contrasted_color(Color orig)
+{
+    auto opacity = orig.stealOpacity();
+    return make_contrasted_color(orig, 1.0 - opacity);
+}
+
+/**
  * Make a themed dark or light color based on a previous shade, returns RGB color.
  */
 Color make_theme_color(Color const &orig, bool dark)

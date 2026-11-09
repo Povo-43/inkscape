@@ -58,6 +58,12 @@ TEST(ColorsColor, parse)
     ASSERT_FALSE(Color::parse(nullptr));
 }
 
+TEST(ColorsColor, parse_forgiving)
+{
+    ASSERT_FALSE(Color::parse("ffffff", false));
+    ASSERT_TRUE(Color::parse("ffffff", true));
+}
+
 TEST(ColorsColor, setter)
 {
     auto color = *Color::parse("purple");
@@ -439,6 +445,18 @@ TEST(ColorsColor, average)
     c1.average(Color(0xffffffff), 0.1, 0);
     ASSERT_NEAR(c1[0], 0.1, 0.001);
     ASSERT_EQ(c1.toString(), "#1a1a1a1a");
+}
+
+TEST(ColorsColor, toArray)
+{
+    std::array<double, 4> rgba = Color(0x45454580).toArray();
+    EXPECT_TRUE(VectorIsNear(rgba, {0.27, 0.27, 0.27, 0.5}, 0.01));
+
+    std::array<double, 3> rgb = Color(0x45454580).toArray<double, 3>();
+    EXPECT_TRUE(VectorIsNear(rgb, {0.27, 0.27, 0.27}, 0.01));
+
+    std::array<float, 4> floater = Color(0x45454580).toArray<float>();
+    EXPECT_TRUE(VectorIsNear(floater, {0.27, 0.27, 0.27, 0.5}, 0.01));
 }
 
 } // namespace

@@ -161,7 +161,11 @@ TEST(ColorsCmsTransformSurface, TransformCMYKToRGB)
     tr.do_transform(2, 2, img.data(), out.data());
 
     EXPECT_TRUE(VectorIsNear(out, {
+#if LCMS_VERSION >= 2180
        -1.063, 0.529, 0.6,   0.5,   0.168, 0.161, 0.163, 0,
+#else
+       -1.053, 0.529, 0.6,   0.5,   0.172, 0.161, 0.163, 0,
+#endif
         0.659, 0.667, 0.677, 0.5,   0.667, 0.644, 0.639, 0.2
     }, 0.001));
 

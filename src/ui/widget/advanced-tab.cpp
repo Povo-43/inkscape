@@ -235,9 +235,8 @@ void AdvancedTab::rebuild_format_model(bool is_inherited, Glib::ustring target_n
     };
 
     /* Global Spaces */
-    auto global_spaces = Colors::Manager::get().spaces(Colors::Space::Traits::Picker);
-    for (auto const &space : global_spaces) {
-        add_item(space->getName());
+    for (auto const &picker : Colors::Manager::get().pickers()) {
+        add_item(picker->getName());
     }
 
     /* Document ICC profiles */

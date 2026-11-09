@@ -9,6 +9,7 @@
 #include <gtkmm/aspectframe.h>
 #include <gtkmm/box.h>
 #include <gtkmm/stack.h>
+#include <gtkmm/togglebutton.h>
 #include <string>
 #include <utility>
 
@@ -20,10 +21,13 @@
 #include "desktop.h"
 #include "generic/icon-combobox.h"
 #include "generic/spin-button.h"
+#include "document.h"
 #include "inkscape.h"
 #include "colors/color.h"
 #include "colors/manager.h"
+#include "colors/document-cms.h"
 #include "colors/spaces/base.h"
+#include "colors/spaces/cms.h"
 #include "ui/tools/dropper-tool.h"
 #include "ui/util.h"
 
@@ -38,7 +42,7 @@ using namespace Colors;
 
 class ColorPickerPanelImpl : public ColorPickerPanel {
 public:
-    ColorPickerPanelImpl(Space::Type space, PlateType type, std::shared_ptr<ColorSet> color, bool with_expander);
+    ColorPickerPanelImpl(Space::Type initial_space, PlateType type, std::shared_ptr<ColorSet> color, bool with_expander);
 
     void update_color() {
         if (_color_set && !_color_set->isEmpty()) {
@@ -62,22 +66,21 @@ public:
         }
     }
 
-    void create_color_page(Space::Type type, PlateType plate_type) {
-        auto space = Manager::get().find(type);
+    void create_color_page(std::shared_ptr<Colors::Space::AnySpace> const &space, PlateType plate_type) {
         _page = std::make_unique<ColorPage>(space, _color_set);
         _page->show_expander(false);
         _page->set_spinner_size_pattern(spinner_pattern);
         _page->attach_page(_first_column, _last_column);
         attach(*_page, 0, ROW_PAGE, 3);
         if (plate_type == Circle) {
-            _plate = _page->create_color_wheel(type, true);
+            _plate = _page->create_color_wheel(space->getComponentType(), true);
             if (_plate) {
                 _plate->get_widget().set_margin_top(4);
                 _plate->get_widget().set_margin_bottom(4);
             }
         }
         else if (plate_type == Rect) {
-            _plate = _page->create_color_wheel(type, false);
+            _plate = _page->create_color_wheel(space->getComponentType(), false);
             if (_plate) {
                 _plate->get_widget().set_margin_bottom(0);
             }
@@ -100,12 +103,15 @@ public:
     }
 
     void set_desktop(SPDesktop* dekstop) override;
+    void set_document(SPDocument* document) override;
+    void set_independent() override;
     void set_color(const Color& color) override;
-    void set_picker_type(Space::Type type) override;
+    void set_picker_space(std::shared_ptr<Colors::Space::AnySpace> const &space) override;
     void set_plate_type(PlateType plate) override;
     PlateType get_plate_type() const override;
-    void switch_page(Space::Type space, PlateType plate_type);
+    void switch_page(std::shared_ptr<Colors::Space::AnySpace> const &space, PlateType plate_type);
     void pick_color();
+    void rebuild_color_space_list();
 
     Glib::RefPtr<Gtk::SizeGroup> get_first_column_size() override {
         return _first_column;
@@ -115,43 +121,50 @@ public:
         return _last_column;
     }
 
-    sigc::signal<void (Space::Type)> get_color_space_changed() override {
+    sigc::signal<void (std::shared_ptr<Colors::Space::AnySpace> const &space)> get_color_space_changed() override {
         return _color_space_changed;
     }
 
     Glib::RefPtr<Gtk::SizeGroup> _first_column = Gtk::SizeGroup::create(Gtk::SizeGroup::Mode::HORIZONTAL);
     Glib::RefPtr<Gtk::SizeGroup> _last_column = Gtk::SizeGroup::create(Gtk::SizeGroup::Mode::HORIZONTAL);
     // eye dropper - color picker
-    Gtk::Button _dropper;
+    Gtk::ToggleButton _dropper;
     // frame for RGB edit box
     Gtk::Box _frame;
     ColorPreview _preview;
-    ColorEntry _rgb_edit;
-    Gtk::Image _warning;
+    ColorEntry _color_edit;
     //todo: let user choose display/input format of ColorEntry
     // Gtk::MenuButton _display_choices;
     // color type space selector
     IconComboBox _spaces = IconComboBox(true, IconComboBox::LabelOnly);
     bool _with_expander = true;
-    // color type this picker is working in
-    Space::Type _space_type = Space::Type::NONE;
+    // color space this picker is working in
+    std::shared_ptr<Colors::Space::AnySpace> _space;
     std::shared_ptr<ColorSet> _color_set;
     PlateType _plate_type;
     std::unique_ptr<ColorPage> _page;
     ColorWheel* _plate = nullptr;
+    bool _color_picking_requested = false;
     sigc::scoped_connection _color_picking;
+    SPDocument* _document = nullptr;
     SPDesktop* _desktop = nullptr;
-    sigc::signal<void (Space::Type)> _color_space_changed;
+    sigc::signal<void (std::shared_ptr<Colors::Space::AnySpace> const &)> _color_space_changed;
+    sigc::connection _tool_changed;
+    sigc::connection _cms_space_changed;
+    std::unique_ptr<Preferences::PreferencesObserver> _prefs_observer;
 };
 
-std::unique_ptr<ColorPickerPanel> ColorPickerPanel::create(Space::Type space, PlateType type, std::shared_ptr<ColorSet> color) {
-    return std::make_unique<ColorPickerPanelImpl>(space, type, color, false);
+std::unique_ptr<ColorPickerPanel> ColorPickerPanel::create(Space::Type initial_space, PlateType type, std::shared_ptr<ColorSet> color) {
+    return std::make_unique<ColorPickerPanelImpl>(initial_space, type, color, false);
+}
+ColorPickerPanel *ColorPickerPanel::make_managed(Space::Type initial_space, PlateType type, std::shared_ptr<ColorSet> color) {
+    return Gtk::make_managed<ColorPickerPanelImpl>(initial_space, type, color, false);
 }
 
-ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type space, PlateType type, std::shared_ptr<ColorSet> color, bool with_expander):
-    _rgb_edit(color),
+ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type initial_space, PlateType type, std::shared_ptr<ColorSet> color, bool with_expander):
+    _color_edit(color),
     _with_expander(with_expander),
-    _space_type(space),
+    _space(Colors::Manager::get().find(initial_space)),
     _color_set(color),
     _plate_type(type)
 {
@@ -160,26 +173,27 @@ ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type space, PlateType type, st
     set_row_spacing(0);
     set_column_spacing(0);
 
-    // list available color space types
-    for (auto&& meta : Manager::get().spaces(Space::Traits::Picker)) {
-        _spaces.add_row(meta->getIcon(), _(meta->getShortName().c_str()), int(meta->getType()));
-    }
+    _spaces.set_label_max_chars(10);
     _spaces.refilter();
     _spaces.set_tooltip_text(_("Select color picker type"));
     // Important: add "regular" class to render non-symbolic color icons;
     // otherwise they will be rendered black&white
     _spaces.add_css_class("regular");
-    _spaces.set_active_by_id(int(space));
+    _spaces.set_active_by_id(_space->getId());
     _spaces.signal_changed().connect([this](int id) {
-        auto type = static_cast<Space::Type>(id);
-        if (type != Space::Type::NONE) {
-            set_picker_type(type);
-            _color_space_changed.emit(type);
+        auto space = Colors::Manager::get().findById(id);
+        if (!space && _document) {
+            space = _document->getDocumentCMS().getSpace(id);
+        }
+        if (space) {
+            set_picker_space(space);
+            _color_space_changed.emit(space);
         }
     });
 
     // color picker button
     _dropper.set_icon_name("color-picker");
+    _dropper.set_visible(false);
     _first_column->add_widget(_dropper);
     _dropper.signal_clicked().connect([this]() { pick_color(); });
     // RGB edit box
@@ -199,19 +213,12 @@ ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type space, PlateType type, st
     _preview.set_halign(Gtk::Align::START);
     _preview.set_valign(Gtk::Align::CENTER);
     _frame.append(_preview);
-    _rgb_edit.set_hexpand();
-    _rgb_edit.set_has_frame(false);
-    _rgb_edit.set_alignment(Gtk::Align::CENTER);
-    _rgb_edit.add_css_class("small-entry");
-    _rgb_edit.get_out_of_gamut_signal().connect([this](auto& msg) {
-        _warning.set_opacity(msg.empty() ? 0 : 1);
-        _warning.set_tooltip_text(msg);
-    });
-    _warning.set_from_icon_name("warning");
-    _warning.set_margin_end(3);
-    _warning.set_opacity(0);
-    _frame.append(_rgb_edit);
-    _frame.append(_warning);
+    _color_edit.set_hexpand();
+    _color_edit.set_has_frame(false);
+    _color_edit.set_alignment(Gtk::Align::CENTER);
+    _color_edit.add_css_class("small-entry");
+    _color_edit.set_margin_end(4);
+    _frame.append(_color_edit);
 
     // color space type selector
     _spaces.set_halign(Gtk::Align::END);
@@ -226,31 +233,100 @@ ColorPickerPanelImpl::ColorPickerPanelImpl(Space::Type space, PlateType type, st
     attach(_frame, 1, ROW_EDIT);
     attach(_spaces, 2, ROW_EDIT);
 
-    create_color_page(space, type);
+    create_color_page(_space, type);
 }
 
 void ColorPickerPanelImpl::set_desktop(SPDesktop* dekstop) {
+    _tool_changed.disconnect();
+    _cms_space_changed.disconnect();
     _desktop = dekstop;
+    if (_desktop) {
+        _tool_changed = _desktop->connectEventContextChanged([this](SPDesktop *desktop, UI::Tools::ToolBase *tool) {
+            auto dropper = dynamic_cast<Tools::DropperTool*>(tool);
+            if (dropper && _color_picking_requested) {
+                _color_picking = dropper->onetimepick_signal.connect([this](auto& color) {
+                    _color_set->setAll(color);
+                });
+            }
+            if (_color_picking && !dropper) {
+                _color_picking.disconnect();
+            }
+            _dropper.set_active(bool(dropper));
+            _dropper.set_sensitive(_color_picking || !dropper);
+            _color_picking_requested = false;
+        });
+    }
+    // Disable color picker with no desktop
+    _dropper.set_visible(_desktop);
+}
+
+void ColorPickerPanelImpl::set_document(SPDocument* doc) {
+    _document = doc;
+    _cms_space_changed.disconnect();
+    if (_document) {
+        _cms_space_changed = _document->getDocumentCMS().connectChanged([this]() {
+            rebuild_color_space_list();
+        });
+    }
+    rebuild_color_space_list();
+}
+
+void ColorPickerPanelImpl::set_independent()
+{
+    set_desktop(nullptr);
+    set_document(nullptr);
 }
 
 void ColorPickerPanelImpl::set_color(const Color& color) {
     _color_set->set(color);
 }
 
-void ColorPickerPanelImpl::set_picker_type(Space::Type type) {
-    switch_page(type, _plate_type);
+void ColorPickerPanelImpl::set_picker_space(std::shared_ptr<Colors::Space::AnySpace> const &space) {
+    switch_page(space, _plate_type);
 }
 
 void ColorPickerPanelImpl::set_plate_type(PlateType plate) {
     if (plate == _plate_type) return;
 
-    switch_page(_space_type, plate);
+    switch_page(_space, plate);
 }
 
-void ColorPickerPanelImpl::switch_page(Space::Type space, PlateType plate_type) {
+void ColorPickerPanelImpl::rebuild_color_space_list()
+{
+    // We need to list color SPACES, not color PICKERS. A picker is the FORM that a color
+    // space can use to select its components, and includes settings specifiic to all pickers
+    // of that type. AND for all the internal SPACES there is one PICKER and visa versa.
+    //
+    // But for CMS you have ONE picker and MANY spaces instead.
+    _spaces.clear();
+
+    auto prefs = Preferences::get();
+
+    for (auto&& picker : Manager::get().pickers()) {
+        if (prefs->getBool(picker->getPrefPath("visible"), true)) {
+            if (auto space = Manager::get().find(picker->getType())) {
+                _spaces.add_row(picker->getIconName(), _(picker->getName().c_str()), space->getId());
+            } else if (picker->getType() == Colors::Space::Type::CMS && _document) {
+                auto cms_spaces = _document->getDocumentCMS().getSpaces();
+                if (!cms_spaces.empty()) {
+                    _spaces.add_separator();
+                    for (auto&& cms : cms_spaces) {
+                        _spaces.add_row(cms->getIcon(), _(cms->getShortName().c_str()), cms->getId());
+                    }
+                }
+            }
+        }
+    }
+    // This is a broad prefs watcher, but it shouldn't change too often and isn't expensive.
+    _prefs_observer = prefs->createObserver(Colors::Picker::prefPath(), [=, this](const Preferences::Entry& entry) {
+        rebuild_color_space_list();
+    });
+}
+
+void ColorPickerPanelImpl::switch_page(std::shared_ptr<Colors::Space::AnySpace> const &space, PlateType plate_type) {
     remove_widgets();
     create_color_page(space, plate_type);
-    _space_type = space;
+    _space = space;
     _plate_type = plate_type;
 }
 
@@ -269,24 +345,14 @@ void set_plate_type_preference(const char* pref_path_base, ColorPickerPanel::Pla
 }
 
 void ColorPickerPanelImpl::pick_color() {
-    // Set the dropper into a "one-click" mode, so it reverts to the previous tool after a click
-    if (_color_picking.connected()) {
-        _color_picking.disconnect();
-        return;
-    }
-
-    // TODO: pass make clients call set_desktop()
-    auto desktop = _desktop ? _desktop : SP_ACTIVE_DESKTOP;
-    if (!desktop) return;
-
-    Tools::sp_toggle_dropper(desktop);
-    if (auto tool = dynamic_cast<Tools::DropperTool*>(desktop->getTool())) {
-        _color_picking = tool->onetimepick_signal.connect([this](auto& color) {
-            _color_set->setAll(color);
-        });
+    if (!_color_picking) {
+        // Tool changes may be threaded so we watch for tool changes and
+        // set out request for color picking so it can be seen by that watcher.
+        _color_picking_requested = true;
         // Close parent popover to release input grab
         UI::close_parent_popover(*this);
     }
+    Tools::sp_toggle_dropper(_desktop);
 }
 
 } // namespace

@@ -145,6 +145,9 @@ public:
     SPClipPathReference &getClipRef();
     SPMaskReference &getMaskRef();
 
+    std::shared_ptr<Inkscape::Colors::Space::AnySpace> getColorSpace() const;
+    bool setColorSpace(std::shared_ptr<Inkscape::Colors::Space::AnySpace> const &space);
+
     std::optional<Geom::PathVector> getClipPathVector() const;
     std::optional<Geom::PathVector> getClipPathVector(SPItem const *root) const;
     SPText const *getClipTextObject() const;

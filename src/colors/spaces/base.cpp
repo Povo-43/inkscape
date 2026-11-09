@@ -29,19 +29,23 @@ namespace Inkscape::Colors::Space {
  * @arg components - The number of component channels in this color space
  * @arg name       - The common name for this color space
  * @arg shortName  - A shorter name used in drop down selections and other tight spaces
- * @arg icon       - An icon name which is used in many UI locations as a short hand for this space.
+ * @arg tag        - A lower-case name used in icons and prefs which is the same for this /type/ of space.
+ *                   for example sRGB would be rgb, and CMS would be cms, but not "Fogra Uncoated 2.0"
  * @arg spaceIsUnbounded - If true, this color space can have values larger and smaller than 0.0 to 1.0
  *
  * Further information about the components themselves are contained within components.cpp
  */
-AnySpace::AnySpace(Type type, int components, std::string name, std::string shortName, std::string icon, bool spaceIsUnbounded)
+AnySpace::AnySpace(Type type, int components, std::string name, std::string shortName, std::string tag, bool spaceIsUnbounded)
     : _type(type)
     , _components(components)
     , _name(std::move(name))
     , _shortName(std::move(shortName))
-    , _icon(std::move(icon))
+    , _type_tag(std::move(tag))
     , _spaceIsUnbounded(spaceIsUnbounded)
-{}
+{
+    static int next_id = 0;
+    _id = ++next_id;
+}
 
 /**
  * Return true if the given data would be valid for this color space.
@@ -99,7 +103,36 @@ uint32_t AnySpace::toRGBA(std::vector<double> const &values, double opacity) con
     return to_int32(values);
 }
 
+/**
+ * Output this color in the best format possible. This is set by choosing an alternative space
+ * where the output is not possible or not desirable for the given process.
+ *
+ * @arg values - The numerical values from the Color object to process.
+ * @arg opacity - If the opacity portion should be ignored in the output.
+ *
+ * @returns A CSS string value for this color in this or the alternative color space format.
+ */
+std::string AnySpace::toString(std::vector<double> const &values, bool opacity) const
+{
+    if (!_output_space || *_output_space == *this) {
+        return _to_string(values, opacity);
+    }
 
+    auto nv = values;
+    convert(nv, _output_space);
+    // We could call toSpace to allow multiple hops, but this introduces
+    // problematic ring conditions of self-referencing.
+    return _output_space->_to_string(nv, opacity);
+}
+
+/**
+ * Called from the main program to set an override, if needed, for this type
+ * of color space and how it should be converted to a string in the above toString function.
+ */
+void AnySpace::overrideOutputFormat(std::shared_ptr<AnySpace> space)
+{
+    _output_space = std::move(space);
+}
 
 /**
  * Return true if the color would be out of gamut in the target color space.

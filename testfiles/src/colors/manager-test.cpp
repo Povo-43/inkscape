@@ -28,16 +28,10 @@ public:
     TestManager() = default;
     ~TestManager() = default;
 
-    std::shared_ptr<Space::AnySpace> testAddSpace(Space::AnySpace *space)
+    void testAddSpace(Space::AnySpace *space)
     {
         return addSpace(space);
     }
-
-    bool testRemoveSpace(std::shared_ptr<Space::AnySpace> space)
-    {
-        return removeSpace(std::move(space));
-    }
-
 };
 
 TEST(ColorManagerTest, spaceComponents)
@@ -101,7 +95,7 @@ TEST(ColorManagerTest, isUnbounded) {
 
 }
 
-TEST(ColorManagerTest, addAndRemoveSpaces)
+TEST(ColorManagerTest, addSpaces)
 {
     auto cm = TestManager();
 
@@ -109,32 +103,14 @@ TEST(ColorManagerTest, addAndRemoveSpaces)
     ASSERT_TRUE(rgb);
 
     EXPECT_THROW(cm.testAddSpace(rgb.get()), ColorError);
-
-    ASSERT_TRUE(cm.testRemoveSpace(rgb));
-    ASSERT_FALSE(cm.testRemoveSpace(rgb));
-    ASSERT_FALSE(cm.find(Space::Type::RGB));
-
-    cm.testAddSpace(new Space::RGB());
-    ASSERT_TRUE(cm.find(Space::Type::RGB));
 }
 
-TEST(ColorManagerTest, getSpaces)
+TEST(ColorManagerTest, getPickers)
 {
     auto cm = TestManager();
 
-    auto none = cm.spaces(Space::Traits::None);
-    ASSERT_EQ(none.size(), 0);
-
-    auto internal = cm.spaces(Space::Traits::Internal);
-    ASSERT_GT(internal.size(), 0);
-    ASSERT_EQ(internal[0]->getComponents().traits() & Space::Traits::Internal, Space::Traits::Internal);
-
-    auto pickers = cm.spaces(Space::Traits::Picker);
+    auto pickers = cm.pickers();
     ASSERT_GT(pickers.size(), 0);
-    ASSERT_EQ(pickers[0]->getComponents().traits() & Space::Traits::Picker, Space::Traits::Picker);
-
-    auto mix = cm.spaces(Space::Traits::Picker | Space::Traits::Internal);
-    ASSERT_EQ(mix.size(), internal.size() + pickers.size());
 }
 
 TEST(ColorsParser, findSvgColorSpace)

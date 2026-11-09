@@ -29,8 +29,10 @@ public:
     constexpr static int ProfileChannels = 3;
     constexpr static int OutputChannels = 3;
 
-    HSLuv(): XYZBase(Type::HSLUV, "HSLuv", "HSLuv", "color-selector-hsluv") {}
+    HSLuv(): XYZBase(Type::HSLUV, "HSLuv", "HSLuv", "hsluv") {}
     ~HSLuv() override = default;
+
+    bool canToString() const override { return false; }
 
     /**
      * Convert a color from the the HSLuv colorspace to the XYZ65 colorspace
@@ -121,8 +123,6 @@ public:
             o[2] = l / 100;
         }
     }
-
-    std::string toString(std::vector<double> const &values, bool opacity) const override { return ""; }
 
     static std::array<Geom::Line, 6> get_bounds(double l);
 };

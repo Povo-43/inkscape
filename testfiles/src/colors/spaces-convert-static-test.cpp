@@ -45,7 +45,7 @@ TEST(ColorSpaceStaticConvertTest, profileToSpace)
 
 TEST(ColorSpaceStaticConvertTest, premultipliedAlpha)
 {
-    for (std::shared_ptr<Space::AnySpace> space : Manager::get().spaces(Space::Traits::Internal)) {
+    for (std::shared_ptr<Space::AnySpace> space : Manager::get().spaces()) {
         auto alpha_in = space->getComponentCount();
         auto alpha_out = space->getProfile()->getSize();
         std::vector<double> in = {0.5, 0.5, 0.5, 0.5, 0.5};
@@ -67,16 +67,16 @@ TEST(ColorSpaceStaticConvertTest, premultipliedAlpha)
             EXPECT_EQ(out_b[alpha_out], 0.5) << space->getName();
             out_a[alpha_out] = out_b[alpha_out]; // Harmonise for testing
             // They should be the same output as the premultiplication was undone
-            EXPECT_TRUE(VectorIsNear(out_a, out_b, 0.01)) << space->getName();
+            EXPECT_TRUE(VectorIsNear(out_a, out_b, 0.01)) << space->getName() << ", " << alpha_in << ", " << alpha_out;
         }
     }
 }
 
 TEST(ColorSpaceStaticConvertTest, correctConversion)
 {
-    for (std::shared_ptr<Space::AnySpace> space : Manager::get().spaces(Space::Traits::Internal)) {
+    for (std::shared_ptr<Space::AnySpace> space : Manager::get().spaces()) {
         // Find direct profile with the same lcms2 color profile
-        for (std::shared_ptr<Space::AnySpace> profile : Manager::get().spaces(Space::Traits::Internal)) {
+        for (std::shared_ptr<Space::AnySpace> profile : Manager::get().spaces()) {
             auto convertable = std::dynamic_pointer_cast<Space::ProfileSpace<false>>(space);
             auto direct = std::dynamic_pointer_cast<Space::ProfileSpace<true>>(profile);
 
@@ -115,7 +115,7 @@ TEST(ColorSpaceStaticConvertTest, correctConversion)
 
 TEST(ColorSpaceStaticConvertTest, premultiplyAlpha)
 {
-    for (std::shared_ptr<Space::AnySpace> space : Manager::get().spaces(Space::Traits::Internal)) {
+    for (std::shared_ptr<Space::AnySpace> space : Manager::get().spaces()) {
         auto alpha_out = space->getComponentCount();
         std::vector<double> in = {0.5, 0.5, 0.5, 0.5, 0.5};
         std::vector<double> out_a = {0.0, 0.0, 0.0, 0.0, 0.0};

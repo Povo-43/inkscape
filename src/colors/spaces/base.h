@@ -45,6 +45,18 @@ namespace Space {
 
 class Components;
 
+class ColorSpaceError : public std::exception
+{
+public:
+    ColorSpaceError(std::string &&msg)
+        : _msg(msg)
+    {}  
+    char const *what() const noexcept override { return _msg.c_str(); }
+
+private:
+    std::string _msg;
+};
+
 class AnySpace : public std::enable_shared_from_this<AnySpace>
 {
 public:
@@ -59,11 +71,13 @@ public:
     bool operator!=(Type type) const { return type != _type; }
 
     Type getType() const { return _type; }
+    int getId() const { return _id; }
     std::string const& getName() const { return _name; }
     std::string const& getShortName() const { return _shortName; }
     std::string getSvgName() const { return _svgNames.empty() ? "" : _svgNames[0]; }
     std::vector<std::string> const& getSvgNames() const { return _svgNames; }
-    std::string const& getIcon() const { return _icon; }
+    std::string const& getTypeTag() const { return _type_tag; }
+    virtual std::string const getIcon() const { return "color-selector-" + _type_tag; }
     unsigned int getComponentCount() const { return _components; }
     virtual Type getComponentType() const { return getType(); }
     virtual std::shared_ptr<Colors::CMS::Profile> const getProfile() const = 0;
@@ -74,14 +88,15 @@ public:
     // Some color spaces (like XYZ or LAB) do not put restrictions on valid ranges of values;
     // others (like sRGB) do, which means that channels outside those bounds represent colors out of gamut.
     bool isUnbounded() const { return _spaceIsUnbounded; }
+
     // Check if 'color' is out of gamut in '*this' color space;
     // use epsilon value to ignore some small deviations from valid domain (they can arise during conversions).
     bool isOutOfGamut(const Colors::Color& color, double eps = 0.0001);
+
     // Bring 'color' into gamut of '*this' color space
     Color toGamut(const Colors::Color& color);
 
     Components const &getComponents(bool alpha = false) const;
-    std::string const getPrefsPath() const { return "/colorselector/" + getName() + "/"; }
 
     /**
      * Returns true almost always. Only CMS could have a different return value.
@@ -106,14 +121,16 @@ public:
             && to_space->profileToSpace(io);
     }
 
+    void overrideOutputFormat(std::shared_ptr<AnySpace> space);
 protected:
     friend class Colors::Color;
 
     AnySpace(Type type, int components, std::string name, std::string shortName, std::string icon, bool spaceIsUnbounded = false);
 
     bool isValidData(std::vector<double> const &values) const;
-    virtual std::string toString(std::vector<double> const &values, bool opacity = true) const = 0;
     uint32_t toRGBA(std::vector<double> const &values, double opacity = 1.0) const;
+    std::string toString(std::vector<double> const &values, bool opacity = true) const;
+    virtual bool canToString() const { return true; }
 
     virtual bool overInk(std::vector<double> const &input) const { return false; }
     bool outOfGamut(std::vector<double> const &input, std::shared_ptr<AnySpace> to_space) const;
@@ -121,14 +138,22 @@ protected:
     RenderingIntent _intent = RenderingIntent::UNKNOWN;
     int _intent_priority = 0;
     std::vector<std::string> _svgNames;
+    std::shared_ptr<AnySpace> _output_space;
 private:
+    virtual std::string _to_string(std::vector<double> const &values, bool opacity = true) const
+    {
+        throw ColorSpaceError("Can not print color to string, no format available or fallback color space format set.");
+    }
+
     mutable std::map<std::string, std::shared_ptr<Colors::CMS::GamutChecker>> _gamut_checkers;
     Type _type;
     int _components;
+    int _id;
     std::string _name;
     std::string _shortName;
-    std::string _icon;
+    std::string _type_tag;
     bool _spaceIsUnbounded;
+    bool _can_print;
 };
 
 template <bool isDirect = true>

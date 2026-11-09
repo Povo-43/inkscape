@@ -24,7 +24,7 @@ public:
     constexpr static int OutputChannels = 4;
     constexpr static int ProfileChannels = 3;
 
-    DeviceCMYK(): RGBBase(Type::CMYK, "DeviceCMYK", "CMYK", "color-selector-cmyk") {
+    DeviceCMYK(): RGBBase(Type::CMYK, "DeviceCMYK", "CMYK", "cmyk") {
         _svgNames.emplace_back("device-cmyk");
     }
     ~DeviceCMYK() override = default;
@@ -44,7 +44,8 @@ public:
 
         if constexpr (PremultipliedAlpha) {
             black = i[3] / i[4];
-            white = (1.0 - i[3]) / i[4];
+            white = (1.0 - (i[3] / i[4])) / i[4];
+            o[3] = i[4];
         } else {
             black = i[3];
             white = 1.0 - black;
@@ -82,9 +83,10 @@ public:
         }
     }
 
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
-
     bool overInk(std::vector<double> const &input) const override;
+
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 } // namespace Inkscape::Colors::Space

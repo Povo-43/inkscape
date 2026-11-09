@@ -36,8 +36,8 @@ public:
 
 private:
 
-    int _channels_in;
-    int _channels_out;
+    unsigned int _channels_in;
+    unsigned int _channels_out;
 };
 
 class GamutChecker : public Transform

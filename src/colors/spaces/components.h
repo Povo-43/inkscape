@@ -23,21 +23,6 @@ namespace Inkscape::Colors::Space {
 
 enum class Type;
 
-enum class Traits {
-    None = 0,
-    Picker = 1,   // show color picker of this type in UI
-    Internal = 2, // internal use only, has converters and tests, or is supported by CSS toString
-    CMS = 4,      // CMS use only, no conversion math available
-};
-inline Traits operator & (const Traits lhs, const Traits rhs) {
-    using underlying = std::underlying_type_t<Traits>;
-    return static_cast<Traits>(static_cast<underlying>(lhs) & static_cast<underlying>(rhs));
-}
-inline Traits operator | (const Traits lhs, const Traits rhs) {
-    using underlying = std::underlying_type_t<Traits>;
-    return static_cast<Traits>(static_cast<underlying>(lhs) | static_cast<underlying>(rhs));
-}
-
 // Unit impacts component presentation in the UI and dictates what its scale is
 enum class Unit {
     EightBit,   // one byte, values from 0..255, unitless
@@ -67,8 +52,8 @@ class Components
 {
 public:
     Components() = default;
-    Components(Type type, Type wheel, Traits traits, std::vector<Component> components):
-        _type(type), _components(std::move(components)), _wheel_type(wheel), _traits(traits) {}
+    Components(Type type, std::vector<Component> components):
+        _type(type), _components(std::move(components)) {}
 
     static Components const &get(Type type, bool alpha = false);
 
@@ -82,17 +67,11 @@ public:
     unsigned size() const { return _components.size(); }
 
     void add(std::string id, std::string name, std::string tip, Unit unit = Unit::EightBit);
-    void setType(Type type, Type color_wheel = Type::NONE) { _type = type; _wheel_type = color_wheel; }
-    // Says which space the color wheel should be in when picking this color space
-    Type get_wheel_type() const;
-    // Trait(s) of those components
-    Traits traits() const { return _traits; }
+    void setType(Type type) { _type = type; }
 
 private:
     Type _type = Type::NONE;
     std::vector<Component> _components;
-    Type _wheel_type = Type::NONE;
-    Traits _traits = Traits::None;
 };
 
 } // namespace Inkscape::Colors::Space

@@ -64,6 +64,7 @@ public:
     }
 
     std::pair<std::string, bool> checkProfileName(Colors::CMS::Profile const &profile, RenderingIntent intent, std::optional<std::string> name = {}) const;
+    std::shared_ptr<Inkscape::Colors::Space::AnySpace> ensureColorSpaceIsInstalled(std::shared_ptr<Inkscape::Colors::Space::AnySpace> const &space);
     std::optional<std::string> attachProfileToDoc(std::string const &lookup, ColorProfileStorage storage,
                                                   RenderingIntent intent);
     std::string attachProfileToDoc(Colors::CMS::Profile const &profile, ColorProfileStorage storage,
@@ -71,6 +72,7 @@ public:
     void setRenderingIntent(std::string const &name, RenderingIntent intent);
 
     std::shared_ptr<Space::CMS> getSpace(std::string const &name) const;
+    std::shared_ptr<Space::CMS> getSpace(int id) const;
 
     ColorProfile *getColorProfileForSpace(std::string const &name) const;
     ColorProfile *getColorProfileForSpace(std::shared_ptr<Space::CMS> space) const;
@@ -79,8 +81,16 @@ public:
     std::vector<ColorProfile *> getObjects() const;
 
     std::shared_ptr<Space::AnySpace> findSvgColorSpace(std::string const &input) const;
+
+    std::shared_ptr<Space::AnySpace> getDocumentColorSpace() const;
+    bool setDocumentColorSpace(std::shared_ptr<Space::AnySpace> const &space);
+
+    std::string toDocumentColorString(Color const &color);
+    std::shared_ptr<Space::AnySpace> mapToStorageFormat(std::shared_ptr<Space::AnySpace> const &space) const;
 private:
-    void refreshResources();
+    void _refresh_resources();
+    void _invalidate_caches();
+    std::shared_ptr<Space::AnySpace> _map_storage_format(std::shared_ptr<Space::AnySpace> const &space) const;
 
     SPDocument *_document = nullptr;
     std::vector<std::shared_ptr<ColorProfileLink>> _links;
@@ -88,7 +98,9 @@ private:
     sigc::scoped_connection _resource_connection;
     sigc::signal<void()> _changed_signal;
 
+    mutable std::shared_ptr<Space::AnySpace> _document_space;
     mutable std::map<std::string, std::shared_ptr<Space::CMS>> _spaces;
+    mutable std::map<int, std::shared_ptr<Space::AnySpace>> _storage_map_cache;
 
 protected:
     friend class ColorProfileLink;

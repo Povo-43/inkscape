@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Colors::Manager - Look after all a document's icc profiles.
+ * Colors::Manager - Look after the systems in built color spaces
  *
- * Copyright 2023 Martin Owens <doctormo@geek-2.com>
+ * Copyright 2023-2026
+ *    * Martin Owens <doctormo@geek-2.com>
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
@@ -14,6 +15,8 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <sigc++/signal.h>
+#include <sigc++/connection.h>
 #include <vector>
 
 #include "spaces/components.h"
@@ -25,6 +28,34 @@ class AnySpace;
 } // namespace Space
 class Color;
 class Parser;
+
+class Picker
+{
+public:
+    static std::string prefPath() { return "/colorselector/"; }
+
+    Picker(Space::Type type, Space::Type wheel_type, std::string name, std::string iconname)
+        : _type(type)
+        , _wheel_type(wheel_type)
+        , _name(std::move(name))
+        , _iconname(std::move(iconname))
+    {}
+
+    Space::Type getType() const { return _type; }
+    Space::Type getWheelType() const { return _wheel_type; }
+    std::string const getName() const { return _name; }
+    std::string const getIconName() const { return _iconname; }
+    std::string const getPrefPath(std::string const &pref) const
+    {
+        return prefPath() + getName() + "/" + pref;
+    }
+
+private:
+    Space::Type _type;
+    Space::Type _wheel_type;
+    std::string _name;
+    std::string _iconname;
+};
 
 class Manager
 {
@@ -40,22 +71,25 @@ public:
         return instance;
     }
 
-    // Request all color spaces with given trait(s); Ex: spaces(Traits::Picker) to list of types suitable for GUI
-    std::vector<std::shared_ptr<Space::AnySpace>> spaces(Space::Traits traits);
-
+    std::vector<std::shared_ptr<Space::AnySpace>> const &spaces() { return _spaces; }
     std::shared_ptr<Space::AnySpace> find(Space::Type type) const;
     std::shared_ptr<Space::AnySpace> find(std::string const &name) const;
     std::shared_ptr<Space::AnySpace> findSvgColorSpace(std::string const &input) const;
+    std::shared_ptr<Space::AnySpace> findById(int id) const;
 
+    std::vector<std::shared_ptr<Picker>> const &pickers() { return _pickers; }
+    std::shared_ptr<Picker> findPicker(Space::Type type) const;
 protected:
     Manager();
     ~Manager() = default;
 
-    std::shared_ptr<Space::AnySpace> addSpace(Space::AnySpace *space);
-    bool removeSpace(std::shared_ptr<Space::AnySpace> space);
+    void addSpace(Space::AnySpace *space);
+    void addPicker(Space::AnySpace *space, Space::Type wheel);
+    void addSpaceAndPicker(Space::AnySpace *space, Space::Type wheel);
 
 private:
     std::vector<std::shared_ptr<Space::AnySpace>> _spaces;
+    std::vector<std::shared_ptr<Picker>> _pickers;
 
     struct cmpCaseInsensitive {
         bool operator()(const std::string& a, const std::string& b) const {

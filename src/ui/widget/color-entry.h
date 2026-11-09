@@ -17,6 +17,8 @@
 #include "colors/color-set.h"
 #include "ui/widget/generic/text-entry.h"
 
+class SPDocument;
+
 namespace Inkscape::UI::Widget {
 
 class ColorEntry : public TextEntry
@@ -27,20 +29,23 @@ public:
 
     sigc::signal<void (Glib::ustring)>& get_out_of_gamut_signal() { return _signal_out_of_gamut; }
 
+    void setDocument(SPDocument *doc) { _doc = doc; }
 protected:
     void on_changed() override;
 
 private:
     void _onColorChanged();
-    void _inputCheck(guint pos, const gchar * /*chars*/, guint /*n_chars*/);
-    bool looksLikeHex(const Glib::ustring &text) const;
 
     std::shared_ptr<Colors::ColorSet> _colors;
-    bool _updating;
-    bool _updatingrgba;
-    int _prevpos;
-    sigc::signal<void (Glib::ustring)> _signal_out_of_gamut;
+
+    SPDocument *_doc = nullptr;
+
+    bool _show_real = true;
+    bool _updating = false;
+    bool _updating_color = false;
     bool _warning = false;
+
+    sigc::signal<void (Glib::ustring)> _signal_out_of_gamut;
     sigc::connection _color_changed_connection;
 };
 

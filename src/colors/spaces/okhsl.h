@@ -25,8 +25,10 @@ public:
     constexpr static int ProfileChannels = 3;
     constexpr static int OutputChannels = 3;
 
-    OkHsl(): RGBBase(Type::OKHSL, "OkHsl", "OkHsl", "color-selector-okhsl", true) {}
+    OkHsl(): RGBBase(Type::OKHSL, "OkHsl", "OkHsl", "okhsl", true) {}
     ~OkHsl() override = default;
+
+    bool canToString() const override { return false; }
 
     template<typename T, bool PremultipliedAlpha = false>
     inline static void spaceToProfile(T const *i, T *o)
@@ -91,8 +93,6 @@ public:
             o[3] = i[3];
         }
     }
-
-    std::string toString(std::vector<double> const &values, bool opacity) const override { return ""; }
 };
 
 } // namespace Inkscape::Colors::Space

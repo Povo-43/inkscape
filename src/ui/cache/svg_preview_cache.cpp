@@ -145,7 +145,6 @@ void SvgPreview::remove_preview_from_cache(const Glib::ustring& key) {
     }
 }
 
-
 }
 }
 }

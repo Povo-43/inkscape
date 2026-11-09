@@ -7,6 +7,7 @@
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/picture.h>
+#include <gtkmm/separator.h>
 #include <gtkmm/togglebutton.h>
 #include "ui/util.h"
 
@@ -54,7 +55,21 @@ void IconComboBox::construct(Glib::RefPtr<Gio::ListStore<ListItem>> store, bool 
         }
     };
 
+    auto setup_separator = [](const Glib::RefPtr<Gtk::ListItem>& list_item)
+    {
+        if (list_item->get_selectable()) {
+            list_item->set_selectable(false);
+            list_item->set_activatable(false);
+            list_item->set_focusable(false);
+            auto rule = Gtk::make_managed<Gtk::Separator>();
+            rule->add_css_class("item-separator");
+            list_item->unset_child();
+            list_item->set_child(*rule);
+        }
+    };
+
     _factory->signal_setup().connect([this, set_up_image](const Glib::RefPtr<Gtk::ListItem>& list_item) {
+
         auto box = Gtk::make_managed<Gtk::Box>();
         box->add_css_class("item-box");
         box->set_orientation(Gtk::Orientation::HORIZONTAL);
@@ -64,45 +79,33 @@ void IconComboBox::construct(Glib::RefPtr<Gio::ListStore<ListItem>> store, bool 
         label->set_hexpand();
         label->set_xalign(0);
         label->set_valign(Gtk::Align::CENTER);
+        if (_label_max_chars) {
+            label->set_max_width_chars(_label_max_chars);
+            label->set_ellipsize(Pango::EllipsizeMode::END);
+        }
 
         set_up_image(*box, get_image_size(), false);
-        // if (use_icons) {
-        //     auto icon = Gtk::make_managed<Gtk::Image>();
-        //     icon->set_icon_size(Gtk::IconSize::NORMAL);
-
-        //     box->append(*icon);
-        // }
-        // else {
-        //     auto image = Gtk::make_managed<Gtk::Picture>();
-        //     image->set_layout_manager(Gtk::BinLayout::create());
-        //     int size = get_image_size();
-        //     image->set_size_request(size, size);
-        //     image->set_can_shrink(true);
-        //     image->set_content_fit(Gtk::ContentFit::CONTAIN);
-        //     image->set_valign(Gtk::Align::CENTER);
-
-        //     box->append(*image);
-        // }
-
         box->append(*label);
 
         list_item->set_child(*box);
     });
 
     _factory->signal_bind().connect([=](const Glib::RefPtr<Gtk::ListItem>& list_item) {
-        auto obj = list_item->get_item();
-
+        auto item = std::dynamic_pointer_cast<ListItem>(list_item->get_item());
         auto& box = dynamic_cast<Gtk::Box&>(*list_item->get_child());
         auto first = box.get_first_child();
         if (!first) throw std::runtime_error("Missing widget in IconComboBox factory binding");
+
+        // At bind time because item data is not available at setup time
+        if (item->is_separator) {
+            setup_separator(list_item);
+            return;
+        }
+
         auto& label = dynamic_cast<Gtk::Label&>(*first->get_next_sibling());
-
-        auto item = std::dynamic_pointer_cast<ListItem>(obj);
-
         if (use_icons) {
             dynamic_cast<Gtk::Image&>(*first).set_from_icon_name(item->icon);
-        }
-        else {
+        } else {
             auto& picture = dynamic_cast<Gtk::Picture&>(*first);
             picture.set_paintable(item->image);
             picture.set_visible(!!item->image);
@@ -125,8 +128,13 @@ void IconComboBox::construct(Glib::RefPtr<Gio::ListStore<ListItem>> store, bool 
         });
 
         _compact_factory->signal_bind().connect([=](const Glib::RefPtr<Gtk::ListItem>& list_item) {
-            auto obj = list_item->get_item();
-            auto item = std::dynamic_pointer_cast<ListItem>(obj);
+            auto item = std::dynamic_pointer_cast<ListItem>(list_item->get_item());
+
+            // At bind time because item data is not available at setup time
+            if (item->is_separator) {
+                setup_separator(list_item);
+                return;
+            }
 
             auto& box = dynamic_cast<Gtk::Box&>(*list_item->get_child());
             auto first = box.get_first_child();
@@ -150,12 +158,22 @@ void IconComboBox::construct(Glib::RefPtr<Gio::ListStore<ListItem>> store, bool 
             label->set_hexpand();
             label->set_xalign(0.5);
             label->set_valign(Gtk::Align::FILL);
+            if (_label_max_chars) {
+                label->set_max_width_chars(_label_max_chars);
+                label->set_ellipsize(Pango::EllipsizeMode::END);
+            }
             list_item->set_child(*label);
         });
 
         _compact_factory->signal_bind().connect([=](const Glib::RefPtr<Gtk::ListItem>& list_item) {
-            auto obj = list_item->get_item();
-            auto item = std::dynamic_pointer_cast<ListItem>(obj);
+            auto item = std::dynamic_pointer_cast<ListItem>(list_item->get_item());
+
+            // At bind time because item data is not available at setup time
+            if (item->is_separator) {
+                setup_separator(list_item);
+                return;
+            }
+
             auto& label = dynamic_cast<Gtk::Label&>(*list_item->get_child());
             label.set_label(item->short_name.empty() ? item->label : item->short_name);
         });
@@ -173,7 +191,7 @@ void IconComboBox::construct(Glib::RefPtr<Gio::ListStore<ListItem>> store, bool 
     set_model(_selection_model);
     refilter();
 
-    property_selected_item().signal_changed().connect([this]() {
+    _item_changed_connection = property_selected_item().signal_changed().connect([this]() {
         auto item = current_item();
         _signal_current_changed.emit(item ? item->id : -1);
     });
@@ -208,6 +226,16 @@ void IconComboBox::add_row(const Glib::ustring& icon_name, const Glib::ustring& 
 void IconComboBox::add_row(Cairo::RefPtr<Cairo::Surface> image, const Glib::ustring& label, int id) {
     auto tex = to_texture(image);
     _store->append(ListItem::create(id, label, {}, {}, tex));
+}
+
+void IconComboBox::add_separator()
+{
+    _store->append(ListItem::create_separator());
+}
+
+void IconComboBox::clear()
+{
+    _store->remove_all();
 }
 
 void IconComboBox::set_active_by_id(int const id)

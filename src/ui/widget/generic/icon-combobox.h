@@ -35,6 +35,9 @@ public:
     void add_row(Glib::ustring const &icon_name, Glib::ustring const &label, int id);
     void add_row(const Glib::ustring& icon_name, const Glib::ustring& full_name, const Glib::ustring& short_name, int id);
     void add_row(Cairo::RefPtr<Cairo::Surface> image, const Glib::ustring& label, int id);
+    void add_separator();
+    void clear();
+
     // Set selected (aka active) item
     void set_active_by_id(int id);
     // Show/hide an item in store
@@ -54,11 +57,14 @@ public:
     // apply filter to show items after adding them
     void refilter();
 
+    void set_label_max_chars(int c) { _label_max_chars = c; }
+
 private:
     void construct(Glib::RefPtr<Gio::ListStore<ListItem>> store, bool use_icons, HeaderType header);
     bool is_item_visible(const Glib::RefPtr<Glib::ObjectBase>& item) const;
     std::pair<std::shared_ptr<IconComboBox::ListItem>, int> find_by_id(int id, bool visible_only);
 
+    int _label_max_chars = 0;
     Geom::Point _image_size{16, 16};
     Glib::RefPtr<Gtk::SignalListItemFactory> _factory;
     Glib::RefPtr<Gtk::SignalListItemFactory> _compact_factory;
@@ -67,6 +73,7 @@ private:
     Glib::RefPtr<Gtk::BoolFilter> _filter;
     Glib::RefPtr<Gio::ListStore<IconComboBox::ListItem>> _store;
     sigc::signal<void (int)> _signal_current_changed = sigc::signal<void (int)>();
+    sigc::scoped_connection _item_changed_connection;
 };
 
 struct IconComboBox::ListItem : Glib::Object {
@@ -76,6 +83,7 @@ struct IconComboBox::ListItem : Glib::Object {
     Glib::ustring icon;         // icon's name to load if icons have been enabled
     Glib::RefPtr<Gdk::Texture> image;  // image to present instead of icon if icons are disabled
     bool is_visible = true;     // true if item is to be visible/included
+    bool is_separator = false;  // true if the item is a separator instead
     std::string uid;            // user-defined unique ID (optional)
     void* data = nullptr;       // user-defined data (optional)
 
@@ -85,6 +93,12 @@ struct IconComboBox::ListItem : Glib::Object {
         Glib::RefPtr<Gdk::Texture> image
     ) {
         return create(id, label, {}, {}, image);
+    }
+    static Glib::RefPtr<ListItem> create_separator()
+    {
+        auto item = Glib::make_refptr_for_instance<ListItem>(new ListItem());
+        item->is_separator = true;
+        return item;
     }
     static Glib::RefPtr<ListItem> create(
         int id,

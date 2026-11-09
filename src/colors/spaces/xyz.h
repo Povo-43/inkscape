@@ -38,7 +38,7 @@ public:
 class XYZ : public ProfileSpace<true>
 {
 public:
-    XYZ(): ProfileSpace(Type::XYZ, 3, "XYZ", "XYZ", "color-selector-xyz", true) {
+    XYZ(): ProfileSpace(Type::XYZ, 3, "XYZ", "XYZ", "xyz", true) {
         _svgNames.emplace_back("xyz-d65");
         _svgNames.emplace_back("xyz");
         _intent = RenderingIntent::RELATIVE_COLORIMETRIC_NOBPC;
@@ -48,20 +48,22 @@ public:
 
     std::shared_ptr<Inkscape::Colors::CMS::Profile> const getProfile() const override { return getXYZ65Profile(); }
 
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 class XYZ50 : public ProfileSpace<true>
 {
 public:
-    XYZ50(): ProfileSpace(Type::XYZ50, 3, "XYZ D50", "XYZ D50", "color-selector-xyz", true) {
+    XYZ50(): ProfileSpace(Type::XYZ50, 3, "XYZ D50", "XYZ D50", "xyz", true) {
         _svgNames.emplace_back("xyz-d50");
     }
     ~XYZ50() override = default;
 
     std::shared_ptr<Inkscape::Colors::CMS::Profile> const getProfile() const override;
 
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 } // namespace Inkscape::Colors::Space

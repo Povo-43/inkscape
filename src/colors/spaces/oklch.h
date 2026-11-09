@@ -25,7 +25,7 @@ public:
 
     constexpr static double HUE_SCALE = 360;
 
-    OkLch(): RGBBase(Type::OKLCH, "OkLch", "OkLch", "color-selector-oklch") {
+    OkLch(): RGBBase(Type::OKLCH, "OkLch", "OkLch", "oklch") {
         _svgNames.emplace_back("oklch");
     }
     ~OkLch() override = default;
@@ -80,9 +80,6 @@ public:
         }
     }
 
-    std::string toString(std::vector<double> const &values, bool opacity) const override;
-
-public:
     class Parser : public Colors::Parser
     {
     public:
@@ -93,6 +90,9 @@ public:
     };
 
     static double max_chroma(double l, double h);
+
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity) const override;
 };
 
 uint8_t const *render_hue_scale(double s, double l, std::array<uint8_t, 4 * 1024> *map);

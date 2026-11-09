@@ -23,8 +23,10 @@ public:
     constexpr static int ProfileChannels = 3;
     constexpr static int OutputChannels = 3;
 
-    HSV(): RGBBase(Type::HSV, "HSV", "HSV", "color-selector-hsx") {}
+    HSV(): RGBBase(Type::HSV, "HSV", "HSV", "hsv") {}
     ~HSV() override = default;
+
+    std::string const getIcon() const override { return "color-selector-hsx"; }
 
     /**
      * Convert the HSV color into sRGB components used in the sRGB icc profile.
@@ -47,9 +49,9 @@ public:
             v = i[2];
         }
         double f = d - std::floor(d);
-        double w = v * (1.0 - i[1]);
-        double q = v * (1.0 - (i[1] * f));
-        double t = v * (1.0 - (i[1] * (1.0 - f)));
+        double w = v * (1.0 - e);
+        double q = v * (1.0 - (e * f));
+        double t = v * (1.0 - (e * (1.0 - f)));
 
         if (d < 1.0) {
             o[0] = v;
@@ -117,8 +119,6 @@ public:
         }
     }
 
-    std::string toString(std::vector<double> const &values, bool opacity) const override;
-
     class fromHwbParser : public HueParser
     {
     public:
@@ -127,6 +127,9 @@ public:
         {}
         bool parse(std::istringstream &input, std::vector<double> &output) const override;
     };
+
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity) const override;
 };
 
 } // namespace Inkscape::Colors::Space

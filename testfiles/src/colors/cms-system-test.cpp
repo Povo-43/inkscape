@@ -32,7 +32,6 @@ protected:
         cms = &CMS::System::get();
         cms->clearDirectoryPaths();
         cms->addDirectoryPath(icc_dir, false);
-        cms->refreshProfiles();
 
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
         prefs->setString("/options/displayprofile/uri", display_profile);
@@ -128,7 +127,6 @@ TEST_F(ColorCmsSystem, refreshProfiles)
 {
     ASSERT_EQ(cms->getDirectoryPaths().size(), 1);
     cms->clearDirectoryPaths();
-    cms->refreshProfiles();
     ASSERT_GE(cms->getDirectoryPaths().size(), 5);
 }
 

@@ -338,7 +338,7 @@ bool OkLch::Parser::parse(std::istringstream &ss, std::vector<double> &output) c
  * @arg values - A vector of doubles for each channel in the Lch space
  * @arg opacity - True if the opacity should be included in the output.
  */
-std::string OkLch::toString(std::vector<double> const &values, bool opacity) const
+std::string OkLch::_to_string(std::vector<double> const &values, bool opacity) const
 {
     auto os = CssFuncPrinter(3, "oklch");
 

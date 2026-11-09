@@ -27,14 +27,13 @@
 #include "parameter-optiongroup.h"
 #include "parameter-path.h"
 #include "parameter-string.h"
+#include "preferences.h"
 #include "widget.h"
 #include "widget-label.h"
 
 #include "extension/extension.h"
 
 #include "object/sp-defs.h"
-
-#include "ui/widget/color-notebook.h"
 
 #include "xml/node.h"
 

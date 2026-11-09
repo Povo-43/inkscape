@@ -24,7 +24,7 @@ class Alpha : public ProfileSpace<true>
 {
 public:
     Alpha()
-        : ProfileSpace(Type::Alpha, 0, "Alpha", "Alpha", "")
+        : ProfileSpace(Type::Alpha, 0, "Alpha", "Alpha", "alpha")
     {}
 
     std::shared_ptr<Colors::CMS::Profile> const getProfile() const override
@@ -33,10 +33,7 @@ public:
         return gray_profile;
     }
 
-    std::string toString(std::vector<double> const &values, bool opacity) const override
-    {
-        return "";
-    }
+    bool canToString() const override { return false; }
 };
 
 } // namespace Inkscape::Colors::Space

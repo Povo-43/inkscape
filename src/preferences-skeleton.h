@@ -339,7 +339,6 @@ static char const preferences_skeleton[] =
            masks="#0000ffff"/>
     <group id="svgoutput"
            disable_optimizations="0"
-           usenamedcolors="0"
            numericprecision="10"
            minimumexponent="-8"
            inlineattrs="0"

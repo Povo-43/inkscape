@@ -203,17 +203,17 @@ bool NamedColor::NameParser::parse(std::istringstream &ss, std::vector<double> &
  * @arg values - A vector of doubles for each channel in the RGB space
  * @arg opacity - True if the opacity should be included in the output.
  */
-std::string NamedColor::toString(std::vector<double> const &values, bool opacity) const
+std::string NamedColor::_to_string(std::vector<double> const &values, bool opacity) const
 {
     // If opacity is set, pass down
     if (values.size() == 4 && opacity)
-        return RGB::toString(values, true);
+        return RGB::_to_string(values, true);
 
     auto name = getNameFor(toRGBA(values));
     if (!name.empty())
         return name;
 
-    return RGB::toString(values, opacity);
+    return RGB::_to_string(values, opacity);
 }
 
 /**

@@ -22,19 +22,13 @@ namespace Inkscape::Colors::Space {
 class NamedColor : public RGB
 {
 public:
-    NamedColor(): RGB(Type::CSSNAME, "CSSNAME", "CSS", "color-selector-named") {}
+    NamedColor(): RGB(Type::CSSNAME, "CSSNAME", "Named", "named") {}
     ~NamedColor() override = default;
 
     Type getComponentType() const override { return Type::RGB; }
 
     static std::string getNameFor(unsigned int rgba);
 
-protected:
-    friend class Inkscape::Colors::Color;
-
-    std::string toString(std::vector<double> const &values, bool opacity = true) const override;
-
-public:
     class NameParser : public Colors::Parser
     {
     public:
@@ -43,6 +37,8 @@ public:
         {}
         bool parse(std::istringstream &input, std::vector<double> &output) const override;
     };
+private:
+    std::string _to_string(std::vector<double> const &values, bool opacity = true) const override;
 };
 
 } // namespace Inkscape::Colors::Space
