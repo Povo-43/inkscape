@@ -304,8 +304,11 @@ if(NOT ANDROID)
   add_executable(inkscape ${main_SRC})
   add_executable(inkview ${view_SRC})
 else()
-  add_library(inkscape ${main_SRC})
-  add_library(inkview ${view_SRC})
+  # On Android, build shared libraries (.so) so they can be loaded from Java via JNI.
+  add_library(inkscape SHARED ${main_SRC})
+  add_library(inkview SHARED ${view_SRC})
+  set_target_properties(inkscape PROPERTIES PREFIX "")
+  set_target_properties(inkview PROPERTIES PREFIX "")
 endif()
 
 if(WIN32)

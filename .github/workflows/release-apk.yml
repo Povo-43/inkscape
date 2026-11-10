@@ -1,0 +1,120 @@
+name: Release APK
+
+on:
+  # リリースが公開された時
+  release:
+    types: [published]
+  # 手動実行も許可
+  workflow_dispatch:
+
+env:
+  # Android SDK ルート（セルフホステッドランナー想定。未セットアップ時は setup-android で整備）
+  ANDROID_SDK_ROOT: /opt/android-sdk
+  # NDK パス
+  ANDROID_NDK: /opt/android-sdk/ndk/26.3.11579264
+  # Gradle キャッシュディレクトリ（~/.gradle 配下）
+  GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
+
+jobs:
+  build-apk:
+    name: APK ビルド
+    runs-on: ubuntu-latest
+
+    steps:
+      # ------------------------------------------------------------------
+      # a. リポジトリチェックアウト（タグも取得するため fetch-depth: 0）
+      # ------------------------------------------------------------------
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ------------------------------------------------------------------
+      # b. JDK 17 セットアップ（Temurin）
+      # ------------------------------------------------------------------
+      - name: JDK 17 をセットアップ
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # ------------------------------------------------------------------
+      # c. Android SDK セットアップ（api 35 / ndk r26 / build-tools 34 / cmake 3.22.1）
+      # ------------------------------------------------------------------
+      - name: Android SDK をセットアップ
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 35
+          ndk: 26.3.11579264
+          build-tools: 34.0.0
+          cmake: 3.22.1
+
+      # ------------------------------------------------------------------
+      # d. Gradle セットアップ＋キャッシュ（GRADLE_USER_HOME = ~/.gradle）
+      # ------------------------------------------------------------------
+      - name: Gradle をセットアップしキャッシュを有効化
+        uses: gradle/actions/setup-gradle@v3
+
+      # ------------------------------------------------------------------
+      # e. gradlew に実行権限付与（未生成なら gradle wrapper を作成）
+      # ------------------------------------------------------------------
+      - name: gradlew に実行権限を付与（未生成なら gradle wrapper を生成）
+        run: |
+          if [ ! -f gradlew ]; then
+            echo "gradlew が見つからないため gradle wrapper を生成します"
+            gradle wrapper
+          fi
+          chmod +x gradlew
+
+      # ------------------------------------------------------------------
+      # f. APK ビルド
+      #    署名シークレットが揃っていれば release ビルド、
+      #    不足していれば debug ビルドにフォールバック（失敗させない）
+      # ------------------------------------------------------------------
+      - name: リリースAPKをビルド（署名シークレットありの場合）
+        if: ${{ secrets.RELEASE_STORE_FILE != '' && secrets.RELEASE_STORE_PASSWORD != '' && secrets.RELEASE_KEY_ALIAS != '' && secrets.RELEASE_KEY_PASSWORD != '' }}
+        env:
+          RELEASE_STORE_FILE: ${{ secrets.RELEASE_STORE_FILE }}
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease
+        continue-on-error: false
+
+      - name: デバッグAPKをビルド（署名シークレット未設定の場合のフォールバック）
+        if: ${{ !(secrets.RELEASE_STORE_FILE != '' && secrets.RELEASE_STORE_PASSWORD != '' && secrets.RELEASE_KEY_ALIAS != '' && secrets.RELEASE_KEY_PASSWORD != '') }}
+        run: ./gradlew :app:assembleDebug
+        continue-on-error: false
+
+      # ------------------------------------------------------------------
+      # g. ビルド成果物の確認（app/build/outputs/apk/release/app-release.apk）
+      # ------------------------------------------------------------------
+      - name: ビルド成果物を確認
+        id: check-artifact
+        run: |
+          APK_PATH="app/build/outputs/apk/release/app-release.apk"
+          if [ -f "$APK_PATH" ]; then
+            echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
+            echo "release APK が見つかりました: $APK_PATH"
+          else
+            echo "release APK が見つかりませんでした: $APK_PATH" >&2
+            exit 1
+          fi
+
+      # ------------------------------------------------------------------
+      # h. GitHub リリースへアセットアップロード
+      #    gh release upload <tag> <apk> --name <asset-name> --clobber
+      # ------------------------------------------------------------------
+      - name: リリースアセットをアップロード
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # タグは release イベントの tag_name を優先（workflow_dispatch 時はこのステップをスキップ）
+          RELEASE_TAG: ${{ github.event.release.tag_name || github.ref_name }}
+        run: |
+          TAG="${RELEASE_TAG}"
+          # アセット名: inkscape-<version>.apk（必要に応じて inkscape-<version>-<abi>.apk に変更可能）
+          ASSET_NAME="inkscape-${TAG}.apk"
+          gh release upload "${TAG}" "${{ steps.check-artifact.outputs.apk_path }}" --name "${ASSET_NAME}" --clobber
+        continue-on-error: false

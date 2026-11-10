@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.Inkscape" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">#ff3584e4</item>
+        <item name="colorPrimaryDark">#ff15539e</item>
+        <item name="colorAccent">#ff3584e4</item>
+    </style>
+</resources>

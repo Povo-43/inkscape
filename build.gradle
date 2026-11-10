@@ -1,0 +1,9 @@
+// Top-level build file. リポジトリ・プラグイン設定は settings.gradle の
+// pluginManagement / dependencyResolutionManagement に一元化済み（Gradle 8.x 推奨形式）。
+allprojects {
+    // 設定は settings.gradle の dependencyResolutionManagement に一元化済み
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
