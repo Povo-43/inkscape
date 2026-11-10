@@ -50,6 +50,8 @@
 #include "ui/knot/knot.h"
 #include "ui/tools/tool-base.h"
 #include "ui/widget/events/canvas-event.h"
+#include "ui/dialog/fill-and-stroke.h"
+#include "ui/util.h"
 
 #include "xml/sp-css-attr.h"
 
@@ -2120,12 +2122,25 @@ void GrDrag::setSelected(GrDragger *dragger, bool add_to_selection, bool overrid
     }
     if (seldragger) {
         SPStop* stop = nullptr;
+        GrDraggable *d = nullptr;
         if (!seldragger->draggables.empty()) {
-            auto d = seldragger->draggables.front();
+            d = seldragger->draggables.front();
             stop = getStop(seldragger, getGradient(d->item, d->fill_or_stroke));
         }
         auto block = _update.block();
         desktop->emit_gradient_stop_selected(stop);
+        if (auto *fs = d ? Inkscape::UI::Dialog::FillAndStroke::get_fill_and_stroke_panel(desktop) : nullptr)
+        {
+            switch (d->fill_or_stroke) {
+                case PaintTarget::FOR_FILL :
+                    fs->showPageFill();
+                    break;
+                case PaintTarget::FOR_STROKE :
+                    fs->showPageStrokePaint();
+                    break;
+            }
+
+        }
     }
 }
 

@@ -113,8 +113,6 @@ enum ui_drop_target_info {
     APP_OSWB_COLOR
 };
 
-/* convenience function */
-static Dialog::FillAndStroke *get_fill_and_stroke_panel(SPDesktop *desktop);
 
 SelectedStyle::SelectedStyle()
 {
@@ -494,12 +492,12 @@ void SelectedStyle::on_fillstroke_swap() {
 }
 
 void SelectedStyle::on_fill_edit() {
-    if (Dialog::FillAndStroke *fs = get_fill_and_stroke_panel(_desktop))
+    if (Dialog::FillAndStroke *fs = Dialog::FillAndStroke::get_fill_and_stroke_panel(_desktop))
         fs->showPageFill();
 }
 
 void SelectedStyle::on_stroke_edit() {
-    if (Dialog::FillAndStroke *fs = get_fill_and_stroke_panel(_desktop))
+    if (Dialog::FillAndStroke *fs = Dialog::FillAndStroke::get_fill_and_stroke_panel(_desktop))
         fs->showPageStrokePaint();
 }
 
@@ -508,7 +506,7 @@ Gtk::EventSequenceState SelectedStyle::on_fill_click(Gtk::GestureClick const &cl
 {
     auto const button = click.get_current_button();
     if (button == 1) { // click, open fill&stroke
-        if (Dialog::FillAndStroke *fs = get_fill_and_stroke_panel(_desktop))
+        if (Dialog::FillAndStroke *fs = Dialog::FillAndStroke::get_fill_and_stroke_panel(_desktop))
             fs->showPageFill();
     } else if (button == 3) { // right-click, popup menu
         setPopover(_popup[SS_FILL].get());
@@ -528,7 +526,7 @@ Gtk::EventSequenceState SelectedStyle::on_stroke_click(Gtk::GestureClick const &
 {
     auto const button = click.get_current_button();
     if (button == 1) { // click, open fill&stroke
-        if (Dialog::FillAndStroke *fs = get_fill_and_stroke_panel(_desktop))
+        if (Dialog::FillAndStroke *fs = Dialog::FillAndStroke::get_fill_and_stroke_panel(_desktop))
             fs->showPageStrokePaint();
     } else if (button == 3) { // right-click, popup menu
         setPopover(_popup[SS_STROKE].get());
@@ -547,7 +545,7 @@ Gtk::EventSequenceState SelectedStyle::on_sw_click(Gtk::GestureClick const &clic
 {
     auto const button = click.get_current_button();
     if (button == 1) { // click, open fill&stroke
-        if (Dialog::FillAndStroke *fs = get_fill_and_stroke_panel(_desktop))
+        if (Dialog::FillAndStroke *fs = Dialog::FillAndStroke::get_fill_and_stroke_panel(_desktop))
             fs->showPageStrokeStyle();
     } else if (button == 3) { // right-click, popup menu
         auto const it = std::find_if(_unit_mis.cbegin(), _unit_mis.cend(), [this] (auto mi) {
@@ -1208,12 +1206,6 @@ void RotateableStrokeWidth::do_scroll(double by, guint modifier)
     do_motion(by/10.0, modifier);
     do_release(by / 10.0, modifier);
     startvalue_set = false;
-}
-
-Dialog::FillAndStroke *get_fill_and_stroke_panel(SPDesktop *desktop)
-{
-    desktop->getContainer()->new_dialog("FillStroke");
-    return dynamic_cast<Dialog::FillAndStroke *>(desktop->getContainer()->get_dialog("FillStroke"));
 }
 
 } // namespace Inkscape::UI::Widget

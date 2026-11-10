@@ -50,6 +50,7 @@ public:
     void showPageFill();
     void showPageStrokePaint();
     void showPageStrokeStyle();
+    static FillAndStroke *get_fill_and_stroke_panel(SPDesktop *desktop);
 
 protected:
     Gtk::Notebook   _notebook;

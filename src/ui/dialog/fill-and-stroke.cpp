@@ -34,6 +34,7 @@
 #include "ui/widget/notebook-page.h"
 #include "ui/widget/recolor-art-manager.h"
 #include "ui/widget/stroke-style.h"
+#include "ui/dialog/dialog-container.h"
 
 
 namespace Inkscape::UI::Dialog {
@@ -618,7 +619,11 @@ FillAndStroke::_createPageTabLabel(const Glib::ustring& label, const char *label
 
     return *_tab_label_box;
 }
-
+FillAndStroke *FillAndStroke::get_fill_and_stroke_panel(SPDesktop *desktop)
+{
+    desktop->getContainer()->new_dialog("FillStroke");
+    return dynamic_cast<FillAndStroke *>(desktop->getContainer()->get_dialog("FillStroke"));
+}
 } // namespace Inkscape::UI::Dialog
 
 /*

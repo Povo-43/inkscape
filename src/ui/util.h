@@ -337,6 +337,7 @@ void connect_click_with_state(Gtk::Button& button, Callback&& callback) {
     button.add_controller(click);
 }
 
+
 } // namespace Inkscape::UI
 
 #endif // UI_UTIL_SEEN

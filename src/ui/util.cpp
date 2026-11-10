@@ -40,6 +40,7 @@
 #include "util/numeric/converters.h"
 #include "widget/generic/spin-button.h"
 
+
 // NOTE: Include windows stuff last, as it #defines ERROR leading to compilation errors
 #if (defined (_WIN32) || defined (_WIN64))
 #undef NOGDI
@@ -279,6 +280,8 @@ void close_parent_popover(Gtk::Widget &widget)
         }
     }
 }
+
+
 
 } // namespace Inkscape::UI
 
