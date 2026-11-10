@@ -4,6 +4,10 @@ on:
   # リリースが公開された時
   release:
     types: [published]
+  # タグが push された時（gh release などでタグ付きリリースを作成した際に起動）
+  push:
+    tags:
+      - 'inkscape-android-*'
   # 手動実行も許可
   workflow_dispatch:
 
@@ -112,10 +116,10 @@ jobs:
       #    gh release upload <tag> <apk> --name <asset-name> --clobber
       # ------------------------------------------------------------------
       - name: リリースアセットをアップロード
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
-          # タグは release イベントの tag_name を優先（workflow_dispatch 時はこのステップをスキップ）
+          # タグは release イベントの tag_name、push 時は github.ref_name を使用
           RELEASE_TAG: ${{ github.event.release.tag_name || github.ref_name }}
         run: |
           TAG="${RELEASE_TAG}"
