@@ -36,15 +36,12 @@ jobs:
           cache: gradle
 
       # ------------------------------------------------------------------
-      # c. Android SDK セットアップ（api 35 / ndk r26 / build-tools 34 / cmake 3.22.1）
+      # c. Android SDK セットアップ（platform 35 / build-tools 34 / NDK / CMake）
       # ------------------------------------------------------------------
       - name: Android SDK をセットアップ
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
-          api-level: 35
-          ndk: 26.3.11579264
-          build-tools: 34.0.0
-          cmake: 3.22.1
+          packages: 'platforms;android-35 build-tools;34.0.0 cmake;3.22.1 ndk;26.3.11579264'
 
       # ------------------------------------------------------------------
       # d. Gradle セットアップ＋キャッシュ
