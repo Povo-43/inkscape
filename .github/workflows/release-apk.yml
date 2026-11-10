@@ -59,19 +59,11 @@ jobs:
         run: chmod +x gradlew
 
       # ------------------------------------------------------------------
-      # f. APK ビルド（デフォルトはデバッグ。署名シークレットがあればリリース）
+      # f. APK ビルド（デフォルトはデバッグビルド。
+      #    ストア公開用リリースには RELEASE_* シークレットを設定し、
+      #    こちらを :app:assembleRelease に切り替えてください）
       # ------------------------------------------------------------------
-      - name: リリースAPKをビルド（署名シークレットありの場合）
-        if: ${{ secrets.RELEASE_STORE_FILE != '' && secrets.RELEASE_STORE_PASSWORD != '' && secrets.RELEASE_KEY_ALIAS != '' && secrets.RELEASE_KEY_PASSWORD != '' }}
-        env:
-          RELEASE_STORE_FILE: ${{ secrets.RELEASE_STORE_FILE }}
-          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
-          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
-          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        run: ./gradlew :app:assembleRelease
-
-      - name: デバッグAPKをビルド（署名シークレット未設定の場合のフォールバック）
-        if: ${{ !(secrets.RELEASE_STORE_FILE != '' && secrets.RELEASE_STORE_PASSWORD != '' && secrets.RELEASE_KEY_ALIAS != '' && secrets.RELEASE_KEY_PASSWORD != '') }}
+      - name: デバッグAPKをビルド
         run: ./gradlew :app:assembleDebug
 
       # ------------------------------------------------------------------
