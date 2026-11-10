@@ -90,17 +90,22 @@ jobs:
       # ------------------------------------------------------------------
       # g. ビルド成果物の確認（app/build/outputs/apk/release/app-release.apk）
       # ------------------------------------------------------------------
-      - name: ビルド成果物を確認
+      - name: ビルド成果物を確認（release 優先、なければ debug にフォールバック）
         id: check-artifact
         run: |
-          APK_PATH="app/build/outputs/apk/release/app-release.apk"
-          if [ -f "$APK_PATH" ]; then
-            echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
+          APK_PATH=""
+          if [ -f "app/build/outputs/apk/release/app-release.apk" ]; then
+            APK_PATH="app/build/outputs/apk/release/app-release.apk"
             echo "release APK が見つかりました: $APK_PATH"
-          else
-            echo "release APK が見つかりませんでした: $APK_PATH" >&2
+          elif [ -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
+            APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
+            echo "release APK は見つからず、debug APK をフォールバックで使用します: $APK_PATH"
+          fi
+          if [ -z "$APK_PATH" ]; then
+            echo "APK が見つかりませんでした" >&2
             exit 1
           fi
+          echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
 
       # ------------------------------------------------------------------
       # h. GitHub リリースへアセットアップロード
