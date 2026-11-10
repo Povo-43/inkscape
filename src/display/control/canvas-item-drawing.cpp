@@ -218,6 +218,13 @@ bool CanvasItemDrawing::handle_event(CanvasEvent const &event)
             /* TODO ... event -> arena transform? */
             _c = event.pos;
 
+            if (!_cursor) {
+                // A button grab can deliver motion after leave. Forward it to the tool
+                // without restoring a drawing hover target before the next enter.
+                retval = _drawing_event_signal.emit(event, nullptr);
+                return;
+            }
+
             auto new_drawing_item = _drawing->pick(_c, _cursor_tolerance, get_canvas()->get_area_world(), get_flags());
             if (!_active_item || _active_item->second != new_drawing_item) {
 
