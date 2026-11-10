@@ -2129,7 +2129,7 @@ void GrDrag::setSelected(GrDragger *dragger, bool add_to_selection, bool overrid
         }
         auto block = _update.block();
         desktop->emit_gradient_stop_selected(stop);
-        if (auto *fs = d ? Inkscape::UI::get_fill_and_stroke_panel(desktop) : nullptr)
+        if (auto *fs = d ? Inkscape::UI::Dialog::FillAndStroke::get_fill_and_stroke_panel(desktop) : nullptr)
         {
             switch (d->fill_or_stroke) {
                 case PaintTarget::FOR_FILL :

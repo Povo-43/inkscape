@@ -21,11 +21,6 @@
 #include <2geom/rect.h>
 
 class SPObject;
-class SPDesktop;
-
-namespace Inkscape::UI::Dialog {
-class FillAndStroke;
-}
 
 namespace Gtk {
 class Button;
@@ -342,7 +337,6 @@ void connect_click_with_state(Gtk::Button& button, Callback&& callback) {
     button.add_controller(click);
 }
 
-Dialog::FillAndStroke *get_fill_and_stroke_panel(SPDesktop *desktop);
 
 } // namespace Inkscape::UI
 
