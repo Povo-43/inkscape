@@ -91,5 +91,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${{ github.event.release.tag_name || github.ref_name }}"
-          ASSET_NAME="inkscape-${TAG}.apk"
-          gh release upload "${TAG}" "${{ steps.check-artifact.outputs.apk_path }}" --name "${ASSET_NAME}" --clobber
+          APK_PATH="${{ steps.check-artifact.outputs.apk_path }}"
+          # アセット名はファイル名をそのまま使用（inkscape-<tag>.apk にリネーム）
+          cp "$APK_PATH" "inkscape-${TAG}.apk"
+          gh release upload "${TAG}" "inkscape-${TAG}.apk" --clobber
