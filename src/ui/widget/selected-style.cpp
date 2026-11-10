@@ -113,8 +113,6 @@ enum ui_drop_target_info {
     APP_OSWB_COLOR
 };
 
-/* convenience function */
-static Dialog::FillAndStroke *get_fill_and_stroke_panel(SPDesktop *desktop);
 
 SelectedStyle::SelectedStyle()
 {
@@ -1208,12 +1206,6 @@ void RotateableStrokeWidth::do_scroll(double by, guint modifier)
     do_motion(by/10.0, modifier);
     do_release(by / 10.0, modifier);
     startvalue_set = false;
-}
-
-Dialog::FillAndStroke *get_fill_and_stroke_panel(SPDesktop *desktop)
-{
-    desktop->getContainer()->new_dialog("FillStroke");
-    return dynamic_cast<Dialog::FillAndStroke *>(desktop->getContainer()->get_dialog("FillStroke"));
 }
 
 } // namespace Inkscape::UI::Widget

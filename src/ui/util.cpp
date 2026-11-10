@@ -39,6 +39,9 @@
 #include "ui/dialog-run.h"
 #include "util/numeric/converters.h"
 #include "widget/generic/spin-button.h"
+#include "ui/dialog/dialog-container.h"
+#include "ui/dialog/fill-and-stroke.h"
+#include "desktop.h"
 
 // NOTE: Include windows stuff last, as it #defines ERROR leading to compilation errors
 #if (defined (_WIN32) || defined (_WIN64))
@@ -278,6 +281,12 @@ void close_parent_popover(Gtk::Widget &widget)
             break;
         }
     }
+}
+
+Inkscape::UI::Dialog::FillAndStroke *get_fill_and_stroke_panel(SPDesktop *desktop)
+{
+    desktop->getContainer()->new_dialog("FillStroke");
+    return dynamic_cast<Inkscape::UI::Dialog::FillAndStroke *>(desktop->getContainer()->get_dialog("FillStroke"));
 }
 
 } // namespace Inkscape::UI
