@@ -16,9 +16,12 @@ on:
 jobs:
   build-apk:
     name: APK ビルド
-    # GTK4 版のリリースが公開された時に、従来版の APK を
+    # GTK4 / gtkmm4 版のリリースが公開された時に、従来版 (Kotlin) の APK を
     # 同じリリースへアップロードしてしまわないように除外する。
-    if: ${{ github.event_name != 'release' || !startsWith(github.event.release.tag_name, 'inkscape-gtk4-android-') }}
+    if: >-
+      ${{ github.event_name != 'release' ||
+          (!startsWith(github.event.release.tag_name, 'inkscape-gtk4-android-') &&
+           !startsWith(github.event.release.tag_name, 'inkscape-gtkmm-android-')) }}
     runs-on: ubuntu-latest
     permissions:
       contents: write   # リリース作成・アセットアップロードに必要
