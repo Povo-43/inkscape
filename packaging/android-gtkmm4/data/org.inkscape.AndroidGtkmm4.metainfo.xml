@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop" xmlns="https://specifications.freedesktop.org/metainfo/1.0">
+  <id>org.inkscape.AndroidGtkmm4</id>
+  <name>Inkscape GTK4 (gtkmm)</name>
+  <summary>gtkmm4 スタック検証用の実験的ビルド</summary>
+  <description>
+    <p>
+      Inkscape 本体の UI と同じ gtkmm4 (C++ バインディング) スタックが
+      Android 上でビルド・動作するかを確認するためのプローブです。
+    </p>
+  </description>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+  <releases>
+    <release version="0.1.0" date="2026-11-11"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

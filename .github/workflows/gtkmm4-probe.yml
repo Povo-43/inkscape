@@ -1,0 +1,161 @@
+# gtkmm4 (GTK の C++ バインディング) スタックが Android で
+# クロスビルドできるかを確認する実験的ワークフロー。
+#
+# Inkscape 本体の UI は gtkmm4 で書かれているため、Inkscape を
+# Android で動かすには sigc++ / glibmm / cairomm / pangomm / gtkmm の
+# クロスビルドが必要になる。このワークフローはその第一歩を検証する。
+name: GTKmm4 Probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'packaging/android-gtkmm4/**'
+      - '.github/workflows/gtkmm4-probe.yml'
+
+concurrency:
+  group: gtkmm4-probe-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: gtkmm4 スタックをビルド
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: pixiewood をチェックアウト
+        uses: actions/checkout@v4
+        with:
+          repository: sp1ritCS/gtk-android-builder
+          ref: 001bfc0cae770438cc051458afc455564e83e3aa
+          path: pixiewood
+
+      - name: mini-studio をチェックアウト
+        uses: actions/checkout@v4
+        with:
+          repository: sp1ritCS/mini-studio
+          ref: 8c2901968b07245ad07c1b38270928a49a510765
+          path: mini
+
+      - name: ビルド依存パッケージをインストール
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            ccache \
+            glslc \
+            gobject-introspection \
+            gir1.2-appstream-1.0 \
+            libglib2.0-dev \
+            libglib2.0-dev-bin \
+            libglib-perl \
+            libglib-object-introspection-perl \
+            libipc-run-perl \
+            libjson-perl \
+            libset-scalar-perl \
+            libxml-libxml-perl \
+            libxml-libxslt-perl \
+            libxml2-utils \
+            sassc \
+            gettext \
+            desktop-file-utils \
+            apksigner
+
+      - name: JDK 21 をセットアップ
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Android SDK / NDK をセットアップ
+        uses: android-actions/setup-android@v4
+        with:
+          packages: >-
+            platform-tools
+            platforms;android-36
+            build-tools;36.0.0
+            ndk;27.2.12479018
+
+      - name: Meson / Ninja をセットアップ
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install meson ninja
+          meson --version
+
+      - name: pixiewood を PATH に追加
+        run: echo "$GITHUB_WORKSPACE/pixiewood" >> "$GITHUB_PATH"
+
+      - name: subprojects のダウンロードをキャッシュ
+        uses: actions/cache@v4
+        with:
+          path: packaging/android-gtkmm4/subprojects/packagecache
+          key: gtkmm4-wrap-${{ hashFiles('packaging/android-gtkmm4/pixiewood.xml', 'packaging/android-gtkmm4/subprojects/*.wrap') }}
+
+      - name: ccache を復元
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: gtkmm4-ccache-${{ hashFiles('packaging/android-gtkmm4/pixiewood.xml') }}-v1
+
+      - name: ccache を設定
+        run: |
+          ccache --max-size=2G
+          echo "CCACHE_DIR=$HOME/.cache/ccache" >> "$GITHUB_ENV"
+          echo "CCACHE_NOHASHDIR=true" >> "$GITHUB_ENV"
+          echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      - name: クロスファイルに ccache を挿入
+        run: |
+          python3 - <<'PY'
+          import re
+          path = "pixiewood/prepare/android.cross"
+          src = open(path).read()
+          for key in ("c", "cpp"):
+              src = re.sub(rf"^{key}(\s+)= (.*)$",
+                           lambda m: f"{key}{m.group(1)}= ['ccache', {m.group(2)}]",
+                           src, flags=re.M)
+          open(path, "w").write(src)
+          PY
+          grep -n "ccache" pixiewood/prepare/android.cross
+
+      - name: pixiewood prepare
+        run: |
+          pixiewood -C packaging/android-gtkmm4 prepare \
+            --release \
+            --android-studio=./mini \
+            --sdk="$ANDROID_HOME" \
+            packaging/android-gtkmm4/pixiewood.xml
+
+      - name: pixiewood generate
+        run: pixiewood -C packaging/android-gtkmm4 generate
+
+      - name: pixiewood build
+        run: pixiewood -C packaging/android-gtkmm4 build
+
+      - name: ccache の統計
+        if: always()
+        run: ccache --show-stats || true
+
+      - name: meson ログ (失敗時)
+        if: failure()
+        run: |
+          for log in packaging/android-gtkmm4/.pixiewood/bin-*/meson-logs/meson-log.txt; do
+            echo "===== $log ====="
+            tail -n 300 "$log" || true
+          done
+
+      - name: APK をアップロード
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtkmm4-probe-apk
+          path: packaging/android-gtkmm4/.pixiewood/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: warn
