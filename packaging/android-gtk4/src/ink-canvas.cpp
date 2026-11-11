@@ -268,9 +268,9 @@ on_drag_update (GtkGestureDrag *gesture,
 }
 
 static void
-on_scale_begin (GtkGestureZoom *gesture,
-                GdkSequence    *sequence,
-                InkCanvas      *self)
+on_scale_begin (GtkGesture       *gesture,
+                GdkEventSequence *sequence,
+                InkCanvas        *self)
 {
   double cx, cy;
 
@@ -278,7 +278,7 @@ on_scale_begin (GtkGestureZoom *gesture,
 
   self->zoom_start = self->zoom;
 
-  if (!gtk_gesture_zoom_get_bounding_box_center (gesture, &cx, &cy))
+  if (!gtk_gesture_get_bounding_box_center (gesture, &cx, &cy))
     {
       cx = gtk_widget_get_width (GTK_WIDGET (self)) / 2.0;
       cy = gtk_widget_get_height (GTK_WIDGET (self)) / 2.0;
@@ -416,7 +416,9 @@ ink_canvas_class_init (InkCanvasClass *klass)
   properties[PROP_ZOOM] =
     g_param_spec_double ("zoom", NULL, NULL,
                          INK_CANVAS_MIN_ZOOM, INK_CANVAS_MAX_ZOOM, 1.0,
-                         G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+                         static_cast<GParamFlags> (G_PARAM_READWRITE |
+                                                   G_PARAM_EXPLICIT_NOTIFY |
+                                                   G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
 
@@ -445,7 +447,7 @@ ink_canvas_init (InkCanvas *self)
   gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (drag));
 
   zoom = gtk_gesture_zoom_new ();
-  g_signal_connect (zoom, "scale-begin", G_CALLBACK (on_scale_begin), self);
+  g_signal_connect (zoom, "begin", G_CALLBACK (on_scale_begin), self);
   g_signal_connect (zoom, "scale-changed", G_CALLBACK (on_scale_changed), self);
   gtk_widget_add_controller (GTK_WIDGET (self), GTK_EVENT_CONTROLLER (zoom));
 
@@ -464,7 +466,7 @@ ink_canvas_init (InkCanvas *self)
 GtkWidget *
 ink_canvas_new (void)
 {
-  return g_object_new (INK_TYPE_CANVAS, NULL);
+  return GTK_WIDGET (g_object_new (INK_TYPE_CANVAS, NULL));
 }
 
 void

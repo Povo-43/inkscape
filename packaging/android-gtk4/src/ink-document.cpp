@@ -77,7 +77,8 @@ maybe_decompress (GBytes  *bytes,
       return NULL;
     }
 
-  result = G_BYTE_ARRAY (g_memory_output_stream_get_data (G_MEMORY_OUTPUT_STREAM (out)));
+  result = static_cast<GByteArray *> (
+      g_memory_output_stream_get_data (G_MEMORY_OUTPUT_STREAM (out)));
 
   {
     GBytes *out_bytes = g_bytes_new (result->data, result->len);
