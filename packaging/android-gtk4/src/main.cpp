@@ -61,9 +61,13 @@ struct InkApp
   InkDocument *document;
   GtkFileDialog *open_dialog;
   GtkFileDialog *save_dialog;
+  double export_scale;
 };
 
 InkApp ink;
+
+void set_document (InkDocument *document);
+void build_window (GtkApplication *application);
 
 void update_status ()
 {
@@ -168,7 +172,7 @@ void on_save_finished (GtkFileDialog *dialog, GAsyncResult *result, gpointer)
       return;
     }
 
-  GBytes *png = ink_document_render_png (ink.document, 2.0, &error);
+  GBytes *png = ink_document_render_png (ink.document, ink.export_scale, &error);
 
   if (png == nullptr)
     {
@@ -195,7 +199,10 @@ void on_save_finished (GtkFileDialog *dialog, GAsyncResult *result, gpointer)
   else
     {
       char *basename = g_file_get_basename (file);
-      char *message = g_strdup_printf ("PNG を書き出しました: %s", basename);
+      char *message = g_strdup_printf ("PNG を書き出しました: %s (%.0f × %.0f px)",
+                                       basename,
+                                       ink_document_get_width (ink.document) * ink.export_scale,
+                                       ink_document_get_height (ink.document) * ink.export_scale);
       gtk_label_set_text (ink.status, message);
       g_free (message);
       g_free (basename);
@@ -228,10 +235,9 @@ void action_open (GSimpleAction *, GVariant *, gpointer)
                         (GAsyncReadyCallback) on_open_finished, nullptr);
 }
 
-void action_export (GSimpleAction *, GVariant *, gpointer)
+void start_save_dialog (double scale)
 {
-  if (ink.document == nullptr)
-    return;
+  ink.export_scale = scale;
 
   if (ink.save_dialog == nullptr)
     {
@@ -264,6 +270,60 @@ void action_export (GSimpleAction *, GVariant *, gpointer)
                         (GAsyncReadyCallback) on_save_finished, nullptr);
 }
 
+void on_export_scale_chosen (GtkAlertDialog *dialog, GAsyncResult *result, gpointer)
+{
+  GError *error = nullptr;
+  int choice = gtk_alert_dialog_choose_finish (dialog, result, &error);
+
+  if (choice < 0)
+    {
+      /* キャンセル / 戻るボタン */
+      g_clear_error (&error);
+      return;
+    }
+
+  double scale = 1.0;
+
+  switch (choice)
+    {
+    case 1: scale = 1.0; break;
+    case 2: scale = 2.0; break;
+    case 3: scale = 4.0; break;
+    default: return;
+    }
+
+  start_save_dialog (scale);
+}
+
+void action_export (GSimpleAction *, GVariant *, gpointer)
+{
+  if (ink.document == nullptr)
+    return;
+
+  double width = ink_document_get_width (ink.document);
+  double height = ink_document_get_height (ink.document);
+  char *detail = g_strdup_printf ("%s (%.0f × %.0f px)\n\n"
+                                  "1× = %.0f × %.0f px\n"
+                                  "2× = %.0f × %.0f px\n"
+                                  "4× = %.0f × %.0f px",
+                                  ink_document_get_name (ink.document),
+                                  width, height,
+                                  width, height,
+                                  width * 2.0, height * 2.0,
+                                  width * 4.0, height * 4.0);
+
+  GtkAlertDialog *dialog = gtk_alert_dialog_new ("書き出し倍率を選択");
+  static const char *const buttons[] = { "キャンセル", "1×", "2×", "4×", nullptr };
+  gtk_alert_dialog_set_detail (dialog, detail);
+  gtk_alert_dialog_set_buttons (dialog, buttons);
+  gtk_alert_dialog_set_cancel_button (dialog, 0);
+  gtk_alert_dialog_set_default_button (dialog, 2);
+  gtk_alert_dialog_choose (dialog, GTK_WINDOW (ink.window), nullptr,
+                           (GAsyncReadyCallback) on_export_scale_chosen, nullptr);
+  g_object_unref (dialog);
+  g_free (detail);
+}
+
 void action_zoom_in (GSimpleAction *, GVariant *, gpointer)
 {
   ink_canvas_zoom_in (INK_CANVAS (ink.canvas));
@@ -291,7 +351,7 @@ void action_about (GSimpleAction *, GVariant *, gpointer)
                                "GTK4 ネイティブ版の実験的ビルドです。\n\n"
                                "UI: GTK4 (Android バックエンド)\n"
                                "レンダリング: GtkSvg (GTK 4.22+)\n"
-                               "バージョン: 0.2.0\n\n"
+                               "バージョン: 0.3.0\n\n"
                                "Inkscape 本体 (gtkmm4) への段階的な移植を進めています。");
   gtk_alert_dialog_show (dialog, GTK_WINDOW (ink.window));
   g_object_unref (dialog);
@@ -336,6 +396,7 @@ void build_window (GtkApplication *application)
 
   ink.application = application;
   ink.window = GTK_APPLICATION_WINDOW (gtk_application_window_new (application));
+  ink.export_scale = 2.0;
 
   gtk_window_set_title (GTK_WINDOW (ink.window), "Inkscape GTK4");
   gtk_window_set_default_size (GTK_WINDOW (ink.window), 900, 700);
@@ -431,6 +492,35 @@ void on_activate (GtkApplication *application, gpointer)
   build_window (application);
 }
 
+/*
+ * 他のアプリ (ファイルマネージャなど) から SVG を開いた場合に呼ばれる。
+ * Android では ACTION_VIEW インテントのデータが GFile として渡される。
+ */
+void on_open (GApplication *, GFile **files, int n_files, const char *hint, gpointer)
+{
+  (void) hint;
+
+  if (n_files < 1 || files == nullptr || files[0] == nullptr)
+    return;
+
+  if (ink.window == nullptr)
+    build_window (ink.application);
+
+  GError *error = nullptr;
+  InkDocument *document = ink_document_new_from_file (files[0], &error);
+
+  if (document == nullptr)
+    {
+      show_error (error ? error->message : "SVG を読み込めませんでした。");
+      g_clear_error (&error);
+      gtk_window_present (GTK_WINDOW (ink.window));
+      return;
+    }
+
+  set_document (document);
+  gtk_window_present (GTK_WINDOW (ink.window));
+}
+
 void on_startup (GtkApplication *application, gpointer)
 {
   static const char *accels_open[] = { "<Control>o", nullptr };
@@ -471,9 +561,12 @@ extern "C" int main (int argc, char **argv, char **envp)
   (void) envp;
 
   GtkApplication *application = gtk_application_new ("org.inkscape.AndroidGtk4",
-                                                     G_APPLICATION_DEFAULT_FLAGS);
+                                                     G_APPLICATION_HANDLES_OPEN);
+  ink.application = application;
+
   g_signal_connect (application, "startup", G_CALLBACK (on_startup), nullptr);
   g_signal_connect (application, "activate", G_CALLBACK (on_activate), nullptr);
+  g_signal_connect (application, "open", G_CALLBACK (on_open), nullptr);
 
   int status = g_application_run (G_APPLICATION (application), argc, argv);
 

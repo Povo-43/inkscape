@@ -49,7 +49,9 @@ maybe_decompress (GBytes  *bytes,
   GInputStream *converted;
   GOutputStream *out;
   gssize copied;
-  GByteArray *result;
+  gsize out_len;
+  gpointer out_data;
+  GBytes *out_bytes;
 
   data = static_cast<const guint8 *> (g_bytes_get_data (bytes, &len));
 
@@ -77,14 +79,12 @@ maybe_decompress (GBytes  *bytes,
       return NULL;
     }
 
-  result = static_cast<GByteArray *> (
-      g_memory_output_stream_get_data (G_MEMORY_OUTPUT_STREAM (out)));
+  out_len = g_memory_output_stream_get_data_size (G_MEMORY_OUTPUT_STREAM (out));
+  out_data = g_memory_output_stream_get_data (G_MEMORY_OUTPUT_STREAM (out));
+  out_bytes = g_bytes_new (out_data, out_len);
+  g_object_unref (out);
 
-  {
-    GBytes *out_bytes = g_bytes_new (result->data, result->len);
-    g_object_unref (out);
-    return out_bytes;
-  }
+  return out_bytes;
 }
 
 /*

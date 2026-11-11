@@ -13,7 +13,7 @@ on:
       - 'packaging/android-gtk4/**'
       - '.github/workflows/gtk4-android.yml'
     tags:
-      - 'inkscape-android-gtk4-*'
+      - 'inkscape-gtk4-android-*'
 
 concurrency:
   group: gtk4-android-${{ github.ref }}
@@ -240,6 +240,10 @@ jobs:
 
           - UI: GTK4 (Android バックエンド)
           - レンダリング: GtkSvg (GTK 4.22+)
+          - SVG / SVGZ を開く、PNG を書き出す (1× / 2× / 4×)
+          - ピンチズーム / ドラッグパン / ページにフィット
+          - ファイルマネージャから image/svg+xml を「開く」に対応
+          - 対応: Android 12 以降 (minSdk 31)
           - インストール: APK をタップしてサイドロードしてください (デバッグ署名)。"
           fi
           gh release upload "$TAG" apk/*.apk --repo "$GITHUB_REPOSITORY" --clobber

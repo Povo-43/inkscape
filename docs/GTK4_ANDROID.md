@@ -24,9 +24,16 @@ UI 技術の上に築くことができます。
 - Android のドキュメントピッカー (`GtkFileDialog` → `GtkFileChooserNative`
   → `ACTION_OPEN_DOCUMENT` / `ACTION_CREATE_DOCUMENT`) で SVG を開き、
   PNG を書き出せる。`.svgz` (gzip) にも対応。
+- ファイルマネージャなどから `image/svg+xml` を「Inkscape GTK4 で開く」
+  ことができる (`G_APPLICATION_HANDLES_OPEN` + ACTION_VIEW インテント)。
+- PNG 書き出し時に倍率 (1× / 2× / 4×) を選べる。出力は最大 8192px に
+  制限される。
 - PNG 書き出しは `GdkPaintable` を `GtkSnapshot` 経由で
   `GskRenderNode` にし、`gsk_render_node_draw()` で cairo イメージ
   サーフェスへ描画している (GL レンダラーがなくても動作する)。
+- ホスト (デスクトップ GTK4) では `tests/render-test.cpp` が SVG /
+  SVGZ の読み込みと PNG 書き出しを自動検証する (CI の
+  `gtk4-syntax.yml`、xvfb 上で実行)。
 
 スクリーンショット (Android 13 x86_64 エミュレータ):
 
@@ -90,7 +97,7 @@ pixiewood の Gradle は release APK を署名しないため、CI では
 
 - `.github/workflows/gtk4-android.yml`
   - `master` への `packaging/android-gtk4/**` の push、または
-    `inkscape-android-gtk4-*` タグで起動。
+    `inkscape-gtk4-android-*` タグで起動。
   - ccache と wrap の packagecache をキャッシュし、GTK 本体の
     再コンパイルを短縮。
   - タグ push 時は追加で GitHub Release を作成し、APK をアップロード。

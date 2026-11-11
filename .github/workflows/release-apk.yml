@@ -5,15 +5,20 @@ on:
   release:
     types: [published]
   # タグが push された時（リリース未作成の場合は自動でリリースを作成）
+  # 数字で始まる従来版 (Kotlin/Android View) のタグのみ対象。
+  # GTK4 版は inkscape-gtk4-android-* を使い、gtk4-android.yml が担当する。
   push:
     tags:
-      - 'inkscape-android-*'
+      - 'inkscape-android-[0-9]*'
   # 手動実行も許可（動作確認用）
   workflow_dispatch:
 
 jobs:
   build-apk:
     name: APK ビルド
+    # GTK4 版のリリースが公開された時に、従来版の APK を
+    # 同じリリースへアップロードしてしまわないように除外する。
+    if: ${{ github.event_name != 'release' || !startsWith(github.event.release.tag_name, 'inkscape-gtk4-android-') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write   # リリース作成・アセットアップロードに必要
