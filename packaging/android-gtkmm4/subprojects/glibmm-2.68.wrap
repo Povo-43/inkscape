@@ -1,8 +1,8 @@
 [wrap-file]
-directory = glibmm-2.86.0
-source_url = https://download.gnome.org/sources/glibmm/2.86/glibmm-2.86.0.tar.xz
-source_filename = glibmm-2.86.0.tar.xz
-source_hash = 39c0e9f6da046d679390774efdb9ad564436236736dc2f7825e614b2d4087826
+directory = glibmm-2.90.0
+source_url = https://download.gnome.org/sources/glibmm/2.90/glibmm-2.90.0.tar.xz
+source_filename = glibmm-2.90.0.tar.xz
+source_hash = e2efa45643f16b9fea2d6299f2f403d672eaeacddf0ff7f8094e1af9b0f5980b
 
 [provide]
 dependency_names = glibmm-2.68, giomm-2.68

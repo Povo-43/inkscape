@@ -17,13 +17,18 @@ gtk_dep = dependency('gtk4', version: '>= 4.22.0')
 # GTK の公式 C++ バインディング (gtkmm) とその依存スタック。
 # Inkscape 本体の UI は gtkmm4 で書かれているため、Android で Inkscape を
 # 動かすにはこれらが必要になる。すべてピン留めしたリリース tarball を
-# meson wrap で取得する (git master ではなく安定版)。
+# meson wrap で取得する。
+#
+# バージョンは GTK main (4.25 系) / GLib main (2.90 系) / Pango main
+# (1.58 系) と整合する系列を選んでいる。C 側のライブラリが開発版で
+# あるため、対応する開発版のバインディング (glibmm 2.90, pangomm 2.58,
+# gtkmm 4.24) を使う必要がある。
 subproject('sigcpp-3.0')
 subproject('glibmm-2.68')
 subproject('cairomm-1.16')
 subproject('pangomm-2.48')
 
-gtkmm_dep = dependency('gtkmm-4.0', version: '>= 4.22.0')
+gtkmm_dep = dependency('gtkmm-4.0', version: '>= 4.24.0')
 
 executable('inkscape-android-gtkmm4',
   'src/main.cpp',

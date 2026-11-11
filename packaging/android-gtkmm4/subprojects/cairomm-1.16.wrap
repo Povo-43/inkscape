@@ -1,8 +1,8 @@
 [wrap-file]
-directory = cairomm-1.18.1
-source_url = https://cairographics.org/releases/cairomm-1.18.1.tar.xz
-source_filename = cairomm-1.18.1.tar.xz
-source_hash = e0e996a979ee52c840dca3ee74f5d005e3259b94ddce58f255d3b6f47c8cb41d
+directory = cairomm-1.19.1
+source_url = https://cairographics.org/releases/cairomm-1.19.1.tar.xz
+source_filename = cairomm-1.19.1.tar.xz
+source_hash = 06881a0167d84962c74db318427c5be663d30b8ea5c60740a9dc36a9c1961b54
 
 [provide]
 dependency_names = cairomm-1.16
