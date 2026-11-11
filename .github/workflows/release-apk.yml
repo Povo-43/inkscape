@@ -108,7 +108,7 @@ jobs:
           echo "タグ: $TAG"
 
       # ------------------------------------------------------------------
-      # i. リリースを作成（存在しなければ）
+      # i. GitHub REST API でリリースを作成（存在しなければ）
       #    release（published）イベントではリリースが既に存在するためスキップ
       # ------------------------------------------------------------------
       - name: リリースを作成（存在しなければ）
@@ -117,12 +117,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${{ steps.determine-tag.outputs.tag }}"
-          if gh release view "${TAG}" >/dev/null 2>&1; then
+          # リリースの存在を確認（tags/{tag} エンドポイント）
+          if gh api "/repos/${{ github.repository }}/releases/tags/${TAG}" >/dev/null 2>&1; then
             echo "リリース ${TAG} は既に存在します（作成をスキップ）"
           else
-            gh release create "${TAG}" \
-              --title "Inkscape Android ${TAG}" \
-              --notes "GitHub Actions による自動ビルド APK"
+            # リリースを作成
+            gh api -X POST "/repos/${{ github.repository }}/releases" \
+              -f tag_name="${TAG}" \
+              -f name="Inkscape Android ${TAG}" \
+              -f body="GitHub Actions による自動ビルド APK"
             echo "リリース ${TAG} を作成しました"
           fi
 
@@ -140,7 +143,7 @@ jobs:
           echo "APK 確認済み: $APK_PATH"
 
       # ------------------------------------------------------------------
-      # k. GitHub リリースへアセットアップロード
+      # k. GitHub REST API でリリースアセットをアップロード
       # ------------------------------------------------------------------
       - name: リリースアセットをアップロード
         env:
@@ -150,4 +153,15 @@ jobs:
           APK_PATH="${{ steps.check-artifact.outputs.apk_path }}"
           # アセット名はファイル名をそのまま使用（inkscape-<tag>.apk にリネーム）
           cp "$APK_PATH" "inkscape-${TAG}.apk"
-          gh release upload "${TAG}" "inkscape-${TAG}.apk" --clobber
+
+          # リリース ID を取得
+          RELEASE_ID=$(gh api "/repos/${{ github.repository }}/releases/tags/${TAG}" --jq '.id')
+          echo "リリース ID: $RELEASE_ID"
+
+          # アセットをアップロード（Content-Type: application/octet-stream）
+          gh api -X POST "/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets" \
+            -f name="inkscape-${TAG}.apk" \
+            -f file="@inkscape-${TAG}.apk" \
+            --header 'Content-Type: application/octet-stream'
+
+          echo "アセットをアップロードしました: inkscape-${TAG}.apk"
