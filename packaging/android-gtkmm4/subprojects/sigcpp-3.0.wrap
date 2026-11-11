@@ -1,5 +1,5 @@
 [wrap-file]
-directory = sigcpp-3.0
+directory = libsigc++-3.8.1
 source_url = https://github.com/libsigcplusplus/libsigcplusplus/releases/download/3.8.1/libsigc%2B%2B-3.8.1.tar.xz
 source_filename = libsigc++-3.8.1.tar.xz
 source_hash = 4ff41d1474e501d3baeced4c989d154338206ac16471e614376496b63fe252d1

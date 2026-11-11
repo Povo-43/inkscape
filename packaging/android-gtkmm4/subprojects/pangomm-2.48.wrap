@@ -1,5 +1,5 @@
 [wrap-file]
-directory = pangomm-2.48
+directory = pangomm-2.56.2
 source_url = https://download.gnome.org/sources/pangomm/2.56/pangomm-2.56.2.tar.xz
 source_filename = pangomm-2.56.2.tar.xz
 source_hash = f1e984c85a85b6a0e61616366521f51dd8282a072bb45d15b5084762b62f4c0e
