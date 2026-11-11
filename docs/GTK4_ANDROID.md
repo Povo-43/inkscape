@@ -21,6 +21,12 @@ UI 技術の上に築くことができます。
   - ピンチでズーム (フォーカルポイント維持)
   - ダブルタップで「ページにフィット」と 100% を切り替え
   - Ctrl+ホイールでズーム
+  - ズームプリセット: 50% / 100% / 200% / ページフィット / ページ幅フィット
+  - 回転: 時計回り (Ctrl+]) / 反時計回り (Ctrl+[) / リセット
+  - 反転: 水平 / 垂直 / リセット
+- アクション名は Inkscape 本体 (`src/actions/actions-canvas-transform.cpp`)
+  と互揣: `app.canvas-zoom-*` / `app.canvas-rotate-*` / `app.canvas-flip-*`
+  (GTK4 `GAction` を使用)。
 - Android のドキュメントピッカー (`GtkFileDialog` → `GtkFileChooserNative`
   → `ACTION_OPEN_DOCUMENT` / `ACTION_CREATE_DOCUMENT`) で SVG を開き、
   PNG を書き出せる。`.svgz` (gzip) にも対応。
