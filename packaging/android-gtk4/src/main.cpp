@@ -384,7 +384,7 @@ void build_window (GtkApplication *application)
 
   GtkWidget *open_button = make_tool_button ("document-open-symbolic", "SVG を開く", "app.open");
   GtkWidget *zoom_out_button = make_tool_button ("zoom-out-symbolic", "縮小", "app.zoom-out");
-  GtkWidget *zoom_fit_button = make_tool_button ("zoom-original-symbolic", "ページにフィット", "app.zoom-fit");
+  GtkWidget *zoom_fit_button = make_tool_button ("view-fullscreen-symbolic", "ページにフィット", "app.zoom-fit");
   GtkWidget *zoom_in_button = make_tool_button ("zoom-in-symbolic", "拡大", "app.zoom-in");
   ink.export_button = make_tool_button ("document-save-as-symbolic", "PNG として書き出す", "app.export");
   gtk_widget_set_sensitive (ink.export_button, FALSE);

@@ -28,3 +28,23 @@ executable('inkscape-android-gtk4',
   install: true,
   android_exe_type: 'application',
 )
+
+# ホスト (デスクトップ GTK4) では、SVG の読み込みと PNG 書き出しを
+# 自動テストする。Android では実行しない。
+if host_machine.system() != 'android'
+  render_test = executable('render-test',
+    'tests/render-test.cpp',
+    'src/ink-document.cpp',
+    include_directories: include_directories('src'),
+    dependencies: [gtk_dep],
+  )
+
+  test('render-test',
+    render_test,
+    args: [
+      join_paths(meson.current_source_dir(), 'tests', 'sample.svg'),
+      join_paths(meson.current_build_dir(), 'render-test.png'),
+    ],
+    timeout: 120,
+  )
+endif
