@@ -35,7 +35,16 @@ Inkscape 本体のコア (GTK4 / gtkmm4 / glibmm / lib2geom) は Android バッ�
 持たないためリンクしていません。元の Inkscape C++ コードは一切変更せず、
 Android 固有のコードのみを追加しています。
 
-### 1.3 アーキテクチャ
+### 1.3 検証済みの内容
+
+- Android 13 (x86_64) エミュレータ上で APK をインストールし、以下を確認
+  - ネイティブライブラリのロードと初期化
+  - `testfiles/sample.svg` の解析 (200x200 / 5 要素 / テキスト検出) と描画
+  - 実際の Inkscape ドキュメント `share/tutorials/tutorial-basic.svg`
+    (2,883 要素、グラデーション・パターン・テキストを含む) の描画
+- テキストは Android の `/system/fonts` を利用して描画
+
+### 1.4 アーキテクチャ
 
 ```
 MainActivity.kt (Kotlin)
