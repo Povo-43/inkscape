@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Inkscape Android テスト用 SVG サンプルファイル
+     背景、円、四角形、線、テキストを含むシンプルな図形です。
+     viewBox="0 0 200 200" を設定しています。 -->
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="200" height="200"
+     viewBox="0 0 200 200"
+     version="1.1">
+  <!-- 背景（薄いグレー） -->
+  <rect x="0" y="0" width="200" height="200" fill="#f0f0f0" />
+  <!-- 円（青系 fill、濃い青 stroke） -->
+  <circle cx="100" cy="70" r="40" fill="#4a90e2" stroke="#2c5282" stroke-width="3" />
+  <!-- 四角形（赤系 fill） -->
+  <rect x="60" y="130" width="80" height="50" fill="#e53935" />
+  <!-- 線（緑系 stroke） -->
+  <line x1="20" y1="180" x2="180" y2="180" stroke="#43a047" stroke-width="4" />
+  <!-- テキスト -->
+  <text x="100" y="100" text-anchor="middle" font-size="16" fill="#333333"
+        font-family="sans-serif">Inkscape Android Test</text>
+</svg>

@@ -1,10 +1,10 @@
 name: Release APK
 
 on:
-  # リリースが公開された時
+  # リリースが公開された時（既存リリースにアセットを追加）
   release:
     types: [published]
-  # タグが push された時（gh release などでタグ付きリリースを作成した際に起動）
+  # タグが push された時（リリース未作成の場合は自動でリリースを作成）
   push:
     tags:
       - 'inkscape-android-*'
@@ -83,14 +83,70 @@ jobs:
           echo "APK: $APK_PATH"
 
       # ------------------------------------------------------------------
-      # h. GitHub リリースへアセットアップロード
+      # h. アップロード対象のタグ名を決定
+      #    release イベント → 既存リリースのタグ
+      #    push イベント   → push されたタグ
+      #    workflow_dispatch → 最新タグ（なければ HEAD で新規リリース作成用のタグ名を生成）
       # ------------------------------------------------------------------
-      - name: リリースアセットをアップロード
-        if: github.event_name == 'release' || github.event_name == 'push'
+      - name: アップロード対象のタグ名を決定
+        id: determine-tag
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${{ github.ref_name }}"
+          else
+            # workflow_dispatch: 最新の inkscape-android-* タグを使用
+            TAG=$(git tag --list 'inkscape-android-*' --sort=-version:refname | head -n1)
+            if [ -z "$TAG" ]; then
+              # タグが存在しなければ HEAD に新規リリースを作成するためのタグ名を生成
+              TAG="inkscape-android-$(date +%Y%m%d)-$(git rev-parse --short HEAD)"
+              echo "新規タグ名を生成しました: $TAG"
+            fi
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "タグ: $TAG"
+
+      # ------------------------------------------------------------------
+      # i. リリースを作成（存在しなければ）
+      #    release（published）イベントではリリースが既に存在するためスキップ
+      # ------------------------------------------------------------------
+      - name: リリースを作成（存在しなければ）
+        if: github.event_name != 'release'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="${{ github.event.release.tag_name || github.ref_name }}"
+          TAG="${{ steps.determine-tag.outputs.tag }}"
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "リリース ${TAG} は既に存在します（作成をスキップ）"
+          else
+            gh release create "${TAG}" \
+              --title "Inkscape Android ${TAG}" \
+              --notes "GitHub Actions による自動ビルド APK"
+            echo "リリース ${TAG} を作成しました"
+          fi
+
+      # ------------------------------------------------------------------
+      # j. アップロード前に APK の存在を確認
+      # ------------------------------------------------------------------
+      - name: アップロード対象 APK の存在を確認
+        id: verify-apk
+        run: |
+          APK_PATH="${{ steps.check-artifact.outputs.apk_path }}"
+          if [ ! -f "$APK_PATH" ]; then
+            echo "APK が見つかりません: $APK_PATH" >&2
+            exit 1
+          fi
+          echo "APK 確認済み: $APK_PATH"
+
+      # ------------------------------------------------------------------
+      # k. GitHub リリースへアセットアップロード
+      # ------------------------------------------------------------------
+      - name: リリースアセットをアップロード
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.determine-tag.outputs.tag }}"
           APK_PATH="${{ steps.check-artifact.outputs.apk_path }}"
           # アセット名はファイル名をそのまま使用（inkscape-<tag>.apk にリネーム）
           cp "$APK_PATH" "inkscape-${TAG}.apk"
