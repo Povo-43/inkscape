@@ -152,11 +152,7 @@ jobs:
             gh api -X POST "/repos/${{ github.repository }}/releases" \
               -f tag_name="${TAG}" \
               -f name="Inkscape Android ${TAG}" \
-              -f body="Inkscape for Android 自動ビルド APK (${TAG})
-
-- SVG レンダリング: resvg (ネイティブ / 純 Rust)
-- プレビュー表示・ズーム/パン・PNG 書き出し
-- 対応 ABI: armeabi-v7a / arm64-v8a / x86_64"
+              -f body="Inkscape for Android 自動ビルド APK (${TAG}) - resvg による SVG レンダリング、プレビュー、ズーム/パン、PNG 書き出しに対応 (armeabi-v7a / arm64-v8a / x86_64)"
             echo "リリース ${TAG} を作成しました"
           fi
 
