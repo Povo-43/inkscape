@@ -108,10 +108,8 @@ android {
 //
 // cargo が PATH に無い環境でも動くよう、~/.cargo/bin/cargo を優先する。
 // ===========================================================================
-def cargoBin = new File(System.getProperty('user.home'), '.cargo/bin/cargo')
-if (!cargoBin.exists()) {
-    cargoBin = new File('cargo')
-}
+def cargoHomeBin = new File(System.getProperty('user.home'), '.cargo/bin/cargo')
+def cargoCommand = cargoHomeBin.exists() ? cargoHomeBin.absolutePath : 'cargo'
 
 def ndkRootDir = new File(android.sdkDirectory, "ndk/${ndkVersionString}")
 
@@ -137,7 +135,7 @@ def cargoTasks = abiToRustTarget.collect { abi, target ->
             environment 'CARGO_HOME', System.getenv('CARGO_HOME')
         }
 
-        commandLine cargoBin.absolutePath, 'build', '--release', '--target', target
+        commandLine cargoCommand, 'build', '--release', '--target', target
 
         inputs.dir(new File(rustCrateDir, 'src'))
         inputs.file(new File(rustCrateDir, 'Cargo.toml'))
