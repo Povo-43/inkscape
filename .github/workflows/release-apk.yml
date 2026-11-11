@@ -160,10 +160,13 @@ jobs:
           RELEASE_ID=$(gh api "/repos/${{ github.repository }}/releases/tags/${TAG}" --jq '.id')
           echo "リリース ID: $RELEASE_ID"
 
-          # アセットをアップロード（Content-Type: application/octet-stream）
-          gh api -X POST "/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets" \
-            -f name="inkscape-${TAG}.apk" \
-            -f file="@inkscape-${TAG}.apk" \
-            --header 'Content-Type: application/octet-stream'
+          # GitHub Uploads API でアセットを直接アップロード（gh api の -f file はマルチパートになりアセットアップロードに不向きなため curl を使用）
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @"inkscape-${TAG}.apk" \
+            "https://uploads.github.com/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets?name=inkscape-${TAG}.apk"
 
           echo "アセットをアップロードしました: inkscape-${TAG}.apk"
