@@ -15,6 +15,8 @@ jobs:
   build-apk:
     name: APK ビルド
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # リリース作成・アセットアップロードに必要
 
     steps:
       # ------------------------------------------------------------------
