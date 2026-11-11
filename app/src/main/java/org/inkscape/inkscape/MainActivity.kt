@@ -376,15 +376,17 @@ class MainActivity : AppCompatActivity() {
             } ?: throw IllegalStateException("入力ストリームを開けません")
 
             val path = localFile.absolutePath
-            if (!openFile(path)) {
+
+            // getDocumentInfo が SVG のパースも兼ねるため、openFile は呼ばない
+            // (大きな SVG の二重パースを避ける)。
+            val info = getDocumentInfo(path)
+            updateDocumentSize(info)
+            if (documentWidth <= 0f || documentHeight <= 0f) {
                 setStatus("SVG を開けません: ${getLastError()}")
                 return
             }
 
-            val info = getDocumentInfo(path)
-            updateDocumentSize(info)
-
-            val preview = renderSvgPng(path, PREVIEW_MAX_WIDTH, 0)
+            val preview = renderSvgPng(path, previewWidth(), 0)
             if (preview == null) {
                 setStatus("レンダリング失敗: ${getLastError()}")
                 return
@@ -412,6 +414,21 @@ class MainActivity : AppCompatActivity() {
         } catch (t: Throwable) {
             setStatus("エラー: ${t.message}")
         }
+    }
+
+    /**
+     * プレビューのレンダリング幅を決める。
+     *
+     * ドキュメントの 2 倍の幅を目安にし、512〜2048 px に収める。
+     * 大きな SVG を 2048 px 固定で描画すると、非力な端末で非常に時間が
+     * かかるため、ドキュメントサイズに応じて解像度を下げる。
+     */
+    private fun previewWidth(): Int {
+        if (documentWidth <= 0f) {
+            return 1024
+        }
+        val desired = kotlin.math.ceil(documentWidth * 2.0).toInt()
+        return desired.coerceIn(1024, PREVIEW_MAX_WIDTH)
     }
 
     /** getDocumentInfo の JSON から width / height を取り出す。 */
