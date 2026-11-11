@@ -8,9 +8,12 @@ name: GTK4 Android
 on:
   workflow_dispatch:
   push:
+    branches: [master]
     paths:
       - 'packaging/android-gtk4/**'
       - '.github/workflows/gtk4-android.yml'
+    tags:
+      - 'inkscape-android-gtk4-*'
 
 concurrency:
   group: gtk4-android-${{ github.ref }}
@@ -51,6 +54,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
+            ccache \
             glslc \
             gobject-introspection \
             gir1.2-appstream-1.0 \
@@ -101,6 +105,36 @@ jobs:
           path: packaging/android-gtk4/subprojects/packagecache
           key: gtk4-wrap-${{ hashFiles('packaging/android-gtk4/pixiewood.xml') }}
 
+      # GTK 本体の再コンパイルを高速化する。
+      - name: ccache を復元
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: gtk4-ccache-${{ hashFiles('packaging/android-gtk4/pixiewood.xml') }}-v1
+
+      - name: ccache を設定
+        run: |
+          ccache --max-size=2G
+          ccache --version
+          echo "CCACHE_DIR=$HOME/.cache/ccache" >> "$GITHUB_ENV"
+          echo "CCACHE_NOHASHDIR=true" >> "$GITHUB_ENV"
+          echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      # pixiewood が生成するクロスファイルのコンパイラを ccache 経由にする。
+      - name: クロスファイルに ccache を挿入
+        run: |
+          python3 - <<'PY'
+          import re
+          path = "pixiewood/prepare/android.cross"
+          src = open(path).read()
+          for key in ("c", "cpp"):
+              src = re.sub(rf"^{key}(\s+)= (.*)$",
+                           lambda m: f"{key}{m.group(1)}= ['ccache', {m.group(2)}]",
+                           src, flags=re.M)
+          open(path, "w").write(src)
+          PY
+          grep -n "ccache" pixiewood/prepare/android.cross
+
       - name: pixiewood prepare
         run: |
           pixiewood -C packaging/android-gtk4 prepare \
@@ -115,6 +149,10 @@ jobs:
       - name: pixiewood build
         run: pixiewood -C packaging/android-gtk4 build
 
+      - name: ccache の統計
+        if: always()
+        run: ccache --show-stats || true
+
       - name: meson ログ (失敗時)
         if: failure()
         run: |
@@ -123,9 +161,86 @@ jobs:
             tail -n 200 "$log" || true
           done
 
+      # pixiewood の生成する Gradle は release ビルドを署名しないため、
+      # ここで署名する。RELEASE_KEYSTORE_BASE64 などのシークレットがあれば
+      # リリース鍵を、なければデバッグ鍵を使う。
+      - name: APK に署名
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+
+          if [ -n "${RELEASE_KEYSTORE_BASE64:-}" ]; then
+            KEYSTORE="$RUNNER_TEMP/release.keystore"
+            printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 -d > "$KEYSTORE"
+            KS_PASS="$RELEASE_KEYSTORE_PASSWORD"
+            KEY_ALIAS="$RELEASE_KEY_ALIAS"
+            KEY_PASS="$RELEASE_KEY_PASSWORD"
+          else
+            KEYSTORE="$RUNNER_TEMP/debug.keystore"
+            KS_PASS="android"
+            KEY_ALIAS="androiddebugkey"
+            KEY_PASS="android"
+            keytool -genkeypair -keystore "$KEYSTORE" \
+              -storepass "$KS_PASS" -keypass "$KEY_PASS" \
+              -alias "$KEY_ALIAS" \
+              -dname "CN=Android Debug,O=Android,C=US" \
+              -keyalg RSA -keysize 2048 -validity 10000
+          fi
+
+          mkdir -p signed
+          shopt -s nullglob
+          for apk in packaging/android-gtk4/.pixiewood/android/app/build/outputs/apk/release/*-unsigned.apk; do
+            aligned="${apk%-unsigned.apk}-aligned.apk"
+            out="signed/$(basename "${apk%-unsigned.apk}").apk"
+            "$BT/zipalign" -f -p 4 "$apk" "$aligned"
+            "$BT/apksigner" sign \
+              --ks "$KEYSTORE" --ks-pass "pass:$KS_PASS" \
+              --key-pass "pass:$KEY_PASS" --ks-key-alias "$KEY_ALIAS" \
+              --out "$out" "$aligned"
+          done
+          ls -l signed
+
       - name: APK をアップロード
         uses: actions/upload-artifact@v4
         with:
           name: gtk4-apk
-          path: packaging/android-gtk4/.pixiewood/android/app/build/outputs/apk/release/*.apk
+          path: signed/*.apk
           if-no-files-found: error
+
+  release:
+    name: リリース作成と APK アップロード
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: APK をダウンロード
+        uses: actions/download-artifact@v4
+        with:
+          name: gtk4-apk
+          path: apk
+
+      - name: gh release にアップロード
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" \
+              --title "Inkscape GTK4 for Android $TAG" \
+              --notes "GTK4 ネイティブ版 Inkscape for Android (実験的ビルド)。
+
+          - UI: GTK4 (Android バックエンド)
+          - レンダリング: GtkSvg (GTK 4.22+)
+          - インストール: APK をタップしてサイドロードしてください (デバッグ署名)。"
+          fi
+          gh release upload "$TAG" apk/*.apk --repo "$GITHUB_REPOSITORY" --clobber
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY"

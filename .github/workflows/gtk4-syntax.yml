@@ -1,0 +1,48 @@
+# GTK4 アプリのソースを、Android ビルド (pixiewood) を待たずに
+# ホストの GTK4 ヘッダで型チェックするための軽量ワークフロー。
+#
+# pixiewood での Android ビルドは GTK 本体のクロスコンパイルを含むため
+# 数十分かかる。コンパイルエラーを数分で検出するためにこちらを使う。
+name: GTK4 Syntax Check
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'packaging/android-gtk4/src/**'
+      - 'packaging/android-gtk4/meson.build'
+      - '.github/workflows/gtk4-syntax.yml'
+
+jobs:
+  syntax:
+    name: ホスト GTK4 でコンパイルチェック
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: GTK4 開発パッケージをインストール
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            libgtk-4-dev
+          pkg-config --modversion gtk4
+
+      - name: 構文チェック
+        run: |
+          cd packaging/android-gtk4
+          set -x
+          g++ -std=c++17 -fsyntax-only -Wall -Wextra \
+            $(pkg-config --cflags gtk4) \
+            src/main.cpp src/ink-canvas.cpp src/ink-document.cpp
+
+      - name: meson でホストビルド (リンクまで確認)
+        run: |
+          python3 -m pip install --user meson ninja
+          cd packaging/android-gtk4
+          meson setup builddir
+          meson compile -C builddir
