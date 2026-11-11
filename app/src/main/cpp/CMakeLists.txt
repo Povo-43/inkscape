@@ -28,9 +28,19 @@ target_include_directories(inkscape-jni PRIVATE
     ../../../../src
 )
 
-# リンク対象なし。Inkscape コア (GTK/glibmm/lib2geom 等) は Android バックエンドを
-# 持たないため、ここではリンクしない。スタンドアロン JNI ライブラリとして
-# ビルドし、リンクエラー・実行時クラッシュを防ぐ。
+# Android システムライブラリにリンク（__android_log_print 等のため）。
+# Inkscape コア (GTK/glibmm/lib2geom 等) は Android バックエンドを持たないため、
+# ここではリンクしない。スタンドアロン JNI ライブラリとしてビルドし、
+# リンクエラー・実行時クラッシュを防ぐ。
+target_link_libraries(inkscape-jni log android)
+
+# ---- 将来の inkscape_base リンクに備えた準備 ----
+# Inkscape コア（GTK4 + glibmm 等）の Android バックエンドが整備され、
+# inkscape_base ライブラリをリンク可能になったら、下記のコメントを有効化する。
+# target_link_libraries(inkscape-jni inkscape_base)
+#
+# 現時点では GTK4/glibmm 等の依存が Android NDK 向けに整備されていないため、
+# スタンドアロン JNI ライブラリとしてビルドし、リンクエラーを回避する。
 
 # 出力ファイル名：PREFIX "" で lib プレフィックスを抑制し、
 # Java 側の System.loadLibrary("inkscape-jni") に対応させる（libinkscape-jni.so）。

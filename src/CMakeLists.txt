@@ -304,8 +304,11 @@ if(NOT ANDROID)
   add_executable(inkscape ${main_SRC})
   add_executable(inkview ${view_SRC})
 else()
-  # On Android, build shared libraries (.so) so they can be loaded from Java via JNI.
-  add_library(inkscape SHARED ${main_SRC})
+  # Android 向け：Java から JNI で読み込むため共有ライブラリ (.so) をビルドする。
+  # android_jni.cpp は同じ src/ ディレクトリにあるため、ファイル名のみで指定する。
+  # 将来、Inkscape コア (inkscape_base / GTK4) がリンク可能になったら
+  # リンク設定を追加する。
+  add_library(inkscape SHARED ${main_SRC} android_jni.cpp)
   add_library(inkview SHARED ${view_SRC})
   set_target_properties(inkscape PROPERTIES PREFIX "")
   set_target_properties(inkview PROPERTIES PREFIX "")
