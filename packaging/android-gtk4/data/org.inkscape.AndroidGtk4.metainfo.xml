@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop" xmlns="https://specifications.freedesktop.org/metainfo/1.0">
+  <id>org.inkscape.AndroidGtk4</id>
+  <name>Inkscape GTK4</name>
+  <summary>GTK4 ネイティブ版 Inkscape for Android (開発中)</summary>
+  <description>
+    <p>
+      Inkscape の GTK4 ユーザーインターフェースを Android 上で動かすための
+      実験的ビルドです。GTK4 の Android バックエンドを利用しています。
+    </p>
+  </description>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+  <releases>
+    <release version="0.1.0" date="2026-11-11"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+  <provides>
+    <mediatype>image/svg+xml</mediatype>
+  </provides>
+</component>

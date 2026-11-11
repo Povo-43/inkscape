@@ -1,0 +1,131 @@
+# GTK4 ネイティブ版 Inkscape for Android をビルドする。
+#
+# これまでの Kotlin/Android View 版とは別に、GTK4 の Android バックエンド
+# (GTK 4.22 以降) を使って GTK4 ウィジェットをそのまま動かす。
+# ビルドには pixiewood (gtk-android-builder) を使う。
+name: GTK4 Android
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'packaging/android-gtk4/**'
+      - '.github/workflows/gtk4-android.yml'
+
+concurrency:
+  group: gtk4-android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: GTK4 APK ビルド
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      # pixiewood 本体 (GTK Android Builder)
+      - name: pixiewood をチェックアウト
+        uses: actions/checkout@v4
+        with:
+          repository: sp1ritCS/gtk-android-builder
+          ref: 001bfc0cae770438cc051458afc455564e83e3aa
+          path: pixiewood
+
+      # pixiewood のアイコン変換 (Svg2Avd) が必要とする Android Studio の
+      # 最小サブセット。
+      - name: mini-studio をチェックアウト
+        uses: actions/checkout@v4
+        with:
+          repository: sp1ritCS/mini-studio
+          ref: 8c2901968b07245ad07c1b38270928a49a510765
+          path: mini
+
+      - name: ビルド依存パッケージをインストール
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            glslc \
+            gobject-introspection \
+            gir1.2-appstream-1.0 \
+            libglib2.0-dev \
+            libglib2.0-dev-bin \
+            libglib-perl \
+            libglib-object-introspection-perl \
+            libipc-run-perl \
+            libjson-perl \
+            libset-scalar-perl \
+            libxml-libxml-perl \
+            libxml-libxslt-perl \
+            libxml2-utils \
+            sassc \
+            gettext \
+            desktop-file-utils \
+            apksigner
+
+      - name: JDK 21 をセットアップ
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Android SDK / NDK をセットアップ
+        uses: android-actions/setup-android@v4
+        with:
+          packages: >-
+            platform-tools
+            platforms;android-36
+            build-tools;36.0.0
+            ndk;27.2.12479018
+
+      - name: Meson / Ninja をセットアップ
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install meson ninja
+          meson --version
+          ninja --version
+
+      - name: pixiewood を PATH に追加
+        run: echo "$GITHUB_WORKSPACE/pixiewood" >> "$GITHUB_PATH"
+
+      # GTK を毎回ダウンロードしないよう、wrap の tarball をキャッシュする。
+      - name: subprojects のダウンロードをキャッシュ
+        uses: actions/cache@v4
+        with:
+          path: packaging/android-gtk4/subprojects/packagecache
+          key: gtk4-wrap-${{ hashFiles('packaging/android-gtk4/pixiewood.xml') }}
+
+      - name: pixiewood prepare
+        run: |
+          pixiewood -C packaging/android-gtk4 prepare \
+            --release \
+            --android-studio=./mini \
+            --sdk="$ANDROID_HOME" \
+            packaging/android-gtk4/pixiewood.xml
+
+      - name: pixiewood generate
+        run: pixiewood -C packaging/android-gtk4 generate
+
+      - name: pixiewood build
+        run: pixiewood -C packaging/android-gtk4 build
+
+      - name: meson ログ (失敗時)
+        if: failure()
+        run: |
+          for log in packaging/android-gtk4/.pixiewood/bin-*/meson-logs/meson-log.txt; do
+            echo "===== $log ====="
+            tail -n 200 "$log" || true
+          done
+
+      - name: APK をアップロード
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtk4-apk
+          path: packaging/android-gtk4/.pixiewood/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
