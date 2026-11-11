@@ -42,6 +42,10 @@ Android 固有のコードのみを追加しています。
   - `testfiles/sample.svg` の解析 (200x200 / 5 要素 / テキスト検出) と描画
   - 実際の Inkscape ドキュメント `share/tutorials/tutorial-basic.svg`
     (2,883 要素、グラデーション・パターン・テキストを含む) の描画
+  - Android 上でネイティブレンダラー単体を実行し、同じ SVG を PNG 化
+- リポジトリ同梱の Inkscape SVG **3,351 ファイルすべて**をレンダリングし、
+  失敗 0 件であることを確認 (アイコン、チュートリアル全言語版、
+  グラデーション / フィルタ / パターン / クリップ / マスクを含む)
 - テキストは Android の `/system/fonts` を利用して描画
 
 ### 1.4 アーキテクチャ
@@ -180,6 +184,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 | Inkscape 固有機能 | 未対応 (拡張機能、フィルタエディタ、パス操作など) |
 | 署名 | 既定はデバッグ署名 |
 | 一部 SVG 機能 | resvg が未対応の機能 (SMIL アニメーション、一部の CSS) は描画されません |
+| 外部参照画像 | SVG 内の相対パスで参照される外部画像は解決できません (data URI の埋め込み画像は表示されます) |
 
 ---
 
