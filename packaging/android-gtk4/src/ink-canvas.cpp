@@ -4,16 +4,23 @@
  *
  * キャンバスウィジェットの実装。
  *
- * SVG のページを中央に表示し、以下をサポートする:
+ * Inkscape 本体 (src/actions/actions-canvas-transform.cpp) の
+ * キャンバス変換アクションに合わせたズーム・回転・反転をサポート。
+ *
+ * サポート:
  *   - 1 本指ドラッグ / マウスドラッグでのパン
- *   - ピンチでのズーム (フォーカルポイントを維持)
- *   - マウスホイール (Ctrl+ホイールでズーム、通常はパン)
- *   - ダブルタップで「ページにフィット」と 100% の切り替え
+ *   - ピンチでズーム (フォーカルポイント維持)
+ *   - ダブルタップで「ページにフィット」と 100% を切り替え
+ *   - Ctrl+ホイールでズーム
+ *   - ズームプリセット: 50%/100%/200%/ページフィット/ページ幅フィット
+ *   - 回転: 時計回り / 反時計回り / リセット
+ *   - 反転: 水平 / 垂直 / リセット
  */
 
 #include "ink-canvas.h"
 
 #include <math.h>
+#include <string.h>
 
 struct _InkCanvas
 {
@@ -32,6 +39,12 @@ struct _InkCanvas
   double zoom_focal_x;
   double zoom_focal_y;
 
+  /* 回転 (度) */
+  double rotation_angle;
+
+  /* 反転モード: 0=なし, 1=水平, 2=垂直 */
+  int flip_mode;
+
   gboolean fit_pending;
 };
 
@@ -48,6 +61,9 @@ static GParamSpec *properties[N_PROPS];
 
 #define INK_CANVAS_MIN_ZOOM 0.01
 #define INK_CANVAS_MAX_ZOOM 128.0
+
+/* Inkscape と同じズーム増分 (sqrt(2) ≈ 1.414) */
+#define INK_CANVAS_ZOOM_INCREMENT 1.41421356
 
 static void
 ink_canvas_get_page_size (InkCanvas *self,
@@ -115,6 +131,29 @@ ink_canvas_apply_fit (InkCanvas *self)
 
   self->zoom = CLAMP (MIN ((w - 2.0 * margin) / pw,
                            (h - 2.0 * margin) / ph),
+                      INK_CANVAS_MIN_ZOOM, INK_CANVAS_MAX_ZOOM);
+  self->pan_x = 0.0;
+  self->pan_y = 0.0;
+
+  gtk_widget_queue_draw (GTK_WIDGET (self));
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ZOOM]);
+}
+
+static void
+ink_canvas_apply_page_width (InkCanvas *self)
+{
+  double pw, ph;
+  int w, h;
+  double margin = 24.0;
+
+  ink_canvas_get_page_size (self, &pw, &ph);
+  w = gtk_widget_get_width (GTK_WIDGET (self));
+  h = gtk_widget_get_height (GTK_WIDGET (self));
+
+  if (pw <= 0.0 || ph <= 0.0 || w <= 0)
+    return;
+
+  self->zoom = CLAMP ((w - 2.0 * margin) / pw,
                       INK_CANVAS_MIN_ZOOM, INK_CANVAS_MAX_ZOOM);
   self->pan_x = 0.0;
   self->pan_y = 0.0;
@@ -197,11 +236,47 @@ ink_canvas_snapshot (GtkWidget   *widget,
   /* ページ範囲にクリップして SVG を描画 */
   gtk_snapshot_push_clip (snapshot, &page);
   gtk_snapshot_save (snapshot);
+
+  /* ページ左上を原点に移動 */
   {
     graphene_point_t origin;
     graphene_point_init (&origin, ox, oy);
     gtk_snapshot_translate (snapshot, &origin);
   }
+
+  /* 回転を適用 (ページ中央を中心に) */
+  if (fabs (self->rotation_angle) > 0.01)
+    {
+      graphene_point_t center;
+      graphene_point_init (&center, pw * scale / 2.0, ph * scale / 2.0);
+      gtk_snapshot_translate (snapshot, &center);
+      gtk_snapshot_rotate (snapshot, self->rotation_angle * G_PI / 180.0);
+      graphene_point_init (&center, -pw * scale / 2.0, -ph * scale / 2.0);
+      gtk_snapshot_translate (snapshot, &center);
+    }
+
+  /* 反転を適用 */
+  if (self->flip_mode == 1)
+    {
+      /* 水平反転: ページ中央を中心に X 方向を反転 */
+      graphene_point_t center;
+      graphene_point_init (&center, pw * scale / 2.0, 0.0);
+      gtk_snapshot_translate (snapshot, &center);
+      gtk_snapshot_scale (snapshot, -1.0, 1.0);
+      graphene_point_init (&center, -pw * scale / 2.0, 0.0);
+      gtk_snapshot_translate (snapshot, &center);
+    }
+  else if (self->flip_mode == 2)
+    {
+      /* 垂直反転: ページ中央を中心に Y 方向を反転 */
+      graphene_point_t center;
+      graphene_point_init (&center, 0.0, ph * scale / 2.0);
+      gtk_snapshot_translate (snapshot, &center);
+      gtk_snapshot_scale (snapshot, 1.0, -1.0);
+      graphene_point_init (&center, 0.0, -ph * scale / 2.0);
+      gtk_snapshot_translate (snapshot, &center);
+    }
+
   gdk_paintable_snapshot (self->paintable, snapshot, pw * scale, ph * scale);
   gtk_snapshot_restore (snapshot);
   gtk_snapshot_pop (snapshot);
@@ -338,7 +413,7 @@ on_scroll (GtkEventControllerScroll *controller,
       double cy = gtk_widget_get_height (GTK_WIDGET (self)) / 2.0;
 
       ink_canvas_zoom_about (self,
-                             self->zoom * pow (1.1, -dy),
+                             self->zoom * pow (INK_CANVAS_ZOOM_INCREMENT, -dy),
                              cx, cy);
     }
   else
@@ -434,6 +509,8 @@ ink_canvas_init (InkCanvas *self)
   GtkEventController *scroll;
 
   self->zoom = 1.0;
+  self->rotation_angle = 0.0;
+  self->flip_mode = 0;
   self->fit_pending = TRUE;
 
   gtk_widget_set_hexpand (GTK_WIDGET (self), TRUE);
@@ -522,6 +599,36 @@ ink_canvas_zoom_fit (InkCanvas *self)
 }
 
 void
+ink_canvas_zoom_page (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  /* zoom_fit と同じ: ページ全体を表示 */
+  ink_canvas_zoom_fit (self);
+}
+
+void
+ink_canvas_zoom_page_width (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  ink_canvas_apply_page_width (self);
+}
+
+void
+ink_canvas_zoom_center_page (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  self->pan_x = 0.0;
+  self->pan_y = 0.0;
+  self->zoom = 1.0;
+
+  gtk_widget_queue_draw (GTK_WIDGET (self));
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ZOOM]);
+}
+
+void
 ink_canvas_zoom_reset (InkCanvas *self)
 {
   g_return_if_fail (INK_IS_CANVAS (self));
@@ -536,12 +643,48 @@ ink_canvas_zoom_reset (InkCanvas *self)
 }
 
 void
+ink_canvas_zoom_1_2 (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  self->fit_pending = FALSE;
+  self->pan_x = 0.0;
+  self->pan_y = 0.0;
+  self->zoom = 0.5;
+
+  gtk_widget_queue_draw (GTK_WIDGET (self));
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ZOOM]);
+}
+
+void
+ink_canvas_zoom_1_1 (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  ink_canvas_zoom_reset (self);
+}
+
+void
+ink_canvas_zoom_2_1 (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  self->fit_pending = FALSE;
+  self->pan_x = 0.0;
+  self->pan_y = 0.0;
+  self->zoom = 2.0;
+
+  gtk_widget_queue_draw (GTK_WIDGET (self));
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ZOOM]);
+}
+
+void
 ink_canvas_zoom_in (InkCanvas *self)
 {
   g_return_if_fail (INK_IS_CANVAS (self));
 
   ink_canvas_zoom_about (self,
-                         self->zoom * 1.25,
+                         self->zoom * INK_CANVAS_ZOOM_INCREMENT,
                          gtk_widget_get_width (GTK_WIDGET (self)) / 2.0,
                          gtk_widget_get_height (GTK_WIDGET (self)) / 2.0);
 }
@@ -552,8 +695,67 @@ ink_canvas_zoom_out (InkCanvas *self)
   g_return_if_fail (INK_IS_CANVAS (self));
 
   ink_canvas_zoom_about (self,
-                         self->zoom / 1.25,
+                         self->zoom / INK_CANVAS_ZOOM_INCREMENT,
                          gtk_widget_get_width (GTK_WIDGET (self)) / 2.0,
                          gtk_widget_get_height (GTK_WIDGET (self)) / 2.0);
 }
 
+void
+ink_canvas_rotate_cw (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  self->rotation_angle += 15.0;
+  if (self->rotation_angle >= 360.0)
+    self->rotation_angle -= 360.0;
+
+  gtk_widget_queue_draw (GTK_WIDGET (self));
+}
+
+void
+ink_canvas_rotate_ccw (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  self->rotation_angle -= 15.0;
+  if (self->rotation_angle <= -360.0)
+    self->rotation_angle += 360.0;
+
+  gtk_widget_queue_draw (GTK_WIDGET (self));
+}
+
+void
+ink_canvas_rotate_reset (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  self->rotation_angle = 0.0;
+  gtk_widget_queue_draw (GTK_WIDGET (self));
+}
+
+void
+ink_canvas_flip_horizontal (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  self->flip_mode = 1;
+  gtk_widget_queue_draw (GTK_WIDGET (self));
+}
+
+void
+ink_canvas_flip_vertical (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  self->flip_mode = 2;
+  gtk_widget_queue_draw (GTK_WIDGET (self));
+}
+
+void
+ink_canvas_flip_reset (InkCanvas *self)
+{
+  g_return_if_fail (INK_IS_CANVAS (self));
+
+  self->flip_mode = 0;
+  gtk_widget_queue_draw (GTK_WIDGET (self));
+}

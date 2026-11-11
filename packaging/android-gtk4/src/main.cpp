@@ -9,6 +9,10 @@
  * レンダリングには GTK 4.22 で追加された GtkSvg (GdkPaintable 実装) を使う。
  * librsvg や resvg を別途リンクする必要がない。
  *
+ * アクション名・ズームレベル・回転/反転は Inkscape 本体
+ * (src/actions/actions-canvas-transform.cpp) に合わせており、
+ * 将来的な Inkscape コア統合時に互換性を保つ。
+ *
  * このファイルは Android 固有コードであり、元の Inkscape C++ コードには
  * 一切手を加えていない。将来的に Inkscape 本体 (gtkmm4) の UI へ
  * 段階的に置き換えていくための土台となる。
@@ -47,7 +51,7 @@ const char *kSampleSvg =
     "  <text x=\"210\" y=\"60\" text-anchor=\"middle\" font-family=\"sans-serif\" "
     "font-size=\"26\" fill=\"#222222\">Inkscape on GTK4</text>\n"
     "  <text x=\"210\" y=\"300\" text-anchor=\"middle\" font-family=\"sans-serif\" "
-    "font-size=\"14\" fill=\"#555555\">SVG · GtkSvg renderer · Android</text>\n"
+    "font-size=\"14\" fill=\"#555555\">gtkmm4 · GtkSvg renderer · Android</text>\n"
     "</svg>\n";
 
 struct InkApp
@@ -324,6 +328,7 @@ void action_export (GSimpleAction *, GVariant *, gpointer)
   g_free (detail);
 }
 
+/* ズームアクション (Inkscape の win.canvas-zoom-* に対応) */
 void action_zoom_in (GSimpleAction *, GVariant *, gpointer)
 {
   ink_canvas_zoom_in (INK_CANVAS (ink.canvas));
@@ -334,14 +339,76 @@ void action_zoom_out (GSimpleAction *, GVariant *, gpointer)
   ink_canvas_zoom_out (INK_CANVAS (ink.canvas));
 }
 
+void action_zoom_1_2 (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_zoom_1_2 (INK_CANVAS (ink.canvas));
+}
+
+void action_zoom_1_1 (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_zoom_1_1 (INK_CANVAS (ink.canvas));
+}
+
+void action_zoom_2_1 (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_zoom_2_1 (INK_CANVAS (ink.canvas));
+}
+
 void action_zoom_fit (GSimpleAction *, GVariant *, gpointer)
 {
   ink_canvas_zoom_fit (INK_CANVAS (ink.canvas));
 }
 
+void action_zoom_page (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_zoom_page (INK_CANVAS (ink.canvas));
+}
+
+void action_zoom_page_width (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_zoom_page_width (INK_CANVAS (ink.canvas));
+}
+
+void action_zoom_center_page (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_zoom_center_page (INK_CANVAS (ink.canvas));
+}
+
 void action_zoom_reset (GSimpleAction *, GVariant *, gpointer)
 {
   ink_canvas_zoom_reset (INK_CANVAS (ink.canvas));
+}
+
+/* 回転アクション (Inkscape の win.canvas-rotate-* に対応) */
+void action_rotate_cw (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_rotate_cw (INK_CANVAS (ink.canvas));
+}
+
+void action_rotate_ccw (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_rotate_ccw (INK_CANVAS (ink.canvas));
+}
+
+void action_rotate_reset (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_rotate_reset (INK_CANVAS (ink.canvas));
+}
+
+/* 反転アクション (Inkscape の win.canvas-flip-* に対応) */
+void action_flip_horizontal (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_flip_horizontal (INK_CANVAS (ink.canvas));
+}
+
+void action_flip_vertical (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_flip_vertical (INK_CANVAS (ink.canvas));
+}
+
+void action_flip_reset (GSimpleAction *, GVariant *, gpointer)
+{
+  ink_canvas_flip_reset (INK_CANVAS (ink.canvas));
 }
 
 void action_about (GSimpleAction *, GVariant *, gpointer)
@@ -351,7 +418,9 @@ void action_about (GSimpleAction *, GVariant *, gpointer)
                                "GTK4 ネイティブ版の実験的ビルドです。\n\n"
                                "UI: GTK4 (Android バックエンド)\n"
                                "レンダリング: GtkSvg (GTK 4.22+)\n"
-                               "バージョン: 0.3.0\n\n"
+                               "バージョン: 0.4.0\n\n"
+                               "アクション名は Inkscape 本体 (actions-canvas-transform.cpp)\n"
+                               "と互換: canvas-zoom-*, canvas-rotate-*, canvas-flip-*\n\n"
                                "Inkscape 本体 (gtkmm4) への段階的な移植を進めています。");
   gtk_alert_dialog_show (dialog, GTK_WINDOW (ink.window));
   g_object_unref (dialog);
@@ -360,10 +429,22 @@ void action_about (GSimpleAction *, GVariant *, gpointer)
 const GActionEntry kAppActions[] = {
   { "open", action_open, nullptr, nullptr, nullptr, { 0, 0, 0 } },
   { "export", action_export, nullptr, nullptr, nullptr, { 0, 0, 0 } },
-  { "zoom-in", action_zoom_in, nullptr, nullptr, nullptr, { 0, 0, 0 } },
-  { "zoom-out", action_zoom_out, nullptr, nullptr, nullptr, { 0, 0, 0 } },
-  { "zoom-fit", action_zoom_fit, nullptr, nullptr, nullptr, { 0, 0, 0 } },
-  { "zoom-reset", action_zoom_reset, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-zoom-in", action_zoom_in, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-zoom-out", action_zoom_out, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-zoom-1-2", action_zoom_1_2, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-zoom-1-1", action_zoom_1_1, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-zoom-2-1", action_zoom_2_1, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-zoom-fit", action_zoom_fit, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-zoom-page", action_zoom_page, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-zoom-page-width", action_zoom_page_width, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-zoom-center-page", action_zoom_center_page, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-zoom-reset", action_zoom_reset, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-rotate-cw", action_rotate_cw, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-rotate-ccw", action_rotate_ccw, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-rotate-reset", action_rotate_reset, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-flip-horizontal", action_flip_horizontal, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-flip-vertical", action_flip_vertical, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "canvas-flip-reset", action_flip_reset, nullptr, nullptr, nullptr, { 0, 0, 0 } },
   { "about", action_about, nullptr, nullptr, nullptr, { 0, 0, 0 } },
 };
 
@@ -409,8 +490,8 @@ void build_window (GtkApplication *application)
   GMenu *menu = g_menu_new ();
   g_menu_append (menu, "SVG を開く…", "app.open");
   g_menu_append (menu, "PNG として書き出す…", "app.export");
-  g_menu_append (menu, "ページにフィット", "app.zoom-fit");
-  g_menu_append (menu, "100% 表示", "app.zoom-reset");
+  g_menu_append (menu, "ページにフィット", "app.canvas-zoom-fit");
+  g_menu_append (menu, "100% 表示", "app.canvas-zoom-reset");
   g_menu_append (menu, "バージョン情報", "app.about");
 
   gtk_menu_button_set_icon_name (GTK_MENU_BUTTON (menu_button), "open-menu-symbolic");
@@ -444,14 +525,20 @@ void build_window (GtkApplication *application)
   gtk_widget_set_margin_bottom (toolbar, 6);
 
   GtkWidget *open_button = make_tool_button ("document-open-symbolic", "SVG を開く", "app.open");
-  GtkWidget *zoom_out_button = make_tool_button ("zoom-out-symbolic", "縮小", "app.zoom-out");
-  GtkWidget *zoom_fit_button = make_tool_button ("view-fullscreen-symbolic", "ページにフィット", "app.zoom-fit");
-  GtkWidget *zoom_in_button = make_tool_button ("zoom-in-symbolic", "拡大", "app.zoom-in");
+  GtkWidget *zoom_out_button = make_tool_button ("zoom-out-symbolic", "縮小", "app.canvas-zoom-out");
+  GtkWidget *zoom_50_button = make_tool_button ("zoom-half-size", "50%", "app.canvas-zoom-1-2");
+  GtkWidget *zoom_100_button = make_tool_button ("zoom-original", "100%", "app.canvas-zoom-reset");
+  GtkWidget *zoom_200_button = make_tool_button ("zoom-double-size", "200%", "app.canvas-zoom-2-1");
+  GtkWidget *zoom_fit_button = make_tool_button ("view-fullscreen-symbolic", "ページにフィット", "app.canvas-zoom-fit");
+  GtkWidget *zoom_in_button = make_tool_button ("zoom-in-symbolic", "拡大", "app.canvas-zoom-in");
   ink.export_button = make_tool_button ("document-save-as-symbolic", "PNG として書き出す", "app.export");
   gtk_widget_set_sensitive (ink.export_button, FALSE);
 
   gtk_box_append (GTK_BOX (toolbar), open_button);
   gtk_box_append (GTK_BOX (toolbar), zoom_out_button);
+  gtk_box_append (GTK_BOX (toolbar), zoom_50_button);
+  gtk_box_append (GTK_BOX (toolbar), zoom_100_button);
+  gtk_box_append (GTK_BOX (toolbar), zoom_200_button);
   gtk_box_append (GTK_BOX (toolbar), zoom_fit_button);
   gtk_box_append (GTK_BOX (toolbar), zoom_in_button);
   gtk_box_append (GTK_BOX (toolbar), ink.export_button);
@@ -527,18 +614,26 @@ void on_startup (GtkApplication *application, gpointer)
   static const char *accels_export[] = { "<Control>e", nullptr };
   static const char *accels_zoom_in[] = { "<Control>plus", "<Control>equal", nullptr };
   static const char *accels_zoom_out[] = { "<Control>minus", nullptr };
+  static const char *accels_zoom_50[] = { "<Control>2", nullptr };
+  static const char *accels_zoom_100[] = { "<Control>1", nullptr };
+  static const char *accels_zoom_200[] = { "<Control>3", nullptr };
   static const char *accels_zoom_fit[] = { "<Control>0", nullptr };
-  static const char *accels_zoom_reset[] = { "<Control>1", nullptr };
+  static const char *accels_rotate_cw[] = { "<Control>bracketright", nullptr };
+  static const char *accels_rotate_ccw[] = { "<Control>bracketleft", nullptr };
 
   g_action_map_add_action_entries (G_ACTION_MAP (application), kAppActions,
                                    G_N_ELEMENTS (kAppActions), nullptr);
 
   gtk_application_set_accels_for_action (application, "app.open", accels_open);
   gtk_application_set_accels_for_action (application, "app.export", accels_export);
-  gtk_application_set_accels_for_action (application, "app.zoom-in", accels_zoom_in);
-  gtk_application_set_accels_for_action (application, "app.zoom-out", accels_zoom_out);
-  gtk_application_set_accels_for_action (application, "app.zoom-fit", accels_zoom_fit);
-  gtk_application_set_accels_for_action (application, "app.zoom-reset", accels_zoom_reset);
+  gtk_application_set_accels_for_action (application, "app.canvas-zoom-in", accels_zoom_in);
+  gtk_application_set_accels_for_action (application, "app.canvas-zoom-out", accels_zoom_out);
+  gtk_application_set_accels_for_action (application, "app.canvas-zoom-1-2", accels_zoom_50);
+  gtk_application_set_accels_for_action (application, "app.canvas-zoom-reset", accels_zoom_100);
+  gtk_application_set_accels_for_action (application, "app.canvas-zoom-2-1", accels_zoom_200);
+  gtk_application_set_accels_for_action (application, "app.canvas-zoom-fit", accels_zoom_fit);
+  gtk_application_set_accels_for_action (application, "app.canvas-rotate-cw", accels_rotate_cw);
+  gtk_application_set_accels_for_action (application, "app.canvas-rotate-ccw", accels_rotate_ccw);
 
   GtkCssProvider *css = gtk_css_provider_new ();
   gtk_css_provider_load_from_string (css,
