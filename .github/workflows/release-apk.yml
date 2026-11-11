@@ -28,6 +28,21 @@ jobs:
           fetch-depth: 0
 
       # ------------------------------------------------------------------
+      # a2. Rust ツールチェーン（SVG レンダラー用）
+      #     resvg を Android ABI 向けにクロスコンパイルするため、
+      #     Rust 本体と Android ターゲットをインストールする。
+      # ------------------------------------------------------------------
+      - name: Rust ツールチェーンをセットアップ
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+
+      - name: Rust ビルドキャッシュ
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: 'app/src/main/rust/svg-renderer -> target'
+
+      # ------------------------------------------------------------------
       # b. JDK 17 セットアップ（Temurin）
       # ------------------------------------------------------------------
       - name: JDK 17 をセットアップ
@@ -56,6 +71,16 @@ jobs:
       # ------------------------------------------------------------------
       - name: gradlew に実行権限を付与
         run: chmod +x gradlew
+
+      # ------------------------------------------------------------------
+      # e2. レンダラーのホスト動作確認（Android ビルド前のスモークテスト）
+      # ------------------------------------------------------------------
+      - name: SVG レンダラーのスモークテスト
+        run: |
+          cd app/src/main/rust/svg-renderer
+          cargo run --release --example render -- \
+            ../../../../../testfiles/sample.svg /tmp/sample.png 256 256
+          test -s /tmp/sample.png
 
       # ------------------------------------------------------------------
       # f. APK ビルド（デフォルトはデバッグビルド。
@@ -127,7 +152,11 @@ jobs:
             gh api -X POST "/repos/${{ github.repository }}/releases" \
               -f tag_name="${TAG}" \
               -f name="Inkscape Android ${TAG}" \
-              -f body="GitHub Actions による自動ビルド APK"
+              -f body="Inkscape for Android 自動ビルド APK (${TAG})
+
+- SVG レンダリング: resvg (ネイティブ / 純 Rust)
+- プレビュー表示・ズーム/パン・PNG 書き出し
+- 対応 ABI: armeabi-v7a / arm64-v8a / x86_64"
             echo "リリース ${TAG} を作成しました"
           fi
 

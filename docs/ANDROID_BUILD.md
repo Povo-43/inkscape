@@ -1,149 +1,187 @@
-# Inkscape Android 移植 - ビルド手順・使い方・仕組み
+# Inkscape for Android - ビルド手順・使い方・内部構成
 
-本ドキュメントは、Inkscape (GTK4 ベース) の Android 移植プロジェクトにおける、Android 上でのビルド手順、アプリの使い方、内部仕組み、およびリリースフローをまとめたものです。
+Inkscape の Android 移植プロジェクトです。GTK4 の GUI 部分は Android では動作しませんが、
+SVG の解析・ラスタライズをネイティブ実装 (resvg) で行い、Android 上で実際に
+SVG を表示・PNG 書き出しできるアプリとしてビルドします。
 
 ---
 
 ## 1. 概要
 
-本プロジェクトは、Inkscape (GTK4 ベース) を Android 上で動作させるための移植プロジェクトです。
+### 1.1 できること
 
-GTK GUI は Android バックエンドを持たないため、現在のリリースでは以下の制約下で動作します：
+| 機能 | 状態 |
+|------|------|
+| SVG ファイルを開く (SAF / 他アプリからの共有) | 動作 |
+| SVG のプレビュー表示 | 動作 |
+| ピンチズーム / ドラッグパン / ダブルタップで全体表示 | 動作 |
+| ドキュメント情報の表示 (サイズ・要素数・テキスト有無など) | 動作 |
+| PNG 書き出し (512 / 1024 / 2048 / 4096 px / 元サイズ) | 動作 |
+| GTK4 GUI (Inkscape の編集画面) | 未対応 |
+| 編集・保存 (SVG の編集) | 未対応 |
 
-- JNI 経由でネイティブライブラリ（Inkscape コア）を**ヘッドレス（GUI なし）**でロード
-- Android 側から以下の操作を JNI で制御可能：
-  - SVG ファイルのオープン
-  - ドキュメント情報の取得
-  - PNG へのエクスポート
+### 1.2 レンダリングエンジン
 
-GUI 描画（キャンバス上での SVG レンダリング・編集）は、将来の GTK Android バックエンド実装または独自レンダリングパイプラインの導入後に本実装を予定しています。
+SVG の解析と描画には [resvg](https://github.com/linebender/resvg) (純 Rust 実装の
+SVG レンダラー) を使用しています。
+
+- `usvg` が SVG / SVGZ / CSS / テキスト / グラデーション / フィルタ / マスク /
+  クリップパス / パターン / 埋め込みラスタ画像を解析
+- `tiny-skia` がアンチエイリアス付きでラスタライズ
+- `fontdb` が `/system/fonts` のフォントを読み込み、`sans-serif` などの
+  総称ファミリーも解決
+
+Inkscape 本体のコア (GTK4 / gtkmm4 / glibmm / lib2geom) は Android バックエンドを
+持たないためリンクしていません。元の Inkscape C++ コードは一切変更せず、
+Android 固有のコードのみを追加しています。
+
+### 1.3 アーキテクチャ
+
+```
+MainActivity.kt (Kotlin)
+  │  external fun (JNI)
+  ▼
+libinkscape-jni.so (src/android_jni.cpp)
+  │  C ABI
+  ▼
+libinkscape_svg_renderer.a (app/src/main/rust/svg-renderer, resvg)
+```
+
+- Kotlin: ファイル選択、プレビュー、ズーム/パン、PNG 保存、UI
+- C++ (`src/android_jni.cpp`): JNI 境界、ファイル I/O、エラー処理
+- Rust: SVG の解析と PNG へのラスタライズ (C ABI のみ公開)
 
 ---
 
 ## 2. ビルド要件
 
-Android アプリおよびネイティブライブラリをビルドするには、以下のツールチェーンが必要です。
-
-| 項目 | 必須バージョン |
-|------|----------------|
+| 項目 | バージョン |
+|------|-----------|
 | Android SDK | API 35 |
-| Android SDK build-tools | 34.0.0 |
-| Android NDK | r26.3.11579264 |
-| CMake | 3.22.1 |
-| JDK | 17 |
-| Gradle | 8.10.2 |
+| Android build-tools | 34.0.0 |
+| Android NDK | 26.3.11579264 |
+| CMake | 3.22.1 (NDK 同梱) |
+| JDK | 17 以上 (21 でも可) |
+| Gradle | 8.10.2 (wrapper 同梱) |
+| Rust | stable (1.80 以上を推奨) |
 
-### セットアップのヒント
+### 2.1 Rust の準備
 
-- `ANDROID_HOME`（または `ANDROID_SDK_ROOT`）環境変数に Android SDK パスを設定してください。
-- `ANDROID_NDK_HOME`（または `ANDROID_NDK`）環境変数に NDK パスを設定してください。
-- SDK Manager / NDK Manager から指定バージョンをインストールしてください。
+```bash
+rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+```
+
+Gradle の `cargoBuild*` タスクが自動的に 3 ABI 向けにクロスコンパイルします。
+`cargo` は `~/.cargo/bin/cargo` を優先して使用します。
+
+### 2.2 環境変数
+
+- `ANDROID_HOME` または `local.properties` の `sdk.dir` に Android SDK を設定
+- NDK は `$ANDROID_HOME/ndk/26.3.11579264` に配置 (Gradle が `ndkVersion` で参照)
 
 ---
 
-## 3. ローカルビルド手順
-
-プロジェクトルート（`/tmp/opencode/inkscape-android`）で以下のコマンドを実行します。
-
-### デバッグビルド（開発用）
+## 3. ローカルビルド
 
 ```bash
 ./gradlew :app:assembleDebug
 ```
 
-ビルドが成功すると、`app/build/outputs/apk/debug/app-debug.apk` に APK が生成されます。
+成果物: `app/build/outputs/apk/debug/app-debug.apk`
 
-### リリースビルド（配布用）
+ビルドの流れ:
+
+1. `cargoBuild<ABI>` が Rust レンダラーを静的ライブラリへビルド
+   (`app/build/rust/<ABI>/libinkscape_svg_renderer.a`)
+2. CMake が `src/android_jni.cpp` と静的ライブラリをリンクして
+   `libinkscape-jni.so` を生成
+3. Gradle が 3 ABI 分を APK に同梱
+
+Rust 部分だけをテストする場合:
+
+```bash
+cd app/src/main/rust/svg-renderer
+cargo run --release --example render -- ../../../../../testfiles/sample.svg /tmp/out.png 512 512
+```
+
+### 3.1 リリースビルド
 
 ```bash
 ./gradlew :app:assembleRelease
 ```
 
-リリースビルドには署名が必要です。署名設定（キーストアファイル・エイリアス・パスワード）を `local.properties` または環境変数で指定してください。詳細は「リリースフロー」およびプロジェクトの署名設定を参照してください。
+`RELEASE_STORE_FILE` / `RELEASE_STORE_PASSWORD` / `RELEASE_KEY_ALIAS` /
+`RELEASE_KEY_PASSWORD` が設定されていればリリース署名、未設定ならデバッグ署名になります。
 
 ---
 
 ## 4. APK のインストール
 
-ビルド済みのデバッグ APK を Android デバイス／エミュレータにインストールします。
-
 ```bash
-adb install app-debug.apk
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-複数のデバイスが接続されている場合は `-s <シリアル>` で対象デバイスを指定してください。
-
-```bash
-adb -s <シリアル> install app-debug.apk
-```
-
-インストール後、デバイスのランチャーから「Inkscape」アプリを起動できます。
+複数デバイス接続時は `adb -s <シリアル> install ...` を使用します。
 
 ---
 
 ## 5. アプリの使い方
 
-現在のリリースで利用可能な機能は以下の通りです。
-
-### 5.1 SVG ファイルを開く
-
-ファイルピッカーから SVG ファイルを選択すると、JNI 経由でネイティブライブラリが SVG をパースし、ドキュメントをロードします。
-
-### 5.2 ドキュメント情報表示
-
-ロードした SVG ドキュメントの情報（サイズ、ビューポート、レイヤー数など）を画面上に表示できます。
-
-### 5.3 PNG エクスポート
-
-ロードした SVG を PNG 画像としてエクスポートし、端末のストレージに保存できます。エクスポート解像度などのオプションは、今後のアップデートで拡張予定です。
+1. **開く**: ファイルピッカーから SVG (`.svg` / `.svgz`) を選択します。
+   他のアプリの「共有 / 開く」から起動することもできます。
+   選択したファイルはアプリのキャッシュへコピーされ、ネイティブ側で解析されます。
+2. **プレビュー**: 最大幅 2048 px でレンダリングした結果を表示します。
+   - ピンチ: ズーム
+   - ドラッグ: パン
+   - ダブルタップ: 全体表示に戻す
+3. **PNG保存**: 書き出しサイズを選択し、保存先を指定します。
+4. **全体表示**: 画像を画面にフィットさせます。
+5. 画面下部にドキュメント情報 (幅・高さ・要素数・テキスト有無・エラー) を表示します。
 
 ---
 
-## 6. リリースフロー
+## 6. リリースフロー (GitHub Actions)
 
-GitHub Actions を用いた CI/CD により、リリースビルドと APK 配布を自動化しています。
+`.github/workflows/release-apk.yml` が以下を自動実行します。
 
-### 6.1 リリーストリガー
+1. `inkscape-android-*` タグの push、または Release の公開、または手動実行で起動
+2. Rust ツールチェーン + Android ターゲットをセットアップ
+3. Rust レンダラーのホスト向けスモークテスト
+4. `./gradlew :app:assembleDebug` で APK をビルド (Rust は Gradle が自動ビルド)
+5. GitHub REST API でリリースを作成 (未作成時)
+6. GitHub Uploads API (`curl`) で APK をアセットとしてアップロード
 
-- `refs/tags/release-*` または `release/` プレフィックスのタグが push されたとき
-- あるいは `release` ブランチへの push / プルリクエストマージ時（設定による）
+### 6.1 リリース署名
 
-### 6.2 ビルドとアップロード
-
-1. GitHub Actions ワークフローが Android SDK / NDK などのビルド要件をセットアップ
-2. `./gradlew :app:assembleRelease` でリリース APK をビルド
-3. ビルド生成物（APK）を GitHub Releases にアップロード（`gh release upload`）
-
-### 6.3 リリース署名
-
-リリース署名ビルドに切り替えるには、GitHub リポジトリの Secrets に以下を設定してください。
-
-| シークレット名 | 説明 |
-|---------------|------|
-| `RELEASE_STORE_FILE` | リリース用キーストアファイル（base64 エンコード等） |
+| シークレット | 説明 |
+|-------------|------|
+| `RELEASE_STORE_FILE` | キーストアファイルのパス |
 | `RELEASE_STORE_PASSWORD` | キーストアのパスワード |
-| `RELEASE_KEY_ALIAS` | 鍵のエイリアス名 |
+| `RELEASE_KEY_ALIAS` | 鍵のエイリアス |
 | `RELEASE_KEY_PASSWORD` | 鍵のパスワード |
-
-これらのシークレットが未設定の場合、デバッグ署名または未署名の APK が生成されます。
 
 ---
 
 ## 7. 制限事項
 
-現在のリリースには以下の制限があります。
-
 | 項目 | 状況 |
 |------|------|
-| **GTK GUI** | 未対応。GTK4 には Android バックエンドが存在しないため、GUI 部分は動作しません |
-| **実行モード** | ヘッドレス版（ネイティブライブラリのみを JNI でロード） |
-| **署名** | デバッグ署名のみ。リリース署名には別途キーストア設定が必要 |
-| **SVG レンダリング** | ダミー実装。Inkscape コアとのリンク完了後、本実装に置き換え予定 |
-| **編集機能** | 未実装。ファイルオープン・情報取得・PNG エクスポートのみ利用可能 |
+| GTK4 GUI | 未対応。GTK4 に Android バックエンドが存在しないため |
+| 編集機能 | 未対応。表示・PNG 書き出しのみ |
+| Inkscape 固有機能 | 未対応 (拡張機能、フィルタエディタ、パス操作など) |
+| 署名 | 既定はデバッグ署名 |
+| 一部 SVG 機能 | resvg が未対応の機能 (SMIL アニメーション、一部の CSS) は描画されません |
 
 ---
 
-## 補足
+## 8. トラブルシューティング
 
-- 本ドキュメントは開発途中のプロジェクト向けであり、仕様・ビルド手順は変更される可能性があります。
-- 問題や改善提案がある場合は、プロジェクトの Issue または Pull Request でご連絡ください。
+- **`SVG レンダラーの静的ライブラリが見つかりません`**
+  `cargoBuild*` が失敗しています。`rustup target list --installed` で Android
+  ターゲットを確認し、`cargo build --release --target aarch64-linux-android` を
+  手動実行してエラーを確認してください。
+- **テキストが表示されない**
+  `/system/fonts` にフォントがあるか確認してください。総称ファミリー
+  (`sans-serif` 等) は利用可能なフォントへ自動的に割り当てられます。
+- **メモリ不足**
+  4096 px の書き出しは端末によっては失敗します。512〜2048 px を試してください。

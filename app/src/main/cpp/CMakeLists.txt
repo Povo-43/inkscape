@@ -28,11 +28,41 @@ target_include_directories(inkscape-jni PRIVATE
     ../../../../src
 )
 
+# ---------------------------------------------------------------------------
+# SVG レンダラー (Rust / resvg) の静的ライブラリを取り込む。
+#
+# Rust 側は Gradle の cargoBuild* タスクが ABI ごとにビルドし、
+#   <buildDir>/rust/<ABI>/libinkscape_svg_renderer.a
+# に配置する。INKSCAPE_RUST_LIB_DIR は app/build.gradle から渡される。
+# ---------------------------------------------------------------------------
+if(NOT DEFINED INKSCAPE_RUST_LIB_DIR)
+    # Gradle 経由でない場合のフォールバック（事前ビルド済みライブラリ）
+    set(INKSCAPE_RUST_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../rust/prebuilt")
+endif()
+
+set(RUST_RENDERER_LIB
+    "${INKSCAPE_RUST_LIB_DIR}/${ANDROID_ABI}/libinkscape_svg_renderer.a")
+
+if(EXISTS "${RUST_RENDERER_LIB}")
+    add_library(inkscape_svg_renderer STATIC IMPORTED)
+    set_target_properties(inkscape_svg_renderer PROPERTIES
+        IMPORTED_LOCATION "${RUST_RENDERER_LIB}")
+    message(STATUS "SVG renderer: ${RUST_RENDERER_LIB}")
+else()
+    message(FATAL_ERROR
+        "SVG レンダラーの静的ライブラリが見つかりません: ${RUST_RENDERER_LIB}\n"
+        "Gradle の cargoBuild タスクを先に実行してください "
+        "(例: ./gradlew :app:assembleDebug)。")
+endif()
+
 # Android システムライブラリにリンク（__android_log_print 等のため）。
-# Inkscape コア (GTK/glibmm/lib2geom 等) は Android バックエンドを持たないため、
-# ここではリンクしない。スタンドアロン JNI ライブラリとしてビルドし、
-# リンクエラー・実行時クラッシュを防ぐ。
-target_link_libraries(inkscape-jni log android)
+target_link_libraries(inkscape-jni
+    inkscape_svg_renderer
+    log
+    android
+    dl
+    m
+)
 
 # ---- 将来の inkscape_base リンクに備えた準備 ----
 # Inkscape コア（GTK4 + glibmm 等）の Android バックエンドが整備され、
@@ -40,7 +70,7 @@ target_link_libraries(inkscape-jni log android)
 # target_link_libraries(inkscape-jni inkscape_base)
 #
 # 現時点では GTK4/glibmm 等の依存が Android NDK 向けに整備されていないため、
-# スタンドアロン JNI ライブラリとしてビルドし、リンクエラーを回避する。
+# SVG の解析・描画は resvg ベースのレンダラーで行う。
 
 # 出力ファイル名：PREFIX "" で lib プレフィックスを抑制し、
 # Java 側の System.loadLibrary("inkscape-jni") に対応させる（libinkscape-jni.so）。

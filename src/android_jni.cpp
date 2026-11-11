@@ -3,33 +3,63 @@
  * Android JNI entry points for Inkscape.
  *
  * このファイルは Android でのみコンパイルされ、Java/Kotlin 側の APK が
- * Inkscape ネイティブライブラリをロード・照会するための安定した JNI API を
+ * Inkscape ネイティブライブラリをロード・操作するための安定した JNI API を
  * 公開します。
  *
  * 設計方針:
- *   - GTK GUI は Android バックエンドを持たないため、ここで初期化しない。
- *   - Inkscape コア (glibmm/GTK/lib2geom 等) への依存を断ち切り、リンク
- *     エラーや実行時クラッシュを防ぐ。将来 GTK-on-Android が整った段階で、
- *     init() を拡張して Gtk::Application を起動すればよい。
- *   - バージョン文字列は固定値を返す。Inkscape コア側の inkscape-version.h
- *     (version_string 等) への依存は避け、リンク時に未解決シンボルが発生
- *     しないようにする。
- *   - openFile / getDocumentInfo / exportPng は現状ファイルシステム操作のみの
- *     ダミー実装。Inkscape コアリンク後、本実装に置き換える。
+ *   - Inkscape の GUI コア (GTK4/gtkmm4/glibmm) は Android バックエンドを
+ *     持たないため、GUI はここでは初期化しない。将来 GTK-on-Android が
+ *     整った段階で init() を拡張する。
+ *   - SVG の解析・ラスタライズには resvg (純 Rust 実装の SVG レンダラー) を
+ *     静的リンクして使用する。Rust 側は C ABI のみを公開する
+ *     (app/src/main/rust/svg-renderer)。
+ *   - 元の Inkscape C++ コードには一切手を加えない。Android 固有コードは
+ *     このファイルと Rust クレート、Gradle/CMake 設定のみ。
  */
 
 #include <jni.h>
-#include <string>
-#include <fstream>
-#include <sys/stat.h>
+
 #include <android/log.h>
+
 #include <cctype>
+#include <cerrno>
+#include <cstdint>
 #include <cstdio>
+#include <cstring>
+#include <fstream>
+#include <string>
+#include <sys/stat.h>
+#include <vector>
+
+// ---------------------------------------------------------------------------
+// Rust レンダラー (app/src/main/rust/svg-renderer) が公開する C ABI
+// ---------------------------------------------------------------------------
+extern "C" {
+/// レンダラーのバージョン文字列 (静的領域、解放不要)
+const char *inkscape_renderer_version(void);
+
+/// SVG バイト列を PNG にラスタライズする。失敗時は NULL。
+unsigned char *inkscape_render_png(const unsigned char *data, size_t len,
+                                   unsigned int width, unsigned int height,
+                                   size_t *out_len);
+
+/// SVG のドキュメント情報を JSON 文字列で返す。失敗時は NULL。
+char *inkscape_svg_info(const unsigned char *data, size_t len);
+
+/// 直近のエラー文字列を返す (要 inkscape_free_string)。
+char *inkscape_last_error(void);
+
+/// inkscape_render_png が確保したバッファを解放する。
+void inkscape_free(unsigned char *ptr, size_t len);
+
+/// Rust 側が確保した文字列を解放する。
+void inkscape_free_string(char *ptr);
+}
 
 // ログタグ（__android_log_print で使用）
 static const char *kLogTag = "InkscapeJni";
 
-// このモジュール固有のバージョン表示（将来 Inkscape コアから取得するよう拡張可能）
+// このモジュール固有のバージョン表示
 static const char *kInkscapeAndroidVersion = "1.5-dev-android";
 
 // ネイティブライブラリの初期化状態（isNativeReady 用）
@@ -41,12 +71,13 @@ static void logInfo(const char *message)
     __android_log_print(ANDROID_LOG_INFO, kLogTag, "%s", message);
 }
 
+static void logError(const std::string &message)
+{
+    __android_log_print(ANDROID_LOG_ERROR, kLogTag, "%s", message.c_str());
+}
+
 /**
  * Java の jstring を C++ std::string に変換する。
- *
- * jstr が NULL の場合は空文字列を返す。GetStringUTFChars 失敗時（メモリ不足等で
- * Java 側に例外が pending になっている場合）はその例外をクリアして空文字列を
- * 返し、C++ 側へ例外が漏れないようにする。
  */
 static std::string jstringToString(JNIEnv *env, jstring jstr)
 {
@@ -56,8 +87,6 @@ static std::string jstringToString(JNIEnv *env, jstring jstr)
 
     const char *utfChars = env->GetStringUTFChars(jstr, nullptr);
     if (utfChars == nullptr) {
-        // GetStringUTFChars が失敗した場合、既に Java 側で OutOfMemoryError 等が
-        // スローされている。C++ 例外にはならないが pending 例外をクリアしておく。
         if (env->ExceptionCheck()) {
             env->ExceptionClear();
         }
@@ -69,18 +98,14 @@ static std::string jstringToString(JNIEnv *env, jstring jstr)
     return result;
 }
 
-/**
- * 指定パスがファイルまたはディレクトリとして存在するかを stat で確認する。
- */
+/// 指定パスがファイルまたはディレクトリとして存在するかを stat で確認する。
 static bool fileExists(const std::string &path)
 {
     struct stat st;
     return stat(path.c_str(), &st) == 0;
 }
 
-/**
- * パスの拡張子が .svg または .svgz かを大文字小文字を区別せずに簡易チェックする。
- */
+/// パスの拡張子が .svg / .svgz かを大文字小文字を区別せずに判定する。
 static bool isSvgPath(const std::string &path)
 {
     std::string lower = path;
@@ -96,10 +121,7 @@ static bool isSvgPath(const std::string &path)
     return false;
 }
 
-/**
- * 出力パスの親ディレクトリを再帰的に作成する（exportPng のダミー用）。
- * 親ディレクトリ指定がない場合（カレントディレクトリ）は成功とみなす。
- */
+/// 出力パスの親ディレクトリを再帰的に作成する。
 static bool makeParentDirs(const std::string &path)
 {
     size_t slash = path.find_last_of("/\\");
@@ -113,12 +135,10 @@ static bool makeParentDirs(const std::string &path)
         return S_ISDIR(st.st_mode);
     }
 
-    // 親を再帰的に作成してから自分自身を作成
     if (!makeParentDirs(parent)) {
         return false;
     }
     if (mkdir(parent.c_str(), 0755) != 0) {
-        // 既に存在する場合は許容（競合状態等）
         if (stat(parent.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
             return false;
         }
@@ -126,9 +146,7 @@ static bool makeParentDirs(const std::string &path)
     return true;
 }
 
-/**
- * JSON 文字列中でエスケープが必要な文字を置換する簡易ヘルパー。
- */
+/// JSON 文字列中でエスケープが必要な文字を置換する簡易ヘルパー。
 static std::string jsonEscape(const std::string &s)
 {
     std::string out;
@@ -151,49 +169,121 @@ static std::string jsonEscape(const std::string &s)
                 } else {
                     out += c;
                 }
-                break;
         }
     }
     return out;
 }
 
+/// ファイルをバイナリで読み込む。成功時 true。
+static bool readFileBinary(const std::string &path, std::vector<unsigned char> &out)
+{
+    std::ifstream in(path, std::ios::binary);
+    if (!in) {
+        return false;
+    }
+    in.seekg(0, std::ios::end);
+    std::streamoff size = in.tellg();
+    if (size < 0) {
+        return false;
+    }
+    in.seekg(0, std::ios::beg);
+    out.resize(static_cast<size_t>(size));
+    if (size > 0) {
+        in.read(reinterpret_cast<char *>(out.data()), size);
+        if (!in) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/// ファイルへバイナリで書き込む。成功時 true。
+static bool writeFileBinary(const std::string &path, const unsigned char *data, size_t len)
+{
+    std::ofstream out(path, std::ios::binary | std::ios::trunc);
+    if (!out) {
+        return false;
+    }
+    if (len > 0) {
+        out.write(reinterpret_cast<const char *>(data),
+                  static_cast<std::streamsize>(len));
+    }
+    out.flush();
+    return static_cast<bool>(out);
+}
+
+/// Rust 側の直近エラーを取り出して解放する。
+static std::string takeRendererError()
+{
+    char *err = inkscape_last_error();
+    if (err == nullptr) {
+        return std::string("unknown renderer error");
+    }
+    std::string message(err);
+    inkscape_free_string(err);
+    return message;
+}
+
+/// Rust の PNG バッファを Java の byte[] にコピーする。
+static jbyteArray pngToByteArray(JNIEnv *env, unsigned char *png, size_t len)
+{
+    if (png == nullptr || len == 0) {
+        if (png != nullptr) {
+            inkscape_free(png, len);
+        }
+        return nullptr;
+    }
+
+    if (len > static_cast<size_t>(INT32_MAX)) {
+        inkscape_free(png, len);
+        logError("PNG が大きすぎます");
+        return nullptr;
+    }
+
+    jbyteArray result = env->NewByteArray(static_cast<jsize>(len));
+    if (result != nullptr) {
+        env->SetByteArrayRegion(result, 0, static_cast<jsize>(len),
+                                reinterpret_cast<const jbyte *>(png));
+    }
+    inkscape_free(png, len);
+    return result;
+}
+
+/// 指定 SVG を PNG バイト列へレンダリングする。失敗時 NULL。
+static unsigned char *renderSvgBytes(const std::vector<unsigned char> &svg,
+                                     int width, int height, size_t &outLen)
+{
+    outLen = 0;
+    unsigned int w = width > 0 ? static_cast<unsigned int>(width) : 0u;
+    unsigned int h = height > 0 ? static_cast<unsigned int>(height) : 0u;
+    return inkscape_render_png(svg.data(), svg.size(), w, h, &outLen);
+}
+
+// ===========================================================================
+// JNI 実装
+// ===========================================================================
+
 extern "C" {
 
 /**
- * Called automatically when the VM loads the library via System.loadLibrary.
- */
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
-{
-    (void)vm;
-    (void)reserved;
-    try {
-        logInfo("JNI_OnLoad: Inkscape JNI ライブラリがロードされました");
-    } catch (...) {
-        // ログ出力失敗時もバージョンは返してロードを続行
-    }
-    return JNI_VERSION_1_6;
-}
-
-/**
- * Initialise the Inkscape native library.
- * Call this once from Java before using any other native method.
- * @return 0 on success, non-zero on failure / already initialised.
+ * ネイティブライブラリを初期化する。
+ *
+ * @return 0 で成功、非 0 で失敗。
  */
 JNIEXPORT jint JNICALL
 Java_org_inkscape_inkscape_InkscapeNative_init(JNIEnv *env, jobject thiz)
 {
-    (void)env;
     (void)thiz;
     try {
         if (gNativeInitialized) {
-            logInfo("init: すでに初期化済み");
             return 0;
         }
         gNativeInitialized = true;
-        logInfo("init: ネイティブライブラリを初期化しました");
-        return 0; // success
+        __android_log_print(ANDROID_LOG_INFO, kLogTag,
+                            "init: SVG レンダラー %s を初期化しました",
+                            inkscape_renderer_version());
+        return 0;
     } catch (...) {
-        logInfo("init: 予期しない例外が発生しました");
         if (env != nullptr && env->ExceptionCheck()) {
             env->ExceptionClear();
         }
@@ -202,17 +292,17 @@ Java_org_inkscape_inkscape_InkscapeNative_init(JNIEnv *env, jobject thiz)
 }
 
 /**
- * Return the Inkscape version string to the Java side.
+ * Inkscape / レンダラーのバージョン文字列を返す。
  */
 JNIEXPORT jstring JNICALL
 Java_org_inkscape_inkscape_InkscapeNative_getVersion(JNIEnv *env, jobject thiz)
 {
     (void)thiz;
     try {
-        logInfo("getVersion: バージョン文字列を返却します");
-        return env->NewStringUTF(kInkscapeAndroidVersion);
+        std::string version = std::string(kInkscapeAndroidVersion) + " (" +
+                              inkscape_renderer_version() + ")";
+        return env->NewStringUTF(version.c_str());
     } catch (...) {
-        logInfo("getVersion: 予期しない例外が発生しました");
         if (env != nullptr && env->ExceptionCheck()) {
             env->ExceptionClear();
         }
@@ -221,7 +311,7 @@ Java_org_inkscape_inkscape_InkscapeNative_getVersion(JNIEnv *env, jobject thiz)
 }
 
 /**
- * Shut down the Inkscape native library.
+ * ネイティブリソースを解放する。
  */
 JNIEXPORT void JNICALL
 Java_org_inkscape_inkscape_InkscapeNative_shutdown(JNIEnv *env, jobject thiz)
@@ -232,7 +322,6 @@ Java_org_inkscape_inkscape_InkscapeNative_shutdown(JNIEnv *env, jobject thiz)
         gNativeInitialized = false;
         logInfo("shutdown: ネイティブライブラリをシャットダウンしました");
     } catch (...) {
-        logInfo("shutdown: 予期しない例外が発生しました");
         if (env != nullptr && env->ExceptionCheck()) {
             env->ExceptionClear();
         }
@@ -240,11 +329,7 @@ Java_org_inkscape_inkscape_InkscapeNative_shutdown(JNIEnv *env, jobject thiz)
 }
 
 /**
- * SVG ファイルが開けるか確認する（現状はファイル存在チェックのみ。
- * 将来 Inkscape コアリンク後、本実装に置き換える）。
- *
- * @param path 開こうとする SVG ファイルのパス
- * @return 存在すれば JNI_TRUE、存在しなければ JNI_FALSE
+ * SVG ファイルを開けるか確認する。実際にパースして検証する。
  */
 JNIEXPORT jboolean JNICALL
 Java_org_inkscape_inkscape_InkscapeNative_openFile(JNIEnv *env, jobject thiz, jstring path)
@@ -252,17 +337,25 @@ Java_org_inkscape_inkscape_InkscapeNative_openFile(JNIEnv *env, jobject thiz, js
     (void)thiz;
     try {
         std::string filePath = jstringToString(env, path);
-        if (filePath.empty()) {
-            logInfo("openFile: パスが空です");
+        if (filePath.empty() || !fileExists(filePath)) {
+            logError("openFile: ファイルが存在しません: " + filePath);
             return JNI_FALSE;
         }
 
-        bool exists = fileExists(filePath);
-        logInfo(exists ? "openFile: ファイルが存在します"
-                        : "openFile: ファイルが存在しません");
-        return exists ? JNI_TRUE : JNI_FALSE;
+        std::vector<unsigned char> data;
+        if (!readFileBinary(filePath, data) || data.empty()) {
+            logError("openFile: ファイルを読み込めません: " + filePath);
+            return JNI_FALSE;
+        }
+
+        char *info = inkscape_svg_info(data.data(), data.size());
+        if (info == nullptr) {
+            logError("openFile: SVG の解析に失敗しました: " + takeRendererError());
+            return JNI_FALSE;
+        }
+        inkscape_free_string(info);
+        return JNI_TRUE;
     } catch (...) {
-        logInfo("openFile: 予期しない例外が発生しました");
         if (env != nullptr && env->ExceptionCheck()) {
             env->ExceptionClear();
         }
@@ -271,69 +364,83 @@ Java_org_inkscape_inkscape_InkscapeNative_openFile(JNIEnv *env, jobject thiz, js
 }
 
 /**
- * SVG ファイルの情報を JSON 形式で返す（現状はファイルサイズ・存在確認のみの
- * ダミー。将来 Inkscape コアリンク後、本実装に置き換える）。
+ * SVG のドキュメント情報を JSON で返す。
  *
- * 例: {"exists":true,"size":1234,"format":"svg","error":null}
- *
- * @param path 情報を取得したい SVG ファイルのパス
- * @return JSON 形式の情報文字列
+ * 例:
+ * {"exists":true,"path":"...","size":1234,"format":"svg",
+ *  "renderer":"resvg 0.1.0",
+ *  "document":{"width":200.0,"height":200.0,"elements":5,...},"error":null}
  */
 JNIEXPORT jstring JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_getDocumentInfo(JNIEnv *env, jobject thiz, jstring path)
+Java_org_inkscape_inkscape_InkscapeNative_getDocumentInfo(JNIEnv *env, jobject thiz,
+                                                          jstring path)
 {
     (void)thiz;
     try {
         std::string filePath = jstringToString(env, path);
+        std::string json;
 
-        bool exists = false;
-        long long size = 0;
-        std::string format = "svg";
-        std::string errorJson = "null"; // JSON の null（エラーなし）
-
-        if (filePath.empty()) {
-            exists = false;
-            errorJson = "\"empty path\"";
-        } else {
-            struct stat st;
-            exists = (stat(filePath.c_str(), &st) == 0);
-            if (exists) {
-                size = static_cast<long long>(st.st_size);
-                if (!isSvgPath(filePath)) {
-                    format = "unknown";
-                }
-            } else {
-                errorJson = "\"file not found\"";
-            }
+        if (filePath.empty() || !fileExists(filePath)) {
+            json = "{\"exists\":false,\"path\":\"" + jsonEscape(filePath) +
+                   "\",\"size\":0,\"format\":null,\"renderer\":\"" +
+                   jsonEscape(inkscape_renderer_version()) +
+                   "\",\"document\":null,\"error\":\"file not found\"}";
+            return env->NewStringUTF(json.c_str());
         }
 
-        std::string json = "{\"exists\":" + std::string(exists ? "true" : "false")
-                         + ",\"size\":" + std::to_string(size)
-                         + ",\"format\":\"" + jsonEscape(format) + "\""
-                         + ",\"error\":" + errorJson + "}";
+        struct stat st;
+        long long size = 0;
+        if (stat(filePath.c_str(), &st) == 0) {
+            size = static_cast<long long>(st.st_size);
+        }
 
-        logInfo("getDocumentInfo: ドキュメント情報を返却します");
+        std::vector<unsigned char> data;
+        if (!readFileBinary(filePath, data) || data.empty()) {
+            json = "{\"exists\":true,\"path\":\"" + jsonEscape(filePath) +
+                   "\",\"size\":" + std::to_string(size) +
+                   ",\"format\":null,\"renderer\":\"" +
+                   jsonEscape(inkscape_renderer_version()) +
+                   "\",\"document\":null,\"error\":\"read failed\"}";
+            return env->NewStringUTF(json.c_str());
+        }
+
+        char *info = inkscape_svg_info(data.data(), data.size());
+        if (info == nullptr) {
+            std::string err = takeRendererError();
+            json = "{\"exists\":true,\"path\":\"" + jsonEscape(filePath) +
+                   "\",\"size\":" + std::to_string(size) +
+                   ",\"format\":null,\"renderer\":\"" +
+                   jsonEscape(inkscape_renderer_version()) +
+                   "\",\"document\":null,\"error\":\"" + jsonEscape(err) + "\"}";
+            return env->NewStringUTF(json.c_str());
+        }
+
+        std::string document(info);
+        inkscape_free_string(info);
+
+        json = "{\"exists\":true,\"path\":\"" + jsonEscape(filePath) +
+               "\",\"size\":" + std::to_string(size) +
+               ",\"format\":\"" + (isSvgPath(filePath) ? "svg" : "unknown") +
+               "\",\"renderer\":\"" + jsonEscape(inkscape_renderer_version()) +
+               "\",\"document\":" + document + ",\"error\":null}";
         return env->NewStringUTF(json.c_str());
     } catch (...) {
-        logInfo("getDocumentInfo: 予期しない例外が発生しました");
         if (env != nullptr && env->ExceptionCheck()) {
             env->ExceptionClear();
         }
-        std::string json = R"({"exists":false,"size":0,"format":null,"error":"internal error"})";
-        return env->NewStringUTF(json.c_str());
+        return env->NewStringUTF(
+            "{\"exists\":false,\"document\":null,\"error\":\"internal error\"}");
     }
 }
 
 /**
- * SVG を PNG にエクスポートする（現状は入力ファイル存在チェック +
- * 出力ディレクトリ作成のみのダミー。実際のレンダリングは Inkscape コア
- * リンク後に実装する）。
+ * SVG を PNG にエクスポートする。
  *
- * @param inputPath  入力 SVG ファイルのパス
- * @param outputPath 出力先 PNG ファイルのパス
- * @param width      出力画像の幅（ピクセル）
- * @param height     出力画像の高さ（ピクセル）
- * @return 準備ができていれば JNI_TRUE、失敗すれば JNI_FALSE
+ * @param inputPath  入力 SVG パス
+ * @param outputPath 出力 PNG パス
+ * @param width      出力幅 (0 で元サイズ)
+ * @param height     出力高さ (0 で元サイズ)
+ * @return 成功時 JNI_TRUE
  */
 JNIEXPORT jboolean JNICALL
 Java_org_inkscape_inkscape_InkscapeNative_exportPng(JNIEnv *env, jobject thiz,
@@ -341,35 +448,51 @@ Java_org_inkscape_inkscape_InkscapeNative_exportPng(JNIEnv *env, jobject thiz,
                                                     jint width, jint height)
 {
     (void)thiz;
-    (void)width;
-    (void)height;
     try {
         std::string inPath = jstringToString(env, inputPath);
         std::string outPath = jstringToString(env, outputPath);
 
-        if (inPath.empty()) {
-            logInfo("exportPng: 入力パスが空です");
+        if (inPath.empty() || outPath.empty()) {
+            logError("exportPng: パスが空です");
             return JNI_FALSE;
         }
         if (!fileExists(inPath)) {
-            logInfo("exportPng: 入力ファイルが存在しません");
-            return JNI_FALSE;
-        }
-        if (outPath.empty()) {
-            logInfo("exportPng: 出力パスが空です");
+            logError("exportPng: 入力ファイルが存在しません: " + inPath);
             return JNI_FALSE;
         }
 
-        // 出力ディレクトリを作成（ダミー実装）
+        std::vector<unsigned char> svg;
+        if (!readFileBinary(inPath, svg) || svg.empty()) {
+            logError("exportPng: 入力ファイルを読み込めません");
+            return JNI_FALSE;
+        }
+
+        size_t pngLen = 0;
+        unsigned char *png = renderSvgBytes(svg, width, height, pngLen);
+        if (png == nullptr) {
+            logError("exportPng: レンダリング失敗: " + takeRendererError());
+            return JNI_FALSE;
+        }
+
         if (!makeParentDirs(outPath)) {
-            logInfo("exportPng: 出力ディレクトリの作成に失敗しました");
+            logError("exportPng: 出力ディレクトリを作成できません: " + outPath);
+            inkscape_free(png, pngLen);
             return JNI_FALSE;
         }
 
-        logInfo("exportPng: エクスポート準備完了（ダミー実装）");
+        bool ok = writeFileBinary(outPath, png, pngLen);
+        inkscape_free(png, pngLen);
+
+        if (!ok) {
+            logError("exportPng: 出力ファイルに書き込めません: " + outPath);
+            return JNI_FALSE;
+        }
+
+        __android_log_print(ANDROID_LOG_INFO, kLogTag,
+                            "exportPng: %s -> %s (%zu bytes)", inPath.c_str(),
+                            outPath.c_str(), pngLen);
         return JNI_TRUE;
     } catch (...) {
-        logInfo("exportPng: 予期しない例外が発生しました");
         if (env != nullptr && env->ExceptionCheck()) {
             env->ExceptionClear();
         }
@@ -378,9 +501,121 @@ Java_org_inkscape_inkscape_InkscapeNative_exportPng(JNIEnv *env, jobject thiz,
 }
 
 /**
- * ネイティブライブラリが初期化済みか返す。
+ * SVG ファイルを PNG バイト列にレンダリングして返す。
+ * プレビュー表示用。失敗時は null。
  *
- * @return 初期化済みなら JNI_TRUE、そうでなければ JNI_FALSE
+ * @param path   入力 SVG パス
+ * @param width  出力幅 (0 で元サイズ)
+ * @param height 出力高さ (0 で元サイズ)
+ */
+JNIEXPORT jbyteArray JNICALL
+Java_org_inkscape_inkscape_InkscapeNative_renderSvgPng(JNIEnv *env, jobject thiz,
+                                                       jstring path, jint width, jint height)
+{
+    (void)thiz;
+    try {
+        std::string filePath = jstringToString(env, path);
+        if (filePath.empty() || !fileExists(filePath)) {
+            logError("renderSvgPng: ファイルが存在しません: " + filePath);
+            return nullptr;
+        }
+
+        std::vector<unsigned char> svg;
+        if (!readFileBinary(filePath, svg) || svg.empty()) {
+            logError("renderSvgPng: ファイルを読み込めません");
+            return nullptr;
+        }
+
+        size_t pngLen = 0;
+        unsigned char *png = renderSvgBytes(svg, width, height, pngLen);
+        if (png == nullptr) {
+            logError("renderSvgPng: レンダリング失敗: " + takeRendererError());
+            return nullptr;
+        }
+        return pngToByteArray(env, png, pngLen);
+    } catch (...) {
+        if (env != nullptr && env->ExceptionCheck()) {
+            env->ExceptionClear();
+        }
+        return nullptr;
+    }
+}
+
+/**
+ * SVG のバイト列 (content:// URI から読み込んだデータ等) を PNG に
+ * レンダリングして返す。
+ */
+JNIEXPORT jbyteArray JNICALL
+Java_org_inkscape_inkscape_InkscapeNative_renderSvgDataPng(JNIEnv *env, jobject thiz,
+                                                           jbyteArray data, jint width,
+                                                           jint height)
+{
+    (void)thiz;
+    try {
+        if (data == nullptr) {
+            return nullptr;
+        }
+        jsize len = env->GetArrayLength(data);
+        if (len <= 0) {
+            return nullptr;
+        }
+
+        std::vector<unsigned char> svg(static_cast<size_t>(len));
+        env->GetByteArrayRegion(data, 0, len,
+                                reinterpret_cast<jbyte *>(svg.data()));
+
+        size_t pngLen = 0;
+        unsigned char *png = renderSvgBytes(svg, width, height, pngLen);
+        if (png == nullptr) {
+            logError("renderSvgDataPng: レンダリング失敗: " + takeRendererError());
+            return nullptr;
+        }
+        return pngToByteArray(env, png, pngLen);
+    } catch (...) {
+        if (env != nullptr && env->ExceptionCheck()) {
+            env->ExceptionClear();
+        }
+        return nullptr;
+    }
+}
+
+/**
+ * レンダラー (resvg) のバージョン文字列を返す。
+ */
+JNIEXPORT jstring JNICALL
+Java_org_inkscape_inkscape_InkscapeNative_getRendererVersion(JNIEnv *env, jobject thiz)
+{
+    (void)thiz;
+    try {
+        return env->NewStringUTF(inkscape_renderer_version());
+    } catch (...) {
+        if (env != nullptr && env->ExceptionCheck()) {
+            env->ExceptionClear();
+        }
+        return env->NewStringUTF("unknown");
+    }
+}
+
+/**
+ * 直近のレンダリングエラーを返す。
+ */
+JNIEXPORT jstring JNICALL
+Java_org_inkscape_inkscape_InkscapeNative_getLastError(JNIEnv *env, jobject thiz)
+{
+    (void)thiz;
+    try {
+        std::string message = takeRendererError();
+        return env->NewStringUTF(message.c_str());
+    } catch (...) {
+        if (env != nullptr && env->ExceptionCheck()) {
+            env->ExceptionClear();
+        }
+        return env->NewStringUTF("unknown");
+    }
+}
+
+/**
+ * ネイティブライブラリが初期化済みか返す。
  */
 JNIEXPORT jboolean JNICALL
 Java_org_inkscape_inkscape_InkscapeNative_isNativeReady(JNIEnv *env, jobject thiz)
@@ -390,7 +625,6 @@ Java_org_inkscape_inkscape_InkscapeNative_isNativeReady(JNIEnv *env, jobject thi
     try {
         return gNativeInitialized ? JNI_TRUE : JNI_FALSE;
     } catch (...) {
-        logInfo("isNativeReady: 予期しない例外が発生しました");
         if (env != nullptr && env->ExceptionCheck()) {
             env->ExceptionClear();
         }

@@ -3,16 +3,42 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+// ===========================================================================
+// SVG レンダラー (Rust / resvg) のビルド設定
+//
+// Rust クレート app/src/main/rust/svg-renderer を ABI ごとに静的ライブラリへ
+// クロスコンパイルし、CMake から libinkscape-jni.so にリンクする。
+// ===========================================================================
+def ndkVersionString = '26.3.11579264'
+
+def rustCrateDir = file('src/main/rust/svg-renderer')
+def rustOutDir = new File(project.layout.buildDirectory.get().asFile, 'rust')
+
+// Android ABI -> Rust ターゲットトリプル
+def abiToRustTarget = [
+    'arm64-v8a'  : 'aarch64-linux-android',
+    'armeabi-v7a': 'armv7-linux-androideabi',
+    'x86_64'     : 'x86_64-linux-android',
+]
+
+// Android ABI -> NDK clang のプレフィックス
+def abiToClangPrefix = [
+    'arm64-v8a'  : 'aarch64-linux-android',
+    'armeabi-v7a': 'armv7a-linux-androideabi',
+    'x86_64'     : 'x86_64-linux-android',
+]
+
 android {
     namespace 'org.inkscape.inkscape'
     compileSdk 35
+    ndkVersion ndkVersionString
 
     defaultConfig {
         applicationId 'org.inkscape.inkscape'
         minSdk 31
         targetSdk 35
-        versionCode 1
-        versionName '1.5-dev'
+        versionCode 8
+        versionName '1.5-dev.8'
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
@@ -20,7 +46,8 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags '-std=c++17 -frtti -fexceptions'
-                arguments '-DANDROID_STL=c++_shared'
+                arguments '-DANDROID_STL=c++_shared',
+                          "-DINKSCAPE_RUST_LIB_DIR=${rustOutDir.absolutePath}"
             }
         }
         ndk {
@@ -74,6 +101,76 @@ android {
             jniLibs.srcDirs('src/main/jniLibs')
         }
     }
+}
+
+// ===========================================================================
+// Rust レンダラーのクロスコンパイルタスク
+//
+// cargo が PATH に無い環境でも動くよう、~/.cargo/bin/cargo を優先する。
+// ===========================================================================
+def cargoBin = new File(System.getProperty('user.home'), '.cargo/bin/cargo')
+if (!cargoBin.exists()) {
+    cargoBin = new File('cargo')
+}
+
+def ndkRootDir = new File(android.sdkDirectory, "ndk/${ndkVersionString}")
+
+def cargoTasks = abiToRustTarget.collect { abi, target ->
+    def taskName = 'cargoBuild' + abi.replace('-', '_')
+    tasks.register(taskName, Exec) {
+        group = 'rust'
+        description = "SVG レンダラーを ${abi} (${target}) 向けにビルドする"
+
+        workingDir rustCrateDir
+
+        def linker = new File(ndkRootDir,
+            "toolchains/llvm/prebuilt/linux-x86_64/bin/${abiToClangPrefix[abi]}31-clang")
+        def envKey = "CARGO_TARGET_${target.toUpperCase().replace('-', '_')}_LINKER"
+
+        environment envKey, linker.absolutePath
+        environment 'CARGO_TARGET_DIR', new File(rustCrateDir, 'target').absolutePath
+        environment 'PATH', "${System.getenv('PATH')}:${System.getProperty('user.home')}/.cargo/bin"
+        if (System.getenv('RUSTUP_HOME') != null) {
+            environment 'RUSTUP_HOME', System.getenv('RUSTUP_HOME')
+        }
+        if (System.getenv('CARGO_HOME') != null) {
+            environment 'CARGO_HOME', System.getenv('CARGO_HOME')
+        }
+
+        commandLine cargoBin.absolutePath, 'build', '--release', '--target', target
+
+        inputs.dir(new File(rustCrateDir, 'src'))
+        inputs.file(new File(rustCrateDir, 'Cargo.toml'))
+        def lockFile = new File(rustCrateDir, 'Cargo.lock')
+        if (lockFile.exists()) {
+            inputs.file(lockFile)
+        }
+
+        def dest = new File(rustOutDir, "${abi}/libinkscape_svg_renderer.a")
+        outputs.file(dest)
+
+        doLast {
+            def built = new File(rustCrateDir,
+                "target/${target}/release/libinkscape_svg_renderer.a")
+            if (!built.exists()) {
+                throw new GradleException("Rust ビルド成果物が見つかりません: ${built}")
+            }
+            dest.parentFile.mkdirs()
+            dest.bytes = built.bytes
+        }
+    }
+}
+
+// 3 ABI を順番にビルドする（同一 target ディレクトリを共有するため）
+cargoTasks.eachWithIndex { provider, index ->
+    if (index > 0) {
+        def previous = cargoTasks[index - 1]
+        provider.configure { mustRunAfter previous }
+    }
+}
+
+tasks.named('preBuild').configure {
+    dependsOn cargoTasks
 }
 
 dependencies {
