@@ -271,7 +271,7 @@ extern "C" {
  * @return 0 で成功、非 0 で失敗。
  */
 JNIEXPORT jint JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_init(JNIEnv *env, jobject thiz)
+Java_org_inkscape_inkscape_MainActivity_init(JNIEnv *env, jobject thiz)
 {
     (void)thiz;
     try {
@@ -295,7 +295,7 @@ Java_org_inkscape_inkscape_InkscapeNative_init(JNIEnv *env, jobject thiz)
  * Inkscape / レンダラーのバージョン文字列を返す。
  */
 JNIEXPORT jstring JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_getVersion(JNIEnv *env, jobject thiz)
+Java_org_inkscape_inkscape_MainActivity_getVersion(JNIEnv *env, jobject thiz)
 {
     (void)thiz;
     try {
@@ -314,7 +314,7 @@ Java_org_inkscape_inkscape_InkscapeNative_getVersion(JNIEnv *env, jobject thiz)
  * ネイティブリソースを解放する。
  */
 JNIEXPORT void JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_shutdown(JNIEnv *env, jobject thiz)
+Java_org_inkscape_inkscape_MainActivity_shutdown(JNIEnv *env, jobject thiz)
 {
     (void)env;
     (void)thiz;
@@ -332,7 +332,7 @@ Java_org_inkscape_inkscape_InkscapeNative_shutdown(JNIEnv *env, jobject thiz)
  * SVG ファイルを開けるか確認する。実際にパースして検証する。
  */
 JNIEXPORT jboolean JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_openFile(JNIEnv *env, jobject thiz, jstring path)
+Java_org_inkscape_inkscape_MainActivity_openFile(JNIEnv *env, jobject thiz, jstring path)
 {
     (void)thiz;
     try {
@@ -372,7 +372,7 @@ Java_org_inkscape_inkscape_InkscapeNative_openFile(JNIEnv *env, jobject thiz, js
  *  "document":{"width":200.0,"height":200.0,"elements":5,...},"error":null}
  */
 JNIEXPORT jstring JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_getDocumentInfo(JNIEnv *env, jobject thiz,
+Java_org_inkscape_inkscape_MainActivity_getDocumentInfo(JNIEnv *env, jobject thiz,
                                                           jstring path)
 {
     (void)thiz;
@@ -443,7 +443,7 @@ Java_org_inkscape_inkscape_InkscapeNative_getDocumentInfo(JNIEnv *env, jobject t
  * @return 成功時 JNI_TRUE
  */
 JNIEXPORT jboolean JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_exportPng(JNIEnv *env, jobject thiz,
+Java_org_inkscape_inkscape_MainActivity_exportPng(JNIEnv *env, jobject thiz,
                                                     jstring inputPath, jstring outputPath,
                                                     jint width, jint height)
 {
@@ -509,7 +509,7 @@ Java_org_inkscape_inkscape_InkscapeNative_exportPng(JNIEnv *env, jobject thiz,
  * @param height 出力高さ (0 で元サイズ)
  */
 JNIEXPORT jbyteArray JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_renderSvgPng(JNIEnv *env, jobject thiz,
+Java_org_inkscape_inkscape_MainActivity_renderSvgPng(JNIEnv *env, jobject thiz,
                                                        jstring path, jint width, jint height)
 {
     (void)thiz;
@@ -546,7 +546,7 @@ Java_org_inkscape_inkscape_InkscapeNative_renderSvgPng(JNIEnv *env, jobject thiz
  * レンダリングして返す。
  */
 JNIEXPORT jbyteArray JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_renderSvgDataPng(JNIEnv *env, jobject thiz,
+Java_org_inkscape_inkscape_MainActivity_renderSvgDataPng(JNIEnv *env, jobject thiz,
                                                            jbyteArray data, jint width,
                                                            jint height)
 {
@@ -583,7 +583,7 @@ Java_org_inkscape_inkscape_InkscapeNative_renderSvgDataPng(JNIEnv *env, jobject 
  * レンダラー (resvg) のバージョン文字列を返す。
  */
 JNIEXPORT jstring JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_getRendererVersion(JNIEnv *env, jobject thiz)
+Java_org_inkscape_inkscape_MainActivity_getRendererVersion(JNIEnv *env, jobject thiz)
 {
     (void)thiz;
     try {
@@ -600,7 +600,7 @@ Java_org_inkscape_inkscape_InkscapeNative_getRendererVersion(JNIEnv *env, jobjec
  * 直近のレンダリングエラーを返す。
  */
 JNIEXPORT jstring JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_getLastError(JNIEnv *env, jobject thiz)
+Java_org_inkscape_inkscape_MainActivity_getLastError(JNIEnv *env, jobject thiz)
 {
     (void)thiz;
     try {
@@ -618,7 +618,7 @@ Java_org_inkscape_inkscape_InkscapeNative_getLastError(JNIEnv *env, jobject thiz
  * ネイティブライブラリが初期化済みか返す。
  */
 JNIEXPORT jboolean JNICALL
-Java_org_inkscape_inkscape_InkscapeNative_isNativeReady(JNIEnv *env, jobject thiz)
+Java_org_inkscape_inkscape_MainActivity_isNativeReady(JNIEnv *env, jobject thiz)
 {
     (void)env;
     (void)thiz;

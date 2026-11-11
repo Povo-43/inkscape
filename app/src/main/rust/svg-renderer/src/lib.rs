@@ -200,8 +200,9 @@ pub unsafe extern "C" fn inkscape_free_string(ptr: *mut c_char) {
 /// レンダラーのバージョン文字列 (静的領域)。解放不要。
 #[no_mangle]
 pub extern "C" fn inkscape_renderer_version() -> *const c_char {
-    // NUL 終端を含む静的バイト列
-    concat!("resvg ", env!("CARGO_PKG_VERSION"), "\0").as_ptr() as *const c_char
+    // NUL 終端を含む静的バイト列（resvg のメジャーバージョンは Cargo.toml で固定）
+    concat!("resvg 0.49 (inkscape-svg-renderer ", env!("CARGO_PKG_VERSION"), ")\0").as_ptr()
+        as *const c_char
 }
 
 /// 直近のエラー内容を返す。エラーがなければ空文字列。解放には inkscape_free_string を使う。

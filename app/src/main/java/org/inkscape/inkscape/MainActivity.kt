@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.Gravity
@@ -82,6 +83,9 @@ class MainActivity : AppCompatActivity() {
 
         /** プレビュー用の最大レンダリング幅 (px)。 */
         private const val PREVIEW_MAX_WIDTH = 2048
+
+        /** logcat 用タグ。 */
+        private const val TAG = "InkscapeApp"
     }
 
     // ========================================================================
@@ -392,6 +396,11 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
+            Log.i(
+                TAG,
+                "SVG 読み込み成功: ${preview.size} bytes, ${bitmap.width}x${bitmap.height}, info=$info"
+            )
+
             main.post {
                 currentPath = path
                 imageView.setImageBitmap(bitmap)
@@ -468,6 +477,7 @@ class MainActivity : AppCompatActivity() {
                 output.flush()
             } ?: throw IllegalStateException("出力ストリームを開けません")
 
+            Log.i(TAG, "PNG 書き出し成功: ${png.size} bytes -> $uri")
             setStatus("PNG を保存しました (${png.size / 1024} KB)")
         } catch (t: Throwable) {
             setStatus("PNG 書き出しエラー: ${t.message}")

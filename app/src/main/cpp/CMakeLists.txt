@@ -72,10 +72,9 @@ target_link_libraries(inkscape-jni
 # 現時点では GTK4/glibmm 等の依存が Android NDK 向けに整備されていないため、
 # SVG の解析・描画は resvg ベースのレンダラーで行う。
 
-# 出力ファイル名：PREFIX "" で lib プレフィックスを抑制し、
-# Java 側の System.loadLibrary("inkscape-jni") に対応させる（libinkscape-jni.so）。
+# 出力ファイル名: Java 側の System.loadLibrary("inkscape-jni") は
+# libinkscape-jni.so を探すため、既定の "lib" プレフィックスを維持する。
 set_target_properties(inkscape-jni PROPERTIES
-    PREFIX ""
     OUTPUT_NAME "inkscape-jni"
 )
 
