@@ -124,9 +124,14 @@ libc++ のシンボルを参照しないため不要でした)。
   SVG / SVGZ を開く、PNG 書き出し (1× / 2× / 4×)、ピンチズーム、
   ドラッグパン、ページにフィット、ファイルマネージャからの「開く」。
 
+## リリース
+
+- `inkscape-gtkmm-android-0.4.0` (Latest) — gtkmm4 版の最初のリリース。
+  GitHub Release に APK (arm64-v8a / x86_64 / universal) を添付。
+
 ## 次の段階
 
-1. gtkmm4 版をリリース (タグ `inkscape-gtkmm-android-*`)。
+1. gtkmm4 版の機能を Inkscape に近づける。
 2. Inkscape コア (`src/` の SPObject ツリー、2geom、SVG 入出力) を
    Android 向けにビルドする。Boehm GC / boost / lcms2 / gsl などの
    依存が最大の難関。

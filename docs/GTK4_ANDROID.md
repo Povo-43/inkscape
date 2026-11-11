@@ -124,11 +124,12 @@ pixiewood の Gradle は release APK を署名しないため、CI では
 
 1. **GTK4 シェル (現在)** — GTK4 + GtkSvg で SVG の表示・ズーム・
    PNG 書き出し。Android バックエンドの検証。
-2. **gtkmm4 スタックのクロスビルド** — libsigc++ / glibmm / cairomm /
-   pangomm / gtkmm を meson wrap で追加し、UI を gtkmm4 で書き直す。
-   Inkscape の UI コードとの距離を縮める。
-   検証用プローブは `packaging/android-gtkmm4/` にあり、詳細は
-   [`docs/GTKMM4_ANDROID.md`](GTKMM4_ANDROID.md) を参照。
+2. **gtkmm4 スタックのクロスビルド (完了)** — libsigc++ / glibmm /
+   cairomm / pangomm / gtkmm を meson wrap で追加し、UI を gtkmm4 で
+   書き直した。これは `packaging/android-gtkmm4/` に実装されており、
+   `inkscape-gtkmm-android-*` タグでリリースされる。
+   詳細は [`docs/GTKMM4_ANDROID.md`](GTKMM4_ANDROID.md) を参照。
+   こちら (C API 版) は軽量なフォールバックとして維持する。
 3. **Inkscape コアの統合** — Inkscape の `src/` 以下 (SPObject ツリー、
    2geom、livarot、SVG 入出力) を Android 向けにビルドし、GTK4 の
    キャンバスから利用する。Inkscape は CMake ビルドで依存も多い
