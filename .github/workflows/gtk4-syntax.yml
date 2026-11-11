@@ -12,6 +12,8 @@ on:
       - 'packaging/android-gtk4/src/**'
       - 'packaging/android-gtk4/tests/**'
       - 'packaging/android-gtk4/meson.build'
+      - 'packaging/android-gtkmm4/src/**'
+      - 'packaging/android-gtkmm4/meson.build'
       - '.github/workflows/gtk4-syntax.yml'
 
 jobs:
@@ -31,8 +33,10 @@ jobs:
             build-essential \
             pkg-config \
             libgtk-4-dev \
+            libgtkmm-4.0-dev \
             xvfb
           pkg-config --modversion gtk4
+          pkg-config --modversion gtkmm-4.0 || true
 
       - name: 構文チェック
         run: |
@@ -41,6 +45,17 @@ jobs:
           g++ -std=c++17 -fsyntax-only -Wall -Wextra \
             $(pkg-config --cflags gtk4) \
             src/main.cpp src/ink-canvas.cpp src/ink-document.cpp
+
+      # gtkmm4 版の UI コードもホストの gtkmm ヘッダで型チェックする。
+      # Android ビルドでは gtkmm 4.24 を使うが、ここではディストリの
+      # バージョン (4.18 以降) で構文・型の整合性のみを確認する。
+      - name: gtkmm4 UI の構文チェック
+        run: |
+          set -x
+          g++ -std=c++17 -fsyntax-only -Wall -Wextra \
+            -Ipackaging/android-gtkmm4/src -Ipackaging/android-gtk4/src \
+            $(pkg-config --cflags gtkmm-4.0 gtk4) \
+            packaging/android-gtkmm4/src/main.cpp
 
       - name: meson でホストビルド (リンクまで確認)
         run: |

@@ -1,5 +1,5 @@
 project('inkscape-android-gtkmm4', 'c', 'cpp',
-  version: '0.1.0',
+  version: '0.4.0',
   license: 'GPL-2.0-or-later',
   meson_version: '>= 1.8.0',
   default_options: [
@@ -7,6 +7,8 @@ project('inkscape-android-gtkmm4', 'c', 'cpp',
     'warning_level=2',
   ],
 )
+
+fs = import('fs')
 
 # GTK4 本体 (pixiewood が Android バックエンド付きでクロスビルドする)。
 # これを最初に構成することで、GTK が内部でビルドする pango / cairo /
@@ -30,9 +32,32 @@ subproject('pangomm-2.48')
 
 gtkmm_dep = dependency('gtkmm-4.0', version: '>= 4.24.0')
 
-executable('inkscape-android-gtkmm4',
+# キャンバスと SVG 入出力の C 実装は GTK4 (C API) 版と共有する。
+shared_src = '../android-gtk4/src'
+
+inkscape_sources = files(
   'src/main.cpp',
+  shared_src / 'ink-canvas.cpp',
+  shared_src / 'ink-document.cpp',
+)
+
+executable('inkscape-android-gtkmm4',
+  inkscape_sources,
+  include_directories: include_directories('src', shared_src),
   dependencies: [gtkmm_dep, gtk_dep],
   install: true,
   android_exe_type: 'application',
 )
+
+# C++ の標準ライブラリ (libc++_shared.so) を APK に同梱する。
+# gtkmm などが共有 libc++ に依存するため、これがないと起動時に
+# `library "libc++_shared.so" not found` でクラッシュする。
+# 実体はワークフローのステップで NDK から libcxx/<abi>/ にコピーされる。
+cxx_shared_abi = host_machine.cpu_family() == 'aarch64' ? 'arm64-v8a' : 'x86_64'
+cxx_shared = 'libcxx' / cxx_shared_abi / 'libc++_shared.so'
+
+if fs.exists(cxx_shared)
+  install_data(cxx_shared, install_dir: get_option('libdir'))
+else
+  warning('libc++_shared.so が見つかりません (libcxx/' + cxx_shared_abi + '/)。APK が起動時にクラッシュします。')
+endif

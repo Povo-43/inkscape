@@ -29,3 +29,6 @@ key.keystore
 
 # OS
 .DS_Store
+
+# gtkmm 版: CI が NDK からコピーする libc++_shared.so
+packaging/android-gtkmm4/libcxx/
