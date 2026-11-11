@@ -298,13 +298,13 @@ void action_about (GSimpleAction *, GVariant *, gpointer)
 }
 
 const GActionEntry kAppActions[] = {
-  { "open", G_CALLBACK (action_open), nullptr, nullptr, nullptr, { 0, 0, 0 } },
-  { "export", G_CALLBACK (action_export), nullptr, nullptr, nullptr, { 0, 0, 0 } },
-  { "zoom-in", G_CALLBACK (action_zoom_in), nullptr, nullptr, nullptr, { 0, 0, 0 } },
-  { "zoom-out", G_CALLBACK (action_zoom_out), nullptr, nullptr, nullptr, { 0, 0, 0 } },
-  { "zoom-fit", G_CALLBACK (action_zoom_fit), nullptr, nullptr, nullptr, { 0, 0, 0 } },
-  { "zoom-reset", G_CALLBACK (action_zoom_reset), nullptr, nullptr, nullptr, { 0, 0, 0 } },
-  { "about", G_CALLBACK (action_about), nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "open", action_open, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "export", action_export, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "zoom-in", action_zoom_in, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "zoom-out", action_zoom_out, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "zoom-fit", action_zoom_fit, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "zoom-reset", action_zoom_reset, nullptr, nullptr, nullptr, { 0, 0, 0 } },
+  { "about", action_about, nullptr, nullptr, nullptr, { 0, 0, 0 } },
 };
 
 /* ------------------------------------------------------------------ *
