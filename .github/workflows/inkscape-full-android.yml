@@ -110,6 +110,13 @@ jobs:
                "packaging/android-gtkmm4/libcxx/$abi/"
           done
 
+      - name: NDK ツールチェインを PATH に追加
+        run: |
+          NDK="$(ls -d "$ANDROID_HOME"/ndk/* | sort -V | tail -1)"
+          echo "$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin" >> "$GITHUB_PATH"
+          # pkg-config を NDK のものを使うよう設定
+          echo "PKG_CONFIG=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config" >> "$GITHUB_ENV"
+
       - name: Meson / Ninja をセットアップ
         run: |
           python3 -m pip install --upgrade pip
@@ -137,7 +144,7 @@ jobs:
           echo "CCACHE_NOHASHDIR=true" >> "$GITHUB_ENV"
           echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
 
-      - name: クロスファイルに ccache を挿入
+      - name: クロスファイルに ccache と pkg-config を挿入
         run: |
           python3 - <<'PY'
           import re
@@ -147,6 +154,10 @@ jobs:
               src = re.sub(rf"^{key}(\s+)= (.*)$",
                            lambda m: f"{key}{m.group(1)}= ['ccache', {m.group(2)}]",
                            src, flags=re.M)
+          # pkg-config を追加
+          if 'pkg-config' not in src:
+              src = src.replace('[built-in options]', 
+                  "[built-in options]\npkg-config = '/usr/local/lib/android/sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config'\n")
           open(path, "w").write(src)
           PY
 
