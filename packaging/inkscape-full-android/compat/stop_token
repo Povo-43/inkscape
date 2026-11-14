@@ -1,0 +1,77 @@
+#ifndef STOP_TOKEN_COMPAT_H
+#define STOP_TOKEN_COMPAT_H
+#include <atomic>
+#include <condition_variable>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <thread>
+#include <vector>
+namespace std {
+class stop_source;
+struct stop_state {
+    std::atomic<bool> stop_requested_{false};
+    std::mutex mutex_;
+    std::condition_variable cv_;
+    std::vector<std::function<void()>> callbacks_;
+    void request_stop() {
+        bool expected = false;
+        if (stop_requested_.compare_exchange_strong(expected, true)) {
+            { std::lock_guard<std::mutex> lock(mutex_); for (auto& cb : callbacks_) cb(); callbacks_.clear(); }
+            cv_.notify_all();
+        }
+    }
+    bool stop_requested() const noexcept { return stop_requested_.load(std::memory_order_acquire); }
+    void wait() { std::unique_lock<std::mutex> lock(mutex_); cv_.wait(lock, [this] { return stop_requested_.load(); }); }
+};
+class stop_token {
+public:
+    stop_token() = default;
+    bool stop_requested() const noexcept { return state_ && state_->stop_requested(); }
+    bool stop_possible() const noexcept { return state_ != nullptr; }
+private:
+    friend class stop_source;
+    friend class jthread;
+    explicit stop_token(std::shared_ptr<stop_state> s) : state_(std::move(s)) {}
+    std::shared_ptr<stop_state> state_;
+};
+class stop_source {
+public:
+    stop_source() : state_(std::make_shared<stop_state>()) {}
+    bool request_stop() noexcept { if (state_) { state_->request_stop(); return true; } return false; }
+    stop_token get_token() const noexcept { return stop_token(state_); }
+    bool stop_requested() const noexcept { return state_ && state_->stop_requested(); }
+    bool stop_possible() const noexcept { return state_ != nullptr; }
+private:
+    std::shared_ptr<stop_state> state_;
+};
+class jthread {
+public:
+    using native_handle_type = std::thread::native_handle_type;
+    jthread() = default;
+    template <typename F, typename... Args>
+    explicit jthread(F&& f, Args&&... args) : stop_source_(std::make_shared<stop_source>()) {
+        auto ss = stop_source_;
+        auto token = stop_source_->get_token();
+        thread_ = std::thread([ss, token, f = std::forward<F>(f)](auto&&... a) mutable {
+            f(std::move(token), std::forward<decltype(a)>(a)...);
+        }, std::forward<Args>(args)...);
+    }
+    ~jthread() { if (joinable()) { request_stop(); join(); } }
+    jthread(jthread&&) = default;
+    jthread& operator=(jthread&&) = default;
+    bool joinable() const noexcept { return thread_.joinable(); }
+    void join() { if (thread_.joinable()) thread_.join(); }
+    void detach() { thread_.detach(); }
+    std::stop_token get_stop_token() const noexcept { return stop_source_ ? stop_source_->get_token() : std::stop_token{}; }
+    bool request_stop() noexcept { return stop_source_ && stop_source_->request_stop(); }
+    std::thread::id get_id() const noexcept { return thread_.get_id(); }
+    native_handle_type native_handle() { return thread_.native_handle(); }
+    void swap(jthread& other) noexcept { std::swap(thread_, other.thread_); std::swap(stop_source_, other.stop_source_); }
+    static unsigned int hardware_concurrency() noexcept { return std::thread::hardware_concurrency(); }
+private:
+    std::thread thread_;
+    std::shared_ptr<stop_source> stop_source_;
+};
+}
+#endif
