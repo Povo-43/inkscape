@@ -80,7 +80,12 @@ build_cmake() {
     echo "--- Building $name (cmake) ---"
     mkdir -p $BUILD_DIR/$name
     cd $BUILD_DIR/$name
-    cmake $SRC_DIR/$dir \
+    # dir が絶対パスの場合はそのまま、相対パスの場合は SRC_DIR から
+    if [[ "$dir" = /* ]]; then
+        cmake "$dir" \
+    else
+        cmake "$SRC_DIR/$dir" \
+    fi \
         -DCMAKE_TOOLCHAIN_FILE=$NDK_HOME/build/cmake/android.toolchain.cmake \
         -DANDROID_ABI=$TARGET_ARCH \
         -DANDROID_PLATFORM=android-$API \
