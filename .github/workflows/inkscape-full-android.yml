@@ -164,12 +164,28 @@ jobs:
       - name: pixiewood build
         run: pixiewood -C packaging/android-gtkmm4 build
 
-      - name: GTK4 スタックの成果物を確認
+      - name: ビルド出力ディレクトリの確認
         run: |
-          echo "=== ビルド成果物 ==="
-          find packaging/android-gtkmm4/.pixiewood -name "*.so" -o -name "*.a" | head -30
-          echo "=== インクルード ==="
-          find packaging/android-gtkmm4/.pixiewood -name "gtk.h" -o -name "gtkmm.h" | head -5
+          echo "=== pixiewood ビルド後のディレクトリ構造 ==="
+          ls -la packaging/android-gtkmm4/
+          echo ""
+          echo "=== .pixiewood ディレクトリ ==="
+          ls -la packaging/android-gtkmm4/.pixiewood/ 2>/dev/null || echo ".pixiewood not found"
+          echo ""
+          echo "=== .so ファイルの検索 ==="
+          find . -name "*.so" -path "*android*" | head -20
+          echo ""
+          echo "=== .a ファイルの検索 ==="
+          find . -name "*.a" -path "*android*" | head -20
+          echo ""
+          echo "=== subprojects ビルド出力 ==="
+          ls packaging/android-gtkmm4/subprojects/ 2>/dev/null
+          echo ""
+          echo "=== build ディレクトリ検索 ==="
+          find . -maxdepth 3 -type d -name "build*" | head -10
+          echo ""
+          echo "=== meson ビルドディレクトリ ==="
+          find . -maxdepth 3 -type d -name "bin-*" | head -10
 
       - name: GTK4 スタックをアーティファクトとしてアップロード
         uses: actions/upload-artifact@v4
@@ -177,7 +193,10 @@ jobs:
           name: gtk4-stack
           path: |
             packaging/android-gtkmm4/.pixiewood/
+            packaging/android-gtkmm4/subprojects/
+            packaging/android-gtkmm4/bin-*/
           retention-days: 7
+          if-no-files-found: warn
 
       - name: meson ログ (失敗時)
         if: failure()
