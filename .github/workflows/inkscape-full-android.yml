@@ -227,15 +227,15 @@ jobs:
 
       - name: Android NDK をセットアップ
         run: |
-          apt-get update
-          apt-get install -y wget unzip
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
           wget -q https://dl.google.com/android/repository/android-ndk-r27b-linux.zip
           unzip -q android-ndk-r27b-linux.zip -d /opt/
           echo "ANDROID_NDK_HOME=/opt/android-ndk-r27b" >> "$GITHUB_ENV"
 
       - name: ビルド依存をインストール
         run: |
-          apt-get install -y \
+          sudo apt-get install -y \
             build-essential cmake ninja-build pkg-config \
             python3-pip curl xz-utils git \
             autoconf automake libtool gettext
