@@ -234,8 +234,10 @@ jobs:
     timeout-minutes: 360
 
     steps:
-      - name: リポジトリをチェックアウト
+      - name: リポジトリをチェックアウト（submodules 含む）
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: GTK4 スタックをダウンロード
         uses: actions/download-artifact@v4
