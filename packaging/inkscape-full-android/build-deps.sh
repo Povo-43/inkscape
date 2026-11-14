@@ -85,8 +85,13 @@ build_cmake() {
     if [[ "$dir" != /* ]]; then
         src_path="$SRC_DIR/$dir"
     fi
+    # NDK の CMake と Ninja を使用
+    local NDK_CMAKE="$NDK_HOME/build/cmake/android.toolchain.cmake"
+    local NDK_NINJA="$NDK_HOME/build/cmake/ninja"
+    # Makefiles generator に対応するため make を明示
     cmake "$src_path" \
-        -DCMAKE_TOOLCHAIN_FILE=$NDK_HOME/build/cmake/android.toolchain.cmake \
+        -DCMAKE_TOOLCHAIN_FILE="$NDK_CMAKE" \
+        -DCMAKE_MAKE_PROGRAM=make \
         -DANDROID_ABI=$TARGET_ARCH \
         -DANDROID_PLATFORM=android-$API \
         -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
