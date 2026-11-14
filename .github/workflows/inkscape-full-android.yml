@@ -154,10 +154,17 @@ jobs:
               src = re.sub(rf"^{key}(\s+)= (.*)$",
                            lambda m: f"{key}{m.group(1)}= ['ccache', {m.group(2)}]",
                            src, flags=re.M)
-          # pkg-config を追加
+          # pkg-config を [binaries] セクションに追加
           if 'pkg-config' not in src:
-              src = src.replace('[built-in options]', 
-                  "[built-in options]\npkg-config = '/usr/local/lib/android/sdk/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config'\n")
+              # NDK の pkg-config パスを動的に取得
+              import glob
+              ndk_pkgconfig = glob.glob('/usr/local/lib/android/sdk/ndk/*/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config')
+              if ndk_pkgconfig:
+                  pkg_path = ndk_pkgconfig[0]
+                  if '[binaries]' in src:
+                      src = src.replace('[binaries]', f'[binaries]\npkg-config = \'{pkg_path}\'')
+                  else:
+                      src = src + f'\n[binaries]\npkg-config = \'{pkg_path}\'\n'
           open(path, "w").write(src)
           PY
 
