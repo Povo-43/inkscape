@@ -110,8 +110,8 @@ build_autotools() {
 # 1. 2geom (geometry library) - critical for Inkscape
 # =========================================================
 if [ ! -f "$INSTALL_DIR/lib/lib2geom.so" ]; then
-    # Use in-tree 2geom (submodule)
-    INKSCAPE_SRC=${INKSCAPE_SRC:-$(dirname $(dirname $(dirname $0)))}
+    # Use in-tree 2geom (submodule) - GITHUB_WORKSPACE から参照
+    INKSCAPE_SRC=${INKSCAPE_SRC:-$GITHUB_WORKSPACE}
     if [ -d "$INKSCAPE_SRC/src/3rdparty/2geom" ]; then
         echo "--- Building 2geom (from in-tree source) ---"
         build_cmake 2geom "$INKSCAPE_SRC/src/3rdparty/2geom" \
