@@ -195,9 +195,6 @@ jobs:
     needs: build-gtk4-stack
     runs-on: ubuntu-24.04
     timeout-minutes: 360
-    container:
-      image: ghcr.io/povo-43/inkscape-android-build:latest
-      options: --privileged
 
     steps:
       - name: リポジトリをチェックアウト
