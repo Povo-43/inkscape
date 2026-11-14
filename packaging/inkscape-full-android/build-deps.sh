@@ -32,7 +32,9 @@ mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 
 # C++ 標準ライブラリ
 export CXXSTDLIB=-lc++_shared
-export CXXFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include -std=c++20"
+# compat ヘッダーを強制インクルードして C++20 機能を提供
+export COMPAT_INCLUDES="-include $INSTALL_DIR/include/android_fix.h -include $INSTALL_DIR/include/atomic_ref_compat.h -include $INSTALL_DIR/include/format -include $INSTALL_DIR/include/stop_token"
+export CXXFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include -std=c++20 $COMPAT_INCLUDES"
 export CFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include"
 export LDFLAGS="-L$INSTALL_DIR/lib"
 
@@ -108,17 +110,17 @@ build_autotools() {
 # 1. 2geom (geometry library) - critical for Inkscape
 # =========================================================
 if [ ! -f "$INSTALL_DIR/lib/lib2geom.so" ]; then
-    fetch 2geom "https://gitlab.com/inkscape/lib2geom/-/archive/master/lib2geom-master.tar.gz" || {
-        # Fallback: use the in-tree copy
-        echo "Using in-tree 2geom"
-        INKSCAPE_SRC=${INKSCAPE_SRC:-$(dirname $(dirname $(dirname $0)))}
-        if [ -d "$INKSCAPE_SRC/src/3rdparty/2geom" ]; then
-            echo "--- Building 2geom (from in-tree source) ---"
-            build_cmake 2geom "" \
-                -D2GEOM_TESTING=OFF \
-                -D2GEOM_BUILD_SHARED=ON
-        fi
-    }
+    # Use in-tree 2geom (submodule)
+    INKSCAPE_SRC=${INKSCAPE_SRC:-$(dirname $(dirname $(dirname $0)))}
+    if [ -d "$INKSCAPE_SRC/src/3rdparty/2geom" ]; then
+        echo "--- Building 2geom (from in-tree source) ---"
+        build_cmake 2geom "$INKSCAPE_SRC/src/3rdparty/2geom" \
+            -D2GEOM_TESTING=OFF \
+            -D2GEOM_BUILD_SHARED=ON
+    else
+        echo "ERROR: 2geom source not found at $INKSCAPE_SRC/src/3rdparty/2geom"
+        exit 1
+    fi
 fi
 
 # =========================================================
