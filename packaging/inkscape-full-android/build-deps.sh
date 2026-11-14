@@ -81,11 +81,11 @@ build_cmake() {
     mkdir -p $BUILD_DIR/$name
     cd $BUILD_DIR/$name
     # dir が絶対パスの場合はそのまま、相対パスの場合は SRC_DIR から
-    if [[ "$dir" = /* ]]; then
-        cmake "$dir" \
-    else
-        cmake "$SRC_DIR/$dir" \
-    fi \
+    local src_path="$dir"
+    if [[ "$dir" != /* ]]; then
+        src_path="$SRC_DIR/$dir"
+    fi
+    cmake "$src_path" \
         -DCMAKE_TOOLCHAIN_FILE=$NDK_HOME/build/cmake/android.toolchain.cmake \
         -DANDROID_ABI=$TARGET_ARCH \
         -DANDROID_PLATFORM=android-$API \
