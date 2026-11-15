@@ -931,7 +931,7 @@ includedir=\${prefix}/include
 Name: epoxy
 Description: OpenGL function pointer management library
 Version: 1.5.10
-Requires: gl
+Requires:
 Libs: -L${EPOXY_LIB} -lepoxy
 Cflags: -I${EPOXY_INCLUDE}
 PCEOF
