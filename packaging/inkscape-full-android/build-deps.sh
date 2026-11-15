@@ -131,6 +131,31 @@ PCEOF
     echo "Created minimal .pc files for GLib/GObject/GIO/GModule/GThread"
 fi
 
+# Also create libxml-2.0.pc if missing (needed by libcroco)
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libxml-2.0.pc" ]; then
+    echo "--- Creating libxml-2.0.pc ---"
+    
+    # Find libxml2 from pixiewood
+    LIBXML_LIB=$(find "$PIXIEWOOD_DIR" -name "libxml2.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    LIBXML_INCLUDE=$(find "$PIXIEWOOD_DIR/../root" -name "libxml" -type d 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_INCLUDE")
+    
+    cat > "$INSTALL_DIR/lib/pkgconfig/libxml-2.0.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: libxml2
+Description: XML parsing library
+Version: 2.12.6
+Requires:
+Libs: -L${LIBXML_LIB} -lxml2
+Cflags: -I${LIBXML_INCLUDE}/libxml2
+PCEOF
+    
+    echo "Created libxml-2.0.pc"
+fi
+
 # C++ 標準ライブラリ
 export CXXSTDLIB=-lc++_shared
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
