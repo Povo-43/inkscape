@@ -173,23 +173,23 @@ if [ ! -f "$INSTALL_DIR/lib/libdouble-conversion.so" ]; then
 fi
 
 # =========================================================
-# 4. libcroco (CSS parsing) - uses meson
+# 4. libcroco (CSS parsing) - use in-tree submodule
 # =========================================================
 if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
     echo "--- Building libcroco ---"
-    if [ ! -d "$SRC_DIR/libcroco" ]; then
-        git clone --depth 1 https://gitlab.com/inkscape/libcroco.git $SRC_DIR/libcroco
+    INKSCAPE_SRC=${INKSCAPE_SRC:-$GITHUB_WORKSPACE}
+    if [ -d "$INKSCAPE_SRC/src/3rdparty/libcroco" ]; then
+        cd $BUILD_DIR
+        mkdir -p libcroco-build
+        cd libcroco-build
+        # libcroco uses autotools
+        $INKSCAPE_SRC/src/3rdparty/libcroco/configure --host=$TRIPLE --prefix=$INSTALL_DIR --disable-static --enable-shared \
+            CC=$CC CXX=$CXX CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" 2>&1 | tail -10
+        make -j$JOBS 2>&1 | tail -10
+        make install 2>&1 | tail -10
+    else
+        echo "WARNING: libcroco submodule not found, skipping"
     fi
-    cd $BUILD_DIR
-    mkdir -p libcroco-build
-    cd libcroco-build
-    meson setup . $SRC_DIR/libcroco \
-        --prefix=$INSTALL_DIR \
-        --buildtype=release \
-        -Ddefault_library=shared \
-        --cross-file=/dev/null 2>&1 | tail -10
-    ninja -j$JOBS 2>&1 | tail -10
-    ninja install 2>&1 | tail -10
 fi
 
 # =========================================================
