@@ -33,6 +33,8 @@ mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 
 # Global PKG_CONFIG_PATH for all builds
 export PKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
+# PKG_CONFIG_LIBDIR tells pkg-config to ONLY look in cross-compile directories
+export PKG_CONFIG_LIBDIR="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
 
 # C++ 標準ライブラリ
 export CXXSTDLIB=-lc++_shared
@@ -74,12 +76,12 @@ build_cmake() {
     if [[ "$dir" != /* ]]; then
         src_path="$SRC_DIR/$dir"
     fi
-    # Set PKG_CONFIG_PATH and PKG_CONFIG for cross-compile pkg-config
-    local CROSS_PKG_CONFIG="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config"
+    # Set PKG_CONFIG_LIBDIR and PKG_CONFIG_PATH for cross-compile pkg-config
+    export PKG_CONFIG_LIBDIR="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
     export PKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
-    export PKG_CONFIG="$CROSS_PKG_CONFIG"
-    echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
-    $CROSS_PKG_CONFIG --list-all 2>/dev/null | grep -E "glib|croco" | head -5 || true
+    export PKG_CONFIG=/usr/bin/pkg-config
+    echo "PKG_CONFIG_LIBDIR=$PKG_CONFIG_LIBDIR"
+    /usr/bin/pkg-config --list-all 2>/dev/null | grep -E "glib|croco" | head -5 || true
     cmake "$src_path" \
         -G Ninja \
         -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
@@ -92,7 +94,7 @@ build_cmake() {
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_C_FLAGS="$CFLAGS" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-        -DPKG_CONFIG_EXECUTABLE="$CROSS_PKG_CONFIG" \
+        -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config \
         -DPKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig" \
         "$@" 2>&1 | tail -20
     /usr/local/bin/ninja -j$JOBS 2>&1 | tail -20
@@ -195,22 +197,15 @@ if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
     mkdir -p libcroco-build
     cd libcroco-build
     
-    # Create cross-compile pkg-config wrapper
-    CROSS_PKG_CONFIG="$BUILD_DIR/libcroco-build/pkg-config-cross"
-    cat > "$CROSS_PKG_CONFIG" << 'PKGEOF'
-#!/bin/bash
-# Cross-compile pkg-config wrapper
-# Uses host pkg-config but with cross-compile search paths
-export PKG_CONFIG_LIBDIR="${PKG_CONFIG_PATH}"
-export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}"
-exec /usr/bin/pkg-config "$@"
-PKGEOF
-    chmod +x "$CROSS_PKG_CONFIG"
-    
-    echo "Using cross-compile pkg-config: $CROSS_PKG_CONFIG"
+    # Set cross-compile pkg-config environment directly
+    # PKG_CONFIG_PATH is already set globally with pixiewood .pc files
+    # PKG_CONFIG_LIBDIR tells pkg-config to ONLY look in cross-compile dirs
+    export PKG_CONFIG_LIBDIR="${PKG_CONFIG_PATH}"
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}"
+    echo "Using host pkg-config with cross-compile PKG_CONFIG_LIBDIR: $PKG_CONFIG_LIBDIR"
     echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
-    export PKG_CONFIG="$CROSS_PKG_CONFIG"
-    $CROSS_PKG_CONFIG --list-all 2>/dev/null | grep -E "glib|croco" | head -5 || true
+    /usr/bin/pkg-config --list-all 2>/dev/null | grep -E "glib|croco" | head -5 || true
+    export PKG_CONFIG=/usr/bin/pkg-config
     
     cmake "$SRC_DIR/libcroco" \
         -G Ninja \
@@ -224,7 +219,7 @@ PKGEOF
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_C_FLAGS="$CFLAGS" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-        -DPKG_CONFIG_EXECUTABLE="$CROSS_PKG_CONFIG" \
+        -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config \
         2>&1 | tail -20
     /usr/local/bin/ninja -j$JOBS 2>&1 | tail -20
     /usr/local/bin/ninja install 2>&1 | tail -20
