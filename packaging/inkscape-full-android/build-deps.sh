@@ -56,7 +56,8 @@ if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glib-2.0.pc" ]; then
     
     # Find actual library locations
     GLIB_LIB=$(find "$PIXIEWOOD_DIR" -name "libglib-2.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    GLIB_INCLUDE=$(find "$PIXIEWOOD_DIR/../root" -name "glib.h" 2>/dev/null | head -1 | xargs dirname 2>/dev/null | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_INCLUDE")
+    # glib.h is at ${PIXIEWOOD_DIR}/root/include/glib-2.0/glib.h
+    GLIB_INCLUDE="${PIXIEWOOD_DIR}/root/include"
     
     cat > "$INSTALL_DIR/lib/pkgconfig/glib-2.0.pc" << PCEOF
 prefix=$INSTALL_DIR
@@ -137,7 +138,8 @@ if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libxml-2.0.pc" ]; then
     
     # Find libxml2 from pixiewood
     LIBXML_LIB=$(find "$PIXIEWOOD_DIR" -name "libxml2.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    LIBXML_INCLUDE=$(find "$PIXIEWOOD_DIR/../root" -name "libxml" -type d 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_INCLUDE")
+    # libxml is at ${PIXIEWOOD_DIR}/root/include/libxml2
+    LIBXML_INCLUDE="${PIXIEWOOD_DIR}/root/include"
     
     cat > "$INSTALL_DIR/lib/pkgconfig/libxml-2.0.pc" << PCEOF
 prefix=$INSTALL_DIR
