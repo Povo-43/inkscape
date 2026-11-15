@@ -36,6 +36,101 @@ export PKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTAL
 # PKG_CONFIG_LIBDIR tells pkg-config to ONLY look in cross-compile directories
 export PKG_CONFIG_LIBDIR="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
 
+# Copy pixiewood pkg-config files FIRST, before any dependency builds
+if [ -n "$PIXIEWOOD_DIR" ] && [ -d "$PIXIEWOOD_DIR" ]; then
+    echo "--- Copying pixiewood pkg-config files ---"
+    echo "Searching for .pc files in $PIXIEWOOD_DIR"
+    find "$PIXIEWOOD_DIR" -name "*.pc" -exec echo "Found: {}" \; -exec cp {} $INSTALL_DIR/lib/pkgconfig/ \; 2>/dev/null || true
+    echo "Installed .pc files:"
+    ls -la $INSTALL_DIR/lib/pkgconfig/ | head -20
+fi
+
+# If no .pc files were found, create minimal .pc files for critical dependencies
+# This is needed because pixiewood may not install .pc files
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glib-2.0.pc" ]; then
+    echo "--- Creating minimal .pc files for cross-compile dependencies ---"
+    
+    # Get library paths from pixiewood build output
+    PIXIEWOOD_LIB="$PIXIEWOOD_DIR"
+    PIXIEWOOD_INCLUDE="$PIXIEWOOD_DIR/../root/include"
+    
+    # Find actual library locations
+    GLIB_LIB=$(find "$PIXIEWOOD_DIR" -name "libglib-2.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    GLIB_INCLUDE=$(find "$PIXIEWOOD_DIR/../root" -name "glib.h" 2>/dev/null | head -1 | xargs dirname 2>/dev/null | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_INCLUDE")
+    
+    cat > "$INSTALL_DIR/lib/pkgconfig/glib-2.0.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: GLib
+Description: Core application library
+Version: 2.90.0
+Requires:
+Libs: -L${GLIB_LIB} -lglib-2.0
+Cflags: -I${GLIB_INCLUDE}/glib-2.0 -I${GLIB_INCLUDE}/glib-2.0/include
+PCEOF
+    
+    cat > "$INSTALL_DIR/lib/pkgconfig/gobject-2.0.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: GObject
+Description: Object/type system for GLib
+Version: 2.90.0
+Requires: glib-2.0
+Libs: -L${GLIB_LIB} -lgobject-2.0
+Cflags: -I${GLIB_INCLUDE}/glib-2.0 -I${GLIB_INCLUDE}/glib-2.0/include
+PCEOF
+    
+    cat > "$INSTALL_DIR/lib/pkgconfig/gio-2.0.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: GIO
+Description: I/O abstraction library
+Version: 2.90.0
+Requires: glib-2.0, gobject-2.0
+Libs: -L${GLIB_LIB} -lgio-2.0
+Cflags: -I${GLIB_INCLUDE}/glib-2.0 -I${GLIB_INCLUDE}/glib-2.0/include
+PCEOF
+    
+    cat > "$INSTALL_DIR/lib/pkgconfig/gmodule-2.0.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: GModule
+Description: Dynamic module loading for GLib
+Version: 2.90.0
+Requires: glib-2.0
+Libs: -L${GLIB_LIB} -lgmodule-2.0
+Cflags: -I${GLIB_INCLUDE}/glib-2.0 -I${GLIB_INCLUDE}/glib-2.0/include
+PCEOF
+    
+    cat > "$INSTALL_DIR/lib/pkgconfig/gthread-2.0.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: GThread
+Description: Thread support for GLib
+Version: 2.90.0
+Requires: glib-2.0
+Libs: -L${GLIB_LIB} -lgthread-2.0
+Cflags: -I${GLIB_INCLUDE}/glib-2.0 -I${GLIB_INCLUDE}/glib-2.0/include
+PCEOF
+    
+    echo "Created minimal .pc files for GLib/GObject/GIO/GModule/GThread"
+fi
+
 # C++ 標準ライブラリ
 export CXXSTDLIB=-lc++_shared
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
@@ -243,17 +338,6 @@ if [ ! -f "$INSTALL_DIR/lib/libpotrace.so" ]; then
     POTRACE_VER=1.16
     fetch potrace "https://github.com/freetype/freetype/archive/refs/tags/VER-2-16-1.tar.gz" || true
     # potrace is included in freetype, skip standalone build
-fi
-
-# =========================================================
-# 7. Copy pixiewood pkg-config files
-# =========================================================
-if [ -n "$PIXIEWOOD_DIR" ] && [ -d "$PIXIEWOOD_DIR" ]; then
-    echo "--- Copying pixiewood pkg-config files ---"
-    echo "Searching for .pc files in $PIXIEWOOD_DIR"
-    find "$PIXIEWOOD_DIR" -name "*.pc" -exec echo "Found: {}" \; -exec cp {} $INSTALL_DIR/lib/pkgconfig/ \; 2>/dev/null || true
-    echo "Installed .pc files:"
-    ls -la $INSTALL_DIR/lib/pkgconfig/ | head -20
 fi
 
 echo ""
