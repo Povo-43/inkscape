@@ -379,7 +379,7 @@ jobs:
             -DWITH_DBUS=OFF \
             -DWITH_GNOME_VFS=OFF \
             -DWITH_POPPLER=OFF \
-            -DWITH_POTRACE=ON \
+            -DWITH_POTRACE=OFF \
             -DWITH_VISIO=OFF \
             -DWITH_WPG=OFF \
             -DWITH_CDR=OFF \
