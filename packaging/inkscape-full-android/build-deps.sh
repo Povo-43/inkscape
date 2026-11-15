@@ -503,6 +503,69 @@ PCEOF
     echo "Created icu-i18n.pc"
 fi
 
+# libpng
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libpng.pc" ]; then
+    echo "--- Creating libpng.pc ---"
+    PNG_LIB=$(find "$PIXIEWOOD_DIR" -name "libpng.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    PNG_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/libpng.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: libpng
+Description: PNG image format library
+Version: 1.6.43
+Requires: zlib
+Libs: -L${PNG_LIB} -lpng
+Cflags: -I${PNG_INCLUDE}
+PCEOF
+    echo "Created libpng.pc"
+fi
+
+# zlib
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/zlib.pc" ]; then
+    echo "--- Creating zlib.pc ---"
+    ZLIB_LIB=$(find "$PIXIEWOOD_DIR" -name "libz.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    ZLIB_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/zlib.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.3
+Requires:
+Libs: -L${ZLIB_LIB} -lz
+Cflags: -I${ZLIB_INCLUDE}
+PCEOF
+    echo "Created zlib.pc"
+fi
+
+# jpeg
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libjpeg.pc" ]; then
+    echo "--- Creating libjpeg.pc ---"
+    JPEG_LIB=$(find "$PIXIEWOOD_DIR" -name "libjpeg.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    JPEG_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/libjpeg.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: libjpeg
+Description: JPEG image format library
+Version: 9e
+Requires:
+Libs: -L${JPEG_LIB} -ljpeg
+Cflags: -I${JPEG_INCLUDE}
+PCEOF
+    echo "Created libjpeg.pc"
+fi
+
 # intl (libintl)
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/intl.pc" ]; then
     echo "--- Creating intl.pc ---"
