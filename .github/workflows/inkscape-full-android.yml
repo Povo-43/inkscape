@@ -363,6 +363,13 @@ jobs:
             -DCMAKE_SHARED_LINKER_FLAGS="-L$INSTALL/lib -lc++_shared" \
             -DPKG_CONFIG_EXECUTABLE=/usr/local/bin/pkg-config-cross \
             -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/packaging/inkscape-full-android/cmake" \
+            -DCMAKE_PREFIX_PATH="$INSTALL;$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64" \
+            -DPNG_INCLUDE_DIR="$INSTALL/include" \
+            -DPNG_LIBRARY="$INSTALL/lib/libpng.so" \
+            -DZLIB_INCLUDE_DIR="$INSTALL/include" \
+            -DZLIB_LIBRARY="$INSTALL/lib/libz.so" \
+            -DJPEG_INCLUDE_DIR="$INSTALL/include" \
+            -DJPEG_LIBRARY="$INSTALL/lib/libjpeg.so" \
             -DWITH_PYTHON=OFF \
             -DWITH_IMAGE_MAGICK=OFF \
             -DWITH_OPENMP=OFF \
