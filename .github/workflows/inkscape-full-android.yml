@@ -343,11 +343,19 @@ jobs:
           mkdir -p build-android-arm64
           cd build-android-arm64
 
+          # Create pkg-config wrapper for cross-compilation
+          cat > /usr/local/bin/pkg-config-cross << 'PKGEOF'
+#!/bin/bash
+export PKG_CONFIG_LIBDIR="/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64:/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig"
+export PKG_CONFIG_PATH="/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64:/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig"
+exec /usr/bin/pkg-config "$@"
+PKGEOF
+          chmod +x /usr/local/bin/pkg-config-cross
+
           # pixiewood + 手動ビルドの依存を pkg-config に見せる
-          # PKG_CONFIG_LIBDIR を設定して host pkg-config が cross-compile .pc を使えるようにする
           export PKG_CONFIG_LIBDIR="$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64:$INSTALL/lib/pkgconfig"
           export PKG_CONFIG_PATH="$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64:$INSTALL/lib/pkgconfig"
-          export PKG_CONFIG=/usr/bin/pkg-config
+          export PKG_CONFIG=/usr/local/bin/pkg-config-cross
           export CMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64:$INSTALL"
 
           cmake .. \
@@ -364,7 +372,7 @@ jobs:
             -DCMAKE_CXX_FLAGS="-DANDROID -fPIC -I$INSTALL/include -std=c++20" \
             -DCMAKE_EXE_LINKER_FLAGS="-L$INSTALL/lib -lc++_shared" \
             -DCMAKE_SHARED_LINKER_FLAGS="-L$INSTALL/lib -lc++_shared" \
-            -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config \
+            -DPKG_CONFIG_EXECUTABLE=/usr/local/bin/pkg-config-cross \
             -DWITH_PYTHON=OFF \
             -DWITH_IMAGE_MAGICK=OFF \
             -DWITH_OPENMP=OFF \
@@ -388,11 +396,11 @@ jobs:
             -DWITH_LIBREVENGE=OFF \
             -DWITH_BOOST=ON \
             -DWITH_GTEST=OFF \
-            2>&1 | tail -50
+            2>&1
 
           # フルビルド（全ターゲット）
           echo "=== Starting full Inkscape build ==="
-          /usr/local/bin/ninja -j$JOBS 2>&1 | tail -100
+          /usr/local/bin/ninja -j$JOBS 2>&1
 
           # 結果確認
           echo "=== Build artifacts ==="
