@@ -194,12 +194,24 @@ if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
     cd $BUILD_DIR
     mkdir -p libcroco-build
     cd libcroco-build
-    # Use system pkg-config with cross-compile search path
-    # NDK doesn't have pkg-config, so use host pkg-config with PKG_CONFIG_PATH
-    echo "Using host pkg-config: $(which pkg-config)"
+    
+    # Create cross-compile pkg-config wrapper
+    CROSS_PKG_CONFIG="$BUILD_DIR/libcroco-build/pkg-config-cross"
+    cat > "$CROSS_PKG_CONFIG" << 'PKGEOF'
+#!/bin/bash
+# Cross-compile pkg-config wrapper
+# Uses host pkg-config but with cross-compile search paths
+export PKG_CONFIG_LIBDIR="${PKG_CONFIG_PATH}"
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}"
+exec /usr/bin/pkg-config "$@"
+PKGEOF
+    chmod +x "$CROSS_PKG_CONFIG"
+    
+    echo "Using cross-compile pkg-config: $CROSS_PKG_CONFIG"
     echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
-    pkg-config --list-all 2>/dev/null | grep -E "glib|croco" | head -5 || true
-    export PKG_CONFIG=$(which pkg-config)
+    export PKG_CONFIG="$CROSS_PKG_CONFIG"
+    $CROSS_PKG_CONFIG --list-all 2>/dev/null | grep -E "glib|croco" | head -5 || true
+    
     cmake "$SRC_DIR/libcroco" \
         -G Ninja \
         -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
@@ -212,7 +224,7 @@ if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_C_FLAGS="$CFLAGS" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-        -DPKG_CONFIG_EXECUTABLE=$(which pkg-config) \
+        -DPKG_CONFIG_EXECUTABLE="$CROSS_PKG_CONFIG" \
         2>&1 | tail -20
     /usr/local/bin/ninja -j$JOBS 2>&1 | tail -20
     /usr/local/bin/ninja install 2>&1 | tail -20
