@@ -851,6 +851,7 @@ if [ ! -f "$INSTALL_DIR/lib/cmake/Boost-1.19.0/BoostConfig.cmake" ]; then
     cat > "$INSTALL_DIR/lib/cmake/Boost-1.19.0/BoostConfig.cmake" << PCEOF
 # Boost CMake configuration for Android cross-compile
 set(Boost_VERSION 101900)
+set(Boost_VERSION_STRING "1.19.0")
 set(Boost_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
 set(Boost_LIBRARY_DIRS "\${_IMPORT_PREFIX}/lib")
 set(Boost_FOUND TRUE)
