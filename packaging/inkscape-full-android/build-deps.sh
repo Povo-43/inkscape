@@ -34,6 +34,8 @@ mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 # C++ 標準ライブラリ
 export CXXSTDLIB=-lc++_shared
 # compat ヘッダーを強制インクルードして C++20 機能を提供
+# android_fix.h を最初にインクルード（stdint 型定義）
+# それ以外は個別にインクルード（atomic_ref_compat.h が <atomic> を含むため順序重要）
 export COMPAT_INCLUDES="-include $INSTALL_DIR/include/android_fix.h -include $INSTALL_DIR/include/atomic_ref_compat.h -include $INSTALL_DIR/include/format -include $INSTALL_DIR/include/stop_token"
 export CXXFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include -std=c++20 $COMPAT_INCLUDES"
 export CFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include"
