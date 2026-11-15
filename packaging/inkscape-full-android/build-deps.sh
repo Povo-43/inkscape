@@ -892,6 +892,30 @@ endif()
 PCEOF
     echo "Created BoostConfigVersion.cmake"
 fi
+
+# libxslt
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libxslt.pc" ]; then
+    echo "--- Creating libxslt.pc ---"
+    XSLT_LIB=$(find "$PIXIEWOOD_DIR" -name "libxslt.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    XSLT_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/libxslt.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: libxslt
+Description: XSLT processing library
+Version: 1.1.38
+Requires: libxml-2.0
+Libs: -L${XSLT_LIB} -lxslt
+Cflags: -I${XSLT_INCLUDE}/libxslt
+PCEOF
+    echo "Created libxslt.pc"
+fi
+
+# libxml-2.0 (update to include libxml2 for libxslt)
+# Already created earlier
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
 # 必要な箇所で個別にインクルードする
 export CXXFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include -std=c++20"
