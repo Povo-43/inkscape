@@ -308,44 +308,13 @@ if [ ! -f "$INSTALL_DIR/lib/libdouble-conversion.so" ]; then
 fi
 
 # =========================================================
-# 4. libcroco (CSS parsing) - use CMake from gitlab.com/inkscape/libcroco
+# 4. libcroco (CSS parsing) - SKIP: let Inkscape CMake build it as subproject
 # =========================================================
-if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
-    echo "--- Building libcroco ---"
-    if [ ! -d "$SRC_DIR/libcroco" ]; then
-        git clone --depth 1 https://gitlab.com/inkscape/libcroco.git $SRC_DIR/libcroco
-    fi
-    cd $BUILD_DIR
-    mkdir -p libcroco-build
-    cd libcroco-build
-    
-    # Set cross-compile pkg-config environment directly
-    # PKG_CONFIG_PATH is already set globally with pixiewood .pc files
-    # PKG_CONFIG_LIBDIR tells pkg-config to ONLY look in cross-compile dirs
-    export PKG_CONFIG_LIBDIR="${PKG_CONFIG_PATH}"
-    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}"
-    echo "Using host pkg-config with cross-compile PKG_CONFIG_LIBDIR: $PKG_CONFIG_LIBDIR"
-    echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
-    /usr/bin/pkg-config --list-all 2>/dev/null | grep -E "glib|croco" | head -5 || true
-    export PKG_CONFIG=/usr/bin/pkg-config
-    
-    cmake "$SRC_DIR/libcroco" \
-        -G Ninja \
-        -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
-        -DCMAKE_C_COMPILER="$CC" \
-        -DCMAKE_CXX_COMPILER="$CXX" \
-        -DCMAKE_AR="$AR" \
-        -DCMAKE_STRIP="$STRIP" \
-        -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_SHARED_LIBS=ON \
-        -DCMAKE_C_FLAGS="$CFLAGS" \
-        -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-        -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config \
-        2>&1 | tail -20
-    /usr/local/bin/ninja -j$JOBS 2>&1 | tail -20
-    /usr/local/bin/ninja install 2>&1 | tail -20
-fi
+# libcroco is in Inkscape's src/3rdparty/libcroco as a git submodule.
+# Inkscape's CMake will build it automatically as part of the main build.
+# We just need the .pc files for glib/gobject/gio/gmodule/gthread/libxml2
+# which we create above.
+echo "--- Skipping libcroco (built by Inkscape CMake) ---"
 
 # =========================================================
 # 5. lcms2 (color management)
