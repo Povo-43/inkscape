@@ -916,6 +916,27 @@ fi
 
 # libxml-2.0 (update to include libxml2 for libxslt)
 # Already created earlier
+
+# epoxy
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/epoxy.pc" ]; then
+    echo "--- Creating epoxy.pc ---"
+    EPOXY_LIB=$(find "$PIXIEWOOD_DIR" -name "libepoxy.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    EPOXY_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/epoxy.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: epoxy
+Description: OpenGL function pointer management library
+Version: 1.5.10
+Requires: gl
+Libs: -L${EPOXY_LIB} -lepoxy
+Cflags: -I${EPOXY_INCLUDE}
+PCEOF
+    echo "Created epoxy.pc"
+fi
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
 # 必要な箇所で個別にインクルードする
 export CXXFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include -std=c++20"
