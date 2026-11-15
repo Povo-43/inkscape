@@ -85,20 +85,23 @@ build_cmake() {
     if [[ "$dir" != /* ]]; then
         src_path="$SRC_DIR/$dir"
     fi
-    # NDK の CMake ツールチェインを使用（Ninja generator 必須）
-    local NDK_CMAKE="$NDK_HOME/build/cmake/android.toolchain.cmake"
-    # Ninja が見つからない場合の対策：CMAKE_MAKE_PROGRAM を明示
+    # NDK の clang を直接指定してクロスコンパイル
     cmake "$src_path" \
         -G Ninja \
-        -DCMAKE_TOOLCHAIN_FILE="$NDK_CMAKE" \
         -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
-        -DANDROID_ABI=$TARGET_ARCH \
-        -DANDROID_PLATFORM=android-$API \
+        -DCMAKE_C_COMPILER="$CC" \
+        -DCMAKE_CXX_COMPILER="$CXX" \
+        -DCMAKE_AR="$AR" \
+        -DCMAKE_STRIP="$STRIP" \
         -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
         -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_C_FLAGS="$CFLAGS" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+        -DCMAKE_SYSTEM_NAME=Android \
+        -DCMAKE_SYSTEM_VERSION=$API \
+        -DCMAKE_ANDROID_ARCH_ABI=$TARGET_ARCH \
+        -DCMAKE_ANDROID_NDK=$NDK_HOME \
         "$@" 2>&1 | tail -5
     /usr/local/bin/ninja -j$JOBS 2>&1 | tail -5
     /usr/local/bin/ninja install 2>&1 | tail -5
