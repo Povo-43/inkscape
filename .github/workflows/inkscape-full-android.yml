@@ -310,10 +310,8 @@ jobs:
           sed -i 's/find_package(Boost 1.60 CONFIG REQUIRED)/find_package(Boost CONFIG REQUIRED)/' src/3rdparty/2geom/CMakeLists.txt
 
           # 8. Make Potrace conditional on WITH_POTRACE
-          sed -i '/find_package(Potrace REQUIRED)/,/list(APPEND INKSCAPE_LIBS Potrace::Potrace)/{
-            c\
-if(WITH_POTRACE)\n    find_package(Potrace REQUIRED)\n    list(APPEND INKSCAPE_LIBS Potrace::Potrace)\nendif()
-          }' CMakeScripts/DefineDependsandFlags.cmake
+          sed -i 's/find_package(Potrace REQUIRED)/if(WITH_POTRACE)\n    find_package(Potrace REQUIRED)/' CMakeScripts/DefineDependsandFlags.cmake
+          sed -i 's/list(APPEND INKSCAPE_LIBS Potrace::Potrace)/    list(APPEND INKSCAPE_LIBS Potrace::Potrace)\nendif()/' CMakeScripts/DefineDependsandFlags.cmake
 
           echo "Patches applied"
 
