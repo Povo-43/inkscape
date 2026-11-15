@@ -167,6 +167,90 @@ fi
 # Create missing .pc files for pixiewood libraries (not installed by pixiewood)
 # These are required by Inkscape CMake
 
+# cairo
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/cairo.pc" ]; then
+    echo "--- Creating cairo.pc ---"
+    CAIRO_LIB=$(find "$PIXIEWOOD_DIR" -name "libcairo.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    CAIRO_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/cairo.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: cairo
+Description: Vector graphics library
+Version: 1.18.0
+Requires:
+Libs: -L${CAIRO_LIB} -lcairo
+Cflags: -I${CAIRO_INCLUDE}/cairo
+PCEOF
+    echo "Created cairo.pc"
+fi
+
+# cairo-gobject
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/cairo-gobject.pc" ]; then
+    echo "--- Creating cairo-gobject.pc ---"
+    CAIRO_GOBJECT_LIB=$(find "$PIXIEWOOD_DIR" -name "libcairo-gobject.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    CAIRO_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/cairo-gobject.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: cairo-gobject
+Description: Cairo GObject bindings
+Version: 1.18.0
+Requires: cairo
+Libs: -L${CAIRO_GOBJECT_LIB} -lcairo-gobject
+Cflags: -I${CAIRO_INCLUDE}/cairo
+PCEOF
+    echo "Created cairo-gobject.pc"
+fi
+
+# freetype2
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/freetype2.pc" ]; then
+    echo "--- Creating freetype2.pc ---"
+    FT_LIB=$(find "$PIXIEWOOD_DIR" -name "libfreetype.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    FT_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/freetype2.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: freetype2
+Description: FreeType 2 font engine
+Version: 2.13.0
+Requires:
+Libs: -L${FT_LIB} -lfreetype
+Cflags: -I${FT_INCLUDE}/freetype2
+PCEOF
+    echo "Created freetype2.pc"
+fi
+
+# pango-1.0
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/pango-1.0.pc" ]; then
+    echo "--- Creating pango-1.0.pc ---"
+    PANGO_LIB=$(find "$PIXIEWOOD_DIR" -name "libpango-1.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    PANGO_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/pango-1.0.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: Pango
+Description: Text layout and rendering
+Version: 1.58.0
+Requires: glib-2.0, gobject-2.0, gio-2.0, gmodule-2.0, freetype2, fontconfig
+Libs: -L${PANGO_LIB} -lpango-1.0
+Cflags: -I${PANGO_INCLUDE}/pango-1.0
+PCEOF
+    echo "Created pango-1.0.pc"
+fi
+
 # harfbuzz
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/harfbuzz.pc" ]; then
     echo "--- Creating harfbuzz.pc ---"
