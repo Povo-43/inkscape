@@ -6,7 +6,24 @@ if(Intl_FOUND)
   return()
 endif()
 
-# Find the intl library
+# Try to find via pkg-config first (works with our custom .pc files)
+find_package(PkgConfig QUIET)
+if(PKG_CONFIG_FOUND)
+  pkg_check_modules(PC_INTL QUIET intl)
+  if(PC_INTL_FOUND)
+    set(Intl_FOUND TRUE)
+    add_library(Intl::Intl INTERFACE IMPORTED)
+    set_target_properties(Intl::Intl PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${PC_INTL_INCLUDE_DIRS}"
+      INTERFACE_LINK_LIBRARIES "${PC_INTL_LIBRARIES}"
+      INTERFACE_COMPILE_OPTIONS "${PC_INTL_CFLAGS_OTHER}"
+    )
+    mark_as_advanced(Intl_INCLUDE_DIR Intl_LIBRARY)
+    return()
+  endif()
+endif()
+
+# Fallback: Find the intl library directly
 set(INTL_NAMES intl)
 find_library(Intl_LIBRARY
   NAMES ${INTL_NAMES}
