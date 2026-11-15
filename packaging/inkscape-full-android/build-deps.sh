@@ -587,6 +587,132 @@ PCEOF
     echo "Created intl.pc"
 fi
 
+# cairomm-1.16
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/cairomm-1.16.pc" ]; then
+    echo "--- Creating cairomm-1.16.pc ---"
+    CAIROMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libcairomm-1.16.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    CAIROMM_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/cairomm-1.16.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: cairomm-1.16
+Description: C++ wrapper for cairo
+Version: 1.18.0
+Requires: cairo, sigc++-3.0
+Libs: -L${CAIROMM_LIB} -lcairomm-1.16
+Cflags: -I${CAIROMM_INCLUDE}/cairomm-1.16 -I${CAIROMM_INCLUDE}/cairomm-1.16/cairomm
+PCEOF
+    echo "Created cairomm-1.16.pc"
+fi
+
+# pangomm-2.48
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/pangomm-2.48.pc" ]; then
+    echo "--- Creating pangomm-2.48.pc ---"
+    PANGOMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libpangomm-2.48.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    PANGOMM_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/pangomm-2.48.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: pangomm-2.48
+Description: C++ wrapper for Pango
+Version: 2.54.0
+Requires: pango-1.0, glibmm-2.68, cairomm-1.16
+Libs: -L${PANGOMM_LIB} -lpangomm-2.48
+Cflags: -I${PANGOMM_INCLUDE}/pangomm-2.48 -I${PANGOMM_INCLUDE}/pangomm-2.48/pangomm
+PCEOF
+    echo "Created pangomm-2.48.pc"
+fi
+
+# gdk-pixbuf-2.0
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/gdk-pixbuf-2.0.pc" ]; then
+    echo "--- Creating gdk-pixbuf-2.0.pc ---"
+    GDKPIXBUF_LIB=$(find "$PIXIEWOOD_DIR" -name "libgdk_pixbuf-2.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    GDKPIXBUF_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/gdk-pixbuf-2.0.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: gdk-pixbuf-2.0
+Description: Image loading library for GTK+
+Version: 2.42.10
+Requires: glib-2.0, gobject-2.0, gio-2.0, gmodule-2.0
+Libs: -L${GDKPIXBUF_LIB} -lgdk_pixbuf-2.0
+Cflags: -I${GDKPIXBUF_INCLUDE}/gdk-pixbuf-2.0
+PCEOF
+    echo "Created gdk-pixbuf-2.0.pc"
+fi
+
+# graphene-1.0
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/graphene-1.0.pc" ]; then
+    echo "--- Creating graphene-1.0.pc ---"
+    GRAPHENE_LIB=$(find "$PIXIEWOOD_DIR" -name "libgraphene-1.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    GRAPHENE_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/graphene-1.0.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: graphene-1.0
+Description: Thin layer of graphic data types
+Version: 1.10.8
+Requires: gobject-2.0, glib-2.0, gio-2.0
+Libs: -L${GRAPHENE_LIB} -lgraphene-1.0
+Cflags: -I${GRAPHENE_INCLUDE}/graphene-1.0
+PCEOF
+    echo "Created graphene-1.0.pc"
+fi
+
+# sigc++-3.0
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/sigc++-3.0.pc" ]; then
+    echo "--- Creating sigc++-3.0.pc ---"
+    SIGC_LIB=$(find "$PIXIEWOOD_DIR" -name "libsigc-3.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    SIGC_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/sigc++-3.0.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: sigc++-3.0
+Description: Typesafe callback framework for C++
+Version: 3.6.0
+Requires:
+Libs: -L${SIGC_LIB} -lsigc-3.0
+Cflags: -I${SIGC_INCLUDE}/sigc++-3.0 -I${SIGC_INCLUDE}/sigc++-3.0/sigc++
+PCEOF
+    echo "Created sigc++-3.0.pc"
+fi
+
+# glibmm-2.68
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" ]; then
+    echo "--- Creating glibmm-2.68.pc ---"
+    GLIBMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libglibmm-2.68.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    GLIBMM_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: glibmm-2.68
+Description: C++ wrapper for GLib
+Version: 2.80.0
+Requires: glib-2.0, gobject-2.0, gio-2.0, sigc++-3.0
+Libs: -L${GLIBMM_LIB} -lglibmm-2.68
+Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.68 -I${GLIBMM_INCLUDE}/glibmm-2.68/glibmm
+PCEOF
+    echo "Created glibmm-2.68.pc"
+fi
+
 # Also create libxml-2.0.pc if missing (needed by libcroco)
 export CXXSTDLIB=-lc++_shared
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
