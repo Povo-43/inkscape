@@ -74,8 +74,10 @@ build_cmake() {
     if [[ "$dir" != /* ]]; then
         src_path="$SRC_DIR/$dir"
     fi
-    # Export PKG_CONFIG_PATH for pkg_check_modules in CMakeLists.txt
+    # Set PKG_CONFIG_PATH and PKG_CONFIG for cross-compile pkg-config
+    local CROSS_PKG_CONFIG="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config"
     export PKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
+    export PKG_CONFIG="$CROSS_PKG_CONFIG"
     cmake "$src_path" \
         -G Ninja \
         -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
@@ -88,6 +90,8 @@ build_cmake() {
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_C_FLAGS="$CFLAGS" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+        -DPKG_CONFIG_EXECUTABLE="$CROSS_PKG_CONFIG" \
+        -DPKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig" \
         "$@" 2>&1 | tail -20
     /usr/local/bin/ninja -j$JOBS 2>&1 | tail -20
     /usr/local/bin/ninja install 2>&1 | tail -20
