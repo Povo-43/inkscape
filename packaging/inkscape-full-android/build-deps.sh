@@ -74,6 +74,8 @@ build_cmake() {
     if [[ "$dir" != /* ]]; then
         src_path="$SRC_DIR/$dir"
     fi
+    # Export PKG_CONFIG_PATH for pkg_check_modules in CMakeLists.txt
+    export PKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
     cmake "$src_path" \
         -G Ninja \
         -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
