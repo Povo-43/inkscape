@@ -356,7 +356,91 @@ PCEOF
     echo "Created bdw-gc.pc"
 fi
 
-# C++ 標準ライブラリ
+# harfbuzz-cairo
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/harfbuzz-cairo.pc" ]; then
+    echo "--- Creating harfbuzz-cairo.pc ---"
+    HB_LIB=$(find "$PIXIEWOOD_DIR" -name "libharfbuzz.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    HB_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/harfbuzz-cairo.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: harfbuzz-cairo
+Description: HarfBuzz Cairo integration
+Version: 8.0.0
+Requires: harfbuzz, cairo
+Libs: -L${HB_LIB} -lharfbuzz-cairo
+Cflags: -I${HB_INCLUDE}/harfbuzz
+PCEOF
+    echo "Created harfbuzz-cairo.pc"
+fi
+
+# icu-uc
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/icu-uc.pc" ]; then
+    echo "--- Creating icu-uc.pc ---"
+    ICU_LIB=$(find "$PIXIEWOOD_DIR" -name "libicuuc.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    ICU_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/icu-uc.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: icu-uc
+Description: ICU Unicode support
+Version: 75.1
+Requires:
+Libs: -L${ICU_LIB} -licuuc
+Cflags: -I${ICU_INCLUDE}/unicode
+PCEOF
+    echo "Created icu-uc.pc"
+fi
+
+# icu-i18n
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/icu-i18n.pc" ]; then
+    echo "--- Creating icu-i18n.pc ---"
+    ICU_LIB=$(find "$PIXIEWOOD_DIR" -name "libicui18n.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    ICU_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/icu-i18n.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: icu-i18n
+Description: ICU Internationalization support
+Version: 75.1
+Requires: icu-uc
+Libs: -L${ICU_LIB} -licui18n
+Cflags: -I${ICU_INCLUDE}/unicode
+PCEOF
+    echo "Created icu-i18n.pc"
+fi
+
+# intl (libintl)
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/intl.pc" ]; then
+    echo "--- Creating intl.pc ---"
+    INTL_LIB=$(find "$PIXIEWOOD_DIR" -name "libintl.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    INTL_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/intl.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: intl
+Description: GNU gettext internationalization library
+Version: 0.22.4
+Requires:
+Libs: -L${INTL_LIB} -lintl
+Cflags: -I${INTL_INCLUDE}
+PCEOF
+    echo "Created intl.pc"
+fi
+
+# Also create libxml-2.0.pc if missing (needed by libcroco)
 export CXXSTDLIB=-lc++_shared
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
 # 必要な箇所で個別にインクルードする
