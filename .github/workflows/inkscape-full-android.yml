@@ -114,7 +114,6 @@ jobs:
         run: |
           NDK="$(ls -d "$ANDROID_HOME"/ndk/* | sort -V | tail -1)"
           echo "$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin" >> "$GITHUB_PATH"
-          # pkg-config を NDK のものを使うよう設定
           echo "PKG_CONFIG=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config" >> "$GITHUB_ENV"
 
       - name: Meson / Ninja をセットアップ
@@ -147,17 +146,14 @@ jobs:
       - name: クロスファイルに ccache と pkg-config を挿入
         run: |
           python3 - <<'PY'
-          import re
+          import re, glob
           path = "pixiewood/prepare/android.cross"
           src = open(path).read()
           for key in ("c", "cpp"):
               src = re.sub(rf"^{key}(\s+)= (.*)$",
                            lambda m: f"{key}{m.group(1)}= ['ccache', {m.group(2)}]",
                            src, flags=re.M)
-          # pkg-config を [binaries] セクションに追加
           if 'pkg-config' not in src:
-              # NDK の pkg-config パスを動的に取得
-              import glob
               ndk_pkgconfig = glob.glob('/usr/local/lib/android/sdk/ndk/*/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config')
               if ndk_pkgconfig:
                   pkg_path = ndk_pkgconfig[0]
@@ -319,13 +315,11 @@ jobs:
         run: |
           echo "=== Building Inkscape Minimal Dependencies for Android ==="
           cd $GITHUB_WORKSPACE
-          # pixiewood の .pc ファイルをコピーするためにパスを渡す
-          PIXIEWOOD_BIN="packaging/android-gtkmm4/.pixiewood/bin-aarch64"
           bash packaging/inkscape-full-android/build-deps.sh \
             $GITHUB_WORKSPACE/android-install \
             /opt/android-ndk-r27b \
             31 \
-            "$PIXIEWOOD_BIN"
+            "$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64"
 
       - name: Inkscape C++ コアをクロスコンパイル（フルビルド）
         run: |
@@ -344,12 +338,7 @@ jobs:
           cd build-android-arm64
 
           # Create pkg-config wrapper for cross-compilation
-          cat > /usr/local/bin/pkg-config-cross << 'PKGEOF'
-#!/bin/bash
-export PKG_CONFIG_LIBDIR="/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64:/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig"
-export PKG_CONFIG_PATH="/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64:/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig"
-exec /usr/bin/pkg-config "$@"
-PKGEOF
+          printf '#!/bin/bash\nexport PKG_CONFIG_LIBDIR="/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64:/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig"\nexport PKG_CONFIG_PATH="/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64:/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig"\nexec /usr/bin/pkg-config "$@"\n' > /usr/local/bin/pkg-config-cross
           chmod +x /usr/local/bin/pkg-config-cross
 
           # pixiewood + 手動ビルドの依存を pkg-config に見せる
@@ -409,7 +398,6 @@ PKGEOF
 
       - name: Inkscape 実行ファイルをコピー
         run: |
-          # ビルド成果物をインストールディレクトリにコピー
           find $GITHUB_WORKSPACE/build-android-arm64 -name "inkscape" -type f -exec cp {} $GITHUB_WORKSPACE/android-install/bin/ \; 2>/dev/null || true
           find $GITHUB_WORKSPACE/build-android-arm64 -name "libinkscape*.so" -type f -exec cp {} $GITHUB_WORKSPACE/android-install/lib/ \; 2>/dev/null || true
 
