@@ -365,6 +365,7 @@ jobs:
             -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/packaging/inkscape-full-android/cmake" \
             -DCMAKE_PREFIX_PATH="$INSTALL;$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64" \
             -DPNG_INCLUDE_DIR="$INSTALL/include" \
+            -DPNG_PNG_INCLUDE_DIR="$INSTALL/include" \
             -DPNG_LIBRARY="$INSTALL/lib/libpng.so" \
             -DZLIB_INCLUDE_DIR="$INSTALL/include" \
             -DZLIB_LIBRARY="$INSTALL/lib/libz.so" \
