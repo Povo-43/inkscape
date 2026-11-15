@@ -156,7 +156,10 @@ if [ ! -f "$INSTALL_DIR/lib/libgsl.so" ]; then
     cd $BUILD_DIR
     mkdir -p gsl-build
     cd gsl-build
-    $CC $CFLAGS -shared -fPIC $SRC_DIR/gsl-$GSL_VER/*.c -I$SRC_DIR/gsl-$GSL_VER -o $INSTALL_DIR/lib/libgsl.so $LDFLAGS 2>&1 | tail -10
+    $SRC_DIR/gsl-$GSL_VER/configure --host=$TRIPLE --prefix=$INSTALL_DIR --disable-static --enable-shared \
+        CC=$CC CXX=$CXX CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" 2>&1 | tail -10
+    make -j$JOBS 2>&1 | tail -10
+    make install 2>&1 | tail -10
 fi
 
 # =========================================================
