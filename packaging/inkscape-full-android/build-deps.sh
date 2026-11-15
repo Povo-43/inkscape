@@ -713,6 +713,69 @@ PCEOF
     echo "Created glibmm-2.68.pc"
 fi
 
+# gtk4
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/gtk4.pc" ]; then
+    echo "--- Creating gtk4.pc ---"
+    GTK4_LIB=$(find "$PIXIEWOOD_DIR" -name "libgtk-4.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    GTK4_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/gtk4.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: gtk4
+Description: GTK4 UI toolkit
+Version: 4.14.0
+Requires: glib-2.0, gobject-2.0, gio-2.0, gmodule-2.0, pango-1.0, cairo, gdk-pixbuf-2.0, graphene-1.0
+Libs: -L${GTK4_LIB} -lgtk-4
+Cflags: -I${GTK4_INCLUDE}/gtk-4.0
+PCEOF
+    echo "Created gtk4.pc"
+fi
+
+# giomm-2.68
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/giomm-2.68.pc" ]; then
+    echo "--- Creating giomm-2.68.pc ---"
+    GIOMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libgiomm-2.68.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    GIOMM_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/giomm-2.68.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: giomm-2.68
+Description: C++ wrapper for GIO
+Version: 2.80.0
+Requires: glibmm-2.68, gio-2.0
+Libs: -L${GIOMM_LIB} -lgiomm-2.68
+Cflags: -I${GIOMM_INCLUDE}/giomm-2.68 -I${GIOMM_INCLUDE}/giomm-2.68/giomm
+PCEOF
+    echo "Created giomm-2.68.pc"
+fi
+
+# gtkmm-4.0
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/gtkmm-4.0.pc" ]; then
+    echo "--- Creating gtkmm-4.0.pc ---"
+    GTKMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libgtkmm-4.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    GTKMM_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/gtkmm-4.0.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: gtkmm-4.0
+Description: C++ wrapper for GTK4
+Version: 4.14.0
+Requires: gtk4, cairomm-1.16, pangomm-2.48, glibmm-2.68, giomm-2.68
+Libs: -L${GTKMM_LIB} -lgtkmm-4.0
+Cflags: -I${GTKMM_INCLUDE}/gtkmm-4.0 -I${GTKMM_INCLUDE}/gtkmm-4.0/gtkmm
+PCEOF
+    echo "Created gtkmm-4.0.pc"
+fi
+
 # Also create libxml-2.0.pc if missing (needed by libcroco)
 export CXXSTDLIB=-lc++_shared
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
