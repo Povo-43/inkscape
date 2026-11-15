@@ -317,9 +317,15 @@ jobs:
 
       - name: 依存ライブラリをクロスコンパイル
         run: |
-          echo "=== Building Inkscape Dependencies for Android ==="
+          echo "=== Building Inkscape Minimal Dependencies for Android ==="
           cd $GITHUB_WORKSPACE
-          bash packaging/inkscape-full-android/build-deps.sh $GITHUB_WORKSPACE/android-install /opt/android-ndk-r27b 31
+          # pixiewood の .pc ファイルをコピーするためにパスを渡す
+          PIXIEWOOD_BIN="packaging/android-gtkmm4/.pixiewood/bin-aarch64"
+          bash packaging/inkscape-full-android/build-deps.sh \
+            $GITHUB_WORKSPACE/android-install \
+            /opt/android-ndk-r27b \
+            31 \
+            "$PIXIEWOOD_BIN"
 
       - name: Inkscape C++ コアをクロスコンパイル
         run: |
@@ -332,19 +338,22 @@ jobs:
           CXX=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/${TRIPLE}${API}-clang++
           JOBS=$(nproc)
 
-          # CMake で Inkscape をビルド
+          # CMake で Inkscape をビルド（Ninja generator 使用）
           cd $GITHUB_WORKSPACE
           mkdir -p build-android-arm64
           cd build-android-arm64
 
-          # pixiewood のビルド出力を pkg-config に見せる
+          # pixiewood + 手動ビルドの依存を pkg-config に見せる
           export PKG_CONFIG_PATH="$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64:$INSTALL/lib/pkgconfig"
           export CMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64:$INSTALL"
 
           cmake .. \
-            -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
-            -DANDROID_ABI=arm64-v8a \
-            -DANDROID_PLATFORM=android-31 \
+            -G Ninja \
+            -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
+            -DCMAKE_C_COMPILER="$CC" \
+            -DCMAKE_CXX_COMPILER="$CXX" \
+            -DCMAKE_AR="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar" \
+            -DCMAKE_STRIP="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip" \
             -DCMAKE_INSTALL_PREFIX=$INSTALL \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON \
@@ -367,14 +376,14 @@ jobs:
             -DWITH_EMF=OFF \
             -DWITH_X11=OFF \
             -DWITH_XCB=OFF \
-            2>&1 | tail -20
+            2>&1 | tail -30
 
-          # ターゲットを指定してビルド（libinkscape_core 等）
-          cmake --build . --target inkscape_core -- -j$JOBS 2>&1 | tail -30 || true
+          # 全ターゲットビルド（Inkscape 自体）
+          /usr/local/bin/ninja -j$JOBS 2>&1 | tail -50 || true
 
           # 結果確認
           echo "=== Build artifacts ==="
-          find $INSTALL -name "*.so" -o -name "*.a" | head -20
+          find $INSTALL -name "*.so" -o -name "*.a" | head -30
 
       - name: ビルド成果物をアップロード
         uses: actions/upload-artifact@v4
