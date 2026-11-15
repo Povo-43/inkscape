@@ -78,6 +78,8 @@ build_cmake() {
     local CROSS_PKG_CONFIG="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config"
     export PKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
     export PKG_CONFIG="$CROSS_PKG_CONFIG"
+    echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+    $CROSS_PKG_CONFIG --list-all 2>/dev/null | grep -E "glib|croco" | head -5 || true
     cmake "$src_path" \
         -G Ninja \
         -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
@@ -192,8 +194,12 @@ if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
     cd $BUILD_DIR
     mkdir -p libcroco-build
     cd libcroco-build
-    # Need pixiewood pkg-config for glib-2.0
-    PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
+    # Use cross-compile pkg-config with correct search path
+    local CROSS_PKG_CONFIG="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config"
+    echo "PKG_CONFIG=$CROSS_PKG_CONFIG"
+    echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+    $CROSS_PKG_CONFIG --list-all | grep -E "glib|croco" || true
+    export PKG_CONFIG="$CROSS_PKG_CONFIG"
     cmake "$SRC_DIR/libcroco" \
         -G Ninja \
         -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
@@ -206,9 +212,10 @@ if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_C_FLAGS="$CFLAGS" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-        2>&1 | tail -10
-    /usr/local/bin/ninja -j$JOBS 2>&1 | tail -10
-    /usr/local/bin/ninja install 2>&1 | tail -10
+        -DPKG_CONFIG_EXECUTABLE="$CROSS_PKG_CONFIG" \
+        2>&1 | tail -20
+    /usr/local/bin/ninja -j$JOBS 2>&1 | tail -20
+    /usr/local/bin/ninja install 2>&1 | tail -20
 fi
 
 # =========================================================
@@ -236,7 +243,10 @@ fi
 # =========================================================
 if [ -n "$PIXIEWOOD_DIR" ] && [ -d "$PIXIEWOOD_DIR" ]; then
     echo "--- Copying pixiewood pkg-config files ---"
-    find "$PIXIEWOOD_DIR" -name "*.pc" -exec cp {} $INSTALL_DIR/lib/pkgconfig/ \; 2>/dev/null || true
+    echo "Searching for .pc files in $PIXIEWOOD_DIR"
+    find "$PIXIEWOOD_DIR" -name "*.pc" -exec echo "Found: {}" \; -exec cp {} $INSTALL_DIR/lib/pkgconfig/ \; 2>/dev/null || true
+    echo "Installed .pc files:"
+    ls -la $INSTALL_DIR/lib/pkgconfig/ | head -20
 fi
 
 echo ""
