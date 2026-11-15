@@ -164,6 +164,114 @@ PCEOF
     echo "Created libxml-2.0.pc"
 fi
 
+# Create missing .pc files for pixiewood libraries (not installed by pixiewood)
+# These are required by Inkscape CMake
+
+# harfbuzz
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/harfbuzz.pc" ]; then
+    echo "--- Creating harfbuzz.pc ---"
+    HB_LIB=$(find "$PIXIEWOOD_DIR" -name "libharfbuzz.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    HB_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/harfbuzz.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: harfbuzz
+Description: OpenType text shaping engine
+Version: 8.0.0
+Requires:
+Libs: -L${HB_LIB} -lharfbuzz
+Cflags: -I${HB_INCLUDE}/harfbuzz
+PCEOF
+    echo "Created harfbuzz.pc"
+fi
+
+# pangocairo
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/pangocairo.pc" ]; then
+    echo "--- Creating pangocairo.pc ---"
+    PANGO_LIB=$(find "$PIXIEWOOD_DIR" -name "libpangocairo-1.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    PANGO_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/pangocairo.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: PangoCairo
+Description: Cairo rendering for Pango
+Version: 1.58.0
+Requires: pango-1.0, cairo
+Libs: -L${PANGO_LIB} -lpangocairo-1.0
+Cflags: -I${PANGO_INCLUDE}/pango-1.0
+PCEOF
+    echo "Created pangocairo.pc"
+fi
+
+# pangoft2
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/pangoft2.pc" ]; then
+    echo "--- Creating pangoft2.pc ---"
+    PANGO_LIB=$(find "$PIXIEWOOD_DIR" -name "libpangoft2-1.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    PANGO_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/pangoft2.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: PangoFT2
+Description: FreeType2 backend for Pango
+Version: 1.58.0
+Requires: pango-1.0, freetype2
+Libs: -L${PANGO_LIB} -lpangoft2-1.0
+Cflags: -I${PANGO_INCLUDE}/pango-1.0
+PCEOF
+    echo "Created pangoft2.pc"
+fi
+
+# fontconfig
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/fontconfig.pc" ]; then
+    echo "--- Creating fontconfig.pc ---"
+    FC_LIB=$(find "$PIXIEWOOD_DIR" -name "libfontconfig.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    FC_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/fontconfig.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: fontconfig
+Description: Font configuration and customization library
+Version: 2.14.2
+Requires:
+Libs: -L${FC_LIB} -lfontconfig
+Cflags: -I${FC_INCLUDE}/fontconfig
+PCEOF
+    echo "Created fontconfig.pc"
+fi
+
+# bdw-gc (Boehm GC)
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/bdw-gc.pc" ]; then
+    echo "--- Creating bdw-gc.pc ---"
+    GC_LIB=$(find "$PIXIEWOOD_DIR" -name "libgc.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    GC_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/bdw-gc.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: bdw-gc
+Description: Boehm-Demers-Weiser conservative garbage collector
+Version: 8.2.4
+Requires:
+Libs: -L${GC_LIB} -lgc
+Cflags: -I${GC_INCLUDE}
+PCEOF
+    echo "Created bdw-gc.pc"
+fi
+
 # C++ 標準ライブラリ
 export CXXSTDLIB=-lc++_shared
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
