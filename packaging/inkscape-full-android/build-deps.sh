@@ -323,7 +323,14 @@ if [ ! -f "$INSTALL_DIR/lib/liblcms2.so" ]; then
     echo "--- Building lcms2 ---"
     LCMS_VER=2.16
     fetch lcms2 "https://github.com/mm2/Little-CMS/archive/refs/tags/lcms$LCMS_VER.tar.gz"
-    build_cmake lcms2 "Little-CMS-lcms$LCMS_VER"
+    # Find actual extracted directory
+    LCMS_DIR=$(find "$SRC_DIR" -maxdepth 1 -name "*ittle-CMS*" -type d | head -1)
+    if [ -n "$LCMS_DIR" ]; then
+        build_cmake lcms2 "$LCMS_DIR"
+    else
+        echo "ERROR: lcms2 source not found"
+        exit 1
+    fi
 fi
 
 # =========================================================
