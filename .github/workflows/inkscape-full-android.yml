@@ -385,6 +385,7 @@ jobs:
             -DWITH_LIBREVENGE=OFF \
             -DWITH_BOOST=ON \
             -DWITH_GTEST=OFF \
+            -DWITH_GETTEXT=OFF \
             2>&1
 
           # フルビルド（全ターゲット）
