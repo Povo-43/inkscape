@@ -376,6 +376,8 @@ jobs:
             -DZLIB_LIBRARY="$INSTALL/lib/libz.so" \
             -DJPEG_INCLUDE_DIR="$INSTALL/include" \
             -DJPEG_LIBRARY="$INSTALL/lib/libjpeg.so" \
+            -DLIBXSLT_INCLUDE_DIR="$INSTALL/include" \
+            -DLIBXSLT_LIBRARIES="$INSTALL/lib/libxslt.so" \
             -DWITH_PYTHON=OFF \
             -DWITH_IMAGE_MAGICK=OFF \
             -DWITH_OPENMP=OFF \
