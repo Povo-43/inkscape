@@ -873,6 +873,25 @@ set(Boost_INCLUDE_DIR "\${_IMPORT_PREFIX}/include")
 PCEOF
     echo "Created BoostConfig.cmake"
 fi
+
+# BoostConfigVersion.cmake - required for version checking
+if [ ! -f "$INSTALL_DIR/lib/cmake/Boost-1.19.0/BoostConfigVersion.cmake" ]; then
+    echo "--- Creating BoostConfigVersion.cmake ---"
+    cat > "$INSTALL_DIR/lib/cmake/Boost-1.19.0/BoostConfigVersion.cmake" << PCEOF
+set(PACKAGE_VERSION "1.19.0")
+
+# Check whether the requested version is compatible
+if("${PACKAGE_VERSION}" VERSION_LESS "${PACKAGE_FIND_VERSION}")
+    set(PACKAGE_VERSION_COMPATIBLE FALSE)
+else()
+    set(PACKAGE_VERSION_COMPATIBLE TRUE)
+    if("${PACKAGE_VERSION}" VERSION_EQUAL "${PACKAGE_FIND_VERSION}")
+        set(PACKAGE_VERSION_EXACT TRUE)
+    endif()
+endif()
+PCEOF
+    echo "Created BoostConfigVersion.cmake"
+fi
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
 # 必要な箇所で個別にインクルードする
 export CXXFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include -std=c++20"
