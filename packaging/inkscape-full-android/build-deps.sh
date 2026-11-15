@@ -173,18 +173,23 @@ if [ ! -f "$INSTALL_DIR/lib/libdouble-conversion.so" ]; then
 fi
 
 # =========================================================
-# 4. libcroco (CSS parsing)
+# 4. libcroco (CSS parsing) - uses meson
 # =========================================================
 if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
     echo "--- Building libcroco ---"
     if [ ! -d "$SRC_DIR/libcroco" ]; then
         git clone --depth 1 https://gitlab.com/inkscape/libcroco.git $SRC_DIR/libcroco
     fi
-    cd $SRC_DIR/libcroco
-    ./configure --host=$TRIPLE --prefix=$INSTALL_DIR --disable-static --enable-shared \
-        CC=$CC CXX=$CXX CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" 2>&1 | tail -10
-    make -j$JOBS 2>&1 | tail -10
-    make install 2>&1 | tail -10
+    cd $BUILD_DIR
+    mkdir -p libcroco-build
+    cd libcroco-build
+    meson setup . $SRC_DIR/libcroco \
+        --prefix=$INSTALL_DIR \
+        --buildtype=release \
+        -Ddefault_library=shared \
+        --cross-file=/dev/null 2>&1 | tail -10
+    ninja -j$JOBS 2>&1 | tail -10
+    ninja install 2>&1 | tail -10
 fi
 
 # =========================================================
