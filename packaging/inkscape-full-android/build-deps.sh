@@ -776,8 +776,102 @@ PCEOF
     echo "Created gtkmm-4.0.pc"
 fi
 
+# libspelling-1
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libspelling-1.pc" ]; then
+    echo "--- Creating libspelling-1.pc ---"
+    SPELL_LIB=$(find "$PIXIEWOOD_DIR" -name "libspelling-1.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    SPELL_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/libspelling-1.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: libspelling-1
+Description: Spelling library for GTK
+Version: 0.1.0
+Requires: glib-2.0, gobject-2.0, gio-2.0, enchant-2
+Libs: -L${SPELL_LIB} -lspelling-1
+Cflags: -I${SPELL_INCLUDE}/libspelling-1
+PCEOF
+    echo "Created libspelling-1.pc"
+fi
+
+# gtksourceview-5
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/gtksourceview-5.pc" ]; then
+    echo "--- Creating gtksourceview-5.pc ---"
+    GSV_LIB=$(find "$PIXIEWOOD_DIR" -name "libgtksourceview-5.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    GSV_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/gtksourceview-5.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: gtksourceview-5
+Description: Source code editing widget for GTK
+Version: 5.12.0
+Requires: gtk4, libxml-2.0
+Libs: -L${GSV_LIB} -lgtksourceview-5
+Cflags: -I${GSV_INCLUDE}/gtksourceview-5
+PCEOF
+    echo "Created gtksourceview-5.pc"
+fi
+
+# enchant-2 (required by libspelling)
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/enchant-2.pc" ]; then
+    echo "--- Creating enchant-2.pc ---"
+    ENCHANT_LIB=$(find "$PIXIEWOOD_DIR" -name "libenchant-2.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    ENCHANT_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/enchant-2.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: enchant-2
+Description: Generic spell checking library
+Version: 2.6.0
+Requires: glib-2.0, gmodule-2.0
+Libs: -L${ENCHANT_LIB} -lenchant-2
+Cflags: -I${ENCHANT_INCLUDE}/enchant-2
+PCEOF
+    echo "Created enchant-2.pc"
+fi
+
 # Also create libxml-2.0.pc if missing (needed by libcroco)
 export CXXSTDLIB=-lc++_shared
+
+# Boost - create config file
+if [ ! -f "$INSTALL_DIR/lib/cmake/Boost-1.19.0/BoostConfig.cmake" ]; then
+    echo "--- Creating BoostConfig.cmake ---"
+    mkdir -p "$INSTALL_DIR/lib/cmake/Boost-1.19.0"
+    BOOST_LIB=$(find "$PIXIEWOOD_DIR" -name "libboost_system.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    BOOST_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/cmake/Boost-1.19.0/BoostConfig.cmake" << PCEOF
+# Boost CMake configuration for Android cross-compile
+set(Boost_VERSION 101900)
+set(Boost_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
+set(Boost_LIBRARY_DIRS "\${_IMPORT_PREFIX}/lib")
+set(Boost_FOUND TRUE)
+
+# Create imported targets for required components
+foreach(comp system thread filesystem program_options regex date_time atomic chrono)
+    if(NOT TARGET Boost::\${comp})
+        add_library(Boost::\${comp} INTERFACE IMPORTED)
+        set_target_properties(Boost::\${comp} PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
+            INTERFACE_LINK_LIBRARIES "boost_\${comp}"
+        )
+    endif()
+endforeach()
+
+# Provide find_package compatibility
+set(Boost_LIBRARIES "")
+set(Boost_INCLUDE_DIR "\${_IMPORT_PREFIX}/include")
+PCEOF
+    echo "Created BoostConfig.cmake"
+fi
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
 # 必要な箇所で個別にインクルードする
 export CXXFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include -std=c++20"
