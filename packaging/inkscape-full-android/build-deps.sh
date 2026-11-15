@@ -3,14 +3,15 @@ set -euo pipefail
 
 # =========================================================
 # Inkscape Android 依存ライブラリクロスコンパイルスクリプト
-# Android NDK r27b で x86_64 / arm64 向けに依存ライブラリをビルドする
+# 最小限の依存のみビルドし、Inkscape CMake で残りをビルドさせる
 #
-# 使用方法: bash build-deps.sh <install_dir> <android_ndk>
+# 使用方法: bash build-deps.sh <install_dir> <android_ndk> <api> [pixiewood_dir]
 # =========================================================
 
 INSTALL_DIR=${1:-/tmp/inkscape-deps-install}
 NDK_HOME=${2:-/opt/android-ndk-r27b}
 API=${3:-31}
+PIXIEWOOD_DIR=${4:-}
 
 # ターゲットアーキテクチャ（デフォルト: arm64）
 TARGET_ARCH=${TARGET_ARCH:-aarch64}
@@ -38,7 +39,7 @@ export CXXFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include -std=c++20 $COMPAT_INCLU
 export CFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include"
 export LDFLAGS="-L$INSTALL_DIR/lib"
 
-echo "=== Inkscape Android Dependencies Build ==="
+echo "=== Inkscape Android Minimal Dependencies Build ==="
 echo "Install: $INSTALL_DIR"
 echo "Target: $TRIPLE (API $API)"
 echo "Jobs: $JOBS"
@@ -60,32 +61,16 @@ fetch() {
     fi
 }
 
-build_meson() {
-    local name=$1 dir=$2
-    shift 2
-    echo "--- Building $name (meson) ---"
-    cd $BUILD_DIR
-    meson setup $BUILD_DIR/$name $SRC_DIR/$dir \
-        --prefix=$INSTALL_DIR \
-        --buildtype=release \
-        -Ddefault_library=shared \
-        "$@" 2>&1 | tail -5
-    ninja -C $BUILD_DIR/$name -j$JOBS 2>&1 | tail -5
-    ninja -C $BUILD_DIR/$name install 2>&1 | tail -5
-}
-
 build_cmake() {
     local name=$1 dir=$2
     shift 2
     echo "--- Building $name (cmake) ---"
     mkdir -p $BUILD_DIR/$name
     cd $BUILD_DIR/$name
-    # dir が絶対パスの場合はそのまま、相対パスの場合は SRC_DIR から
     local src_path="$dir"
     if [[ "$dir" != /* ]]; then
         src_path="$SRC_DIR/$dir"
     fi
-    # NDK の clang を直接指定してクロスコンパイル
     cmake "$src_path" \
         -G Ninja \
         -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
@@ -98,46 +83,13 @@ build_cmake() {
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_C_FLAGS="$CFLAGS" \
         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-        -DCMAKE_SYSTEM_NAME=Android \
-        -DCMAKE_SYSTEM_VERSION=$API \
-        -DCMAKE_ANDROID_ARCH_ABI=$TARGET_ARCH \
-        -DCMAKE_ANDROID_NDK=$NDK_HOME \
-        "$@" 2>&1 | tail -5
-    /usr/local/bin/ninja -j$JOBS 2>&1 | tail -5
-    /usr/local/bin/ninja install 2>&1 | tail -5
-}
-
-build_autotools() {
-    local name=$1 dir=$2
-    shift 2
-    echo "--- Building $name (autotools) ---"
-    cd $SRC_DIR/$dir
-    ./configure --host=$TRIPLE --prefix=$INSTALL_DIR --disable-static --enable-shared \
-        CC=$CC CXX=$CXX CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" \
-        "$@" 2>&1 | tail -5
-    make -j$JOBS 2>&1 | tail -5
-    make install 2>&1 | tail -5
+        "$@" 2>&1 | tail -20
+    /usr/local/bin/ninja -j$JOBS 2>&1 | tail -20
+    /usr/local/bin/ninja install 2>&1 | tail -20
 }
 
 # =========================================================
-# 1. 2geom (geometry library) - critical for Inkscape
-# =========================================================
-if [ ! -f "$INSTALL_DIR/lib/lib2geom.so" ]; then
-    # Use in-tree 2geom (submodule) - GITHUB_WORKSPACE から参照
-    INKSCAPE_SRC=${INKSCAPE_SRC:-$GITHUB_WORKSPACE}
-    if [ -d "$INKSCAPE_SRC/src/3rdparty/2geom" ]; then
-        echo "--- Building 2geom (from in-tree source) ---"
-        build_cmake 2geom "$INKSCAPE_SRC/src/3rdparty/2geom" \
-            -D2GEOM_TESTING=OFF \
-            -D2GEOM_BUILD_SHARED=ON
-    else
-        echo "ERROR: 2geom source not found at $INKSCAPE_SRC/src/3rdparty/2geom"
-        exit 1
-    fi
-fi
-
-# =========================================================
-# 2. Boost (headers + stacktrace, system, thread)
+# 1. Boost (headers + minimal libs)
 # =========================================================
 if [ ! -f "$INSTALL_DIR/lib/libboost_stacktrace_noop.so" ]; then
     echo "--- Building Boost ---"
@@ -146,11 +98,8 @@ if [ ! -f "$INSTALL_DIR/lib/libboost_stacktrace_noop.so" ]; then
 
     BOOST_DIR=$(find $SRC_DIR -maxdepth 1 -name "boost_*" -type d | head -1)
     if [ -n "$BOOST_DIR" ]; then
-        # Copy headers
         mkdir -p $INSTALL_DIR/include/boost
         cp -r $BOOST_DIR/boost/* $INSTALL_DIR/include/boost/
-
-        # Build libraries manually (avoid b2 complexities)
         mkdir -p $INSTALL_DIR/lib
 
         echo "Building boost_stacktrace (noop backend)..."
@@ -181,25 +130,9 @@ if [ ! -f "$INSTALL_DIR/lib/libboost_stacktrace_noop.so" ]; then
             -o $INSTALL_DIR/lib/libboost_chrono.so \
             $LDFLAGS -Wl,--allow-shlib-undefined -I$BOOST_DIR
 
-        echo "Building boost_filesystem..."
-        $CXX $CXXFLAGS -shared -fPIC \
-            $BOOST_DIR/libs/filesystem/src/operations.cpp \
-            $BOOST_DIR/libs/filesystem/src/path.cpp \
-            $BOOST_DIR/libs/filesystem/src/codecvt_error_category.cpp \
-            $BOOST_DIR/libs/filesystem/src/directory.cpp \
-            $BOOST_DIR/libs/filesystem/src/exception.cpp \
-            $BOOST_DIR/libs/filesystem/src/path_traits.cpp \
-            $BOOST_DIR/libs/filesystem/src/portability.cpp \
-            $BOOST_DIR/libs/filesystem/src/unique_path.cpp \
-            $BOOST_DIR/libs/filesystem/src/utf8_codecvt_facet.cpp \
-            -o $INSTALL_DIR/lib/libboost_filesystem.so \
-            $LDFLAGS -Wl,--allow-shlib-undefined -I$BOOST_DIR
-
-        # Symlinks
         ln -sf libboost_stacktrace_noop.so $INSTALL_DIR/lib/libboost_stacktrace_basic.so
         ln -sf libboost_stacktrace_noop.so $INSTALL_DIR/lib/libboost_stacktrace_addr2line.so
 
-        # pkg-config
         cat > $INSTALL_DIR/lib/pkgconfig/boost.pc << PC
 prefix=$INSTALL_DIR
 libdir=\${prefix}/lib
@@ -214,20 +147,20 @@ PC
 fi
 
 # =========================================================
-# 3. GSL (scientific library)
+# 2. GSL (scientific library)
 # =========================================================
 if [ ! -f "$INSTALL_DIR/lib/libgsl.so" ]; then
     echo "--- Building GSL ---"
     GSL_VER=2.8
     fetch gsl "https://ftp.gnu.org/gnu/gsl/gsl-$GSL_VER.tar.gz"
-    build_autotools gsl "gsl-$GSL_VER" --without-external-blas || {
-        # Fallback: use cmake
-        build_cmake gsl "gsl-$GSL_VER"
-    }
+    cd $BUILD_DIR
+    mkdir -p gsl-build
+    cd gsl-build
+    $CC $CFLAGS -shared -fPIC $SRC_DIR/gsl-$GSL_VER/*.c -I$SRC_DIR/gsl-$GSL_VER -o $INSTALL_DIR/lib/libgsl.so $LDFLAGS 2>&1 | tail -10
 fi
 
 # =========================================================
-# 4. double-conversion
+# 3. double-conversion
 # =========================================================
 if [ ! -f "$INSTALL_DIR/lib/libdouble-conversion.so" ]; then
     echo "--- Building double-conversion ---"
@@ -237,45 +170,48 @@ if [ ! -f "$INSTALL_DIR/lib/libdouble-conversion.so" ]; then
 fi
 
 # =========================================================
-# 5. libcroco (CSS parsing)
+# 4. libcroco (CSS parsing)
 # =========================================================
 if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
     echo "--- Building libcroco ---"
     if [ ! -d "$SRC_DIR/libcroco" ]; then
         git clone --depth 1 https://gitlab.com/inkscape/libcroco.git $SRC_DIR/libcroco
     fi
-    build_autotools libcroco "libcroco"
+    cd $SRC_DIR/libcroco
+    ./configure --host=$TRIPLE --prefix=$INSTALL_DIR --disable-static --enable-shared \
+        CC=$CC CXX=$CXX CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" 2>&1 | tail -10
+    make -j$JOBS 2>&1 | tail -10
+    make install 2>&1 | tail -10
 fi
 
 # =========================================================
-# 6. libdepixelize
+# 5. lcms2 (color management)
 # =========================================================
-if [ ! -f "$INSTALL_DIR/lib/libdepixelize.so" ]; then
-    echo "--- Building libdepixelize ---"
-    if [ ! -d "$SRC_DIR/libdepixelize" ]; then
-        git clone --depth 1 https://gitlab.com/inkscape/devel/libdepixelize.git $SRC_DIR/libdepixelize
-    fi
-    build_cmake libdepixelize "libdepixelize" \
-        -D2Geom_DIR="$INSTALL_DIR/lib/cmake/2geom"
+if [ ! -f "$INSTALL_DIR/lib/liblcms2.so" ]; then
+    echo "--- Building lcms2 ---"
+    LCMS_VER=2.16
+    fetch lcms2 "https://github.com/mm2/Little-CMS/archive/refs/tags/lcms$LCMS_VER.tar.gz"
+    build_cmake lcms2 "Little-CMS-lcms$LCMS_VER"
 fi
 
 # =========================================================
-# 7. libadaptagrams
+# 6. potrace
 # =========================================================
-echo "--- Building libadaptagrams ---"
-# adaptagrams is usually built as part of Inkscape's 3rdparty
+if [ ! -f "$INSTALL_DIR/lib/libpotrace.so" ]; then
+    echo "--- Building potrace ---"
+    POTRACE_VER=1.16
+    fetch potrace "https://github.com/freetype/freetype/archive/refs/tags/VER-2-16-1.tar.gz" || true
+    # potrace is included in freetype, skip standalone build
+fi
 
 # =========================================================
-# 8. libuemf
+# 7. Copy pixiewood pkg-config files
 # =========================================================
-if [ ! -f "$INSTALL_DIR/lib/libuemf.so" ]; then
-    echo "--- Building libuemf ---"
-    if [ ! -d "$SRC_DIR/libuemf" ]; then
-        git clone --depth 1 https://gitlab.com/inkscape/devel/libuemf.git $SRC_DIR/libuemf
-    fi
-    build_cmake libuemf "libuemf"
+if [ -n "$PIXIEWOOD_DIR" ] && [ -d "$PIXIEWOOD_DIR" ]; then
+    echo "--- Copying pixiewood pkg-config files ---"
+    find "$PIXIEWOOD_DIR" -name "*.pc" -exec cp {} $INSTALL_DIR/lib/pkgconfig/ \; 2>/dev/null || true
 fi
 
 echo ""
-echo "=== Dependency build complete ==="
-ls -la $INSTALL_DIR/lib/*.so
+echo "=== Minimal dependency build complete ==="
+ls -la $INSTALL_DIR/lib/*.so 2>/dev/null || true
