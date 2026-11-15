@@ -173,23 +173,31 @@ if [ ! -f "$INSTALL_DIR/lib/libdouble-conversion.so" ]; then
 fi
 
 # =========================================================
-# 4. libcroco (CSS parsing) - use in-tree submodule
+# 4. libcroco (CSS parsing) - use CMake from gitlab.com/inkscape/libcroco
 # =========================================================
 if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
     echo "--- Building libcroco ---"
-    INKSCAPE_SRC=${INKSCAPE_SRC:-$GITHUB_WORKSPACE}
-    if [ -d "$INKSCAPE_SRC/src/3rdparty/libcroco" ]; then
-        cd $BUILD_DIR
-        mkdir -p libcroco-build
-        cd libcroco-build
-        # libcroco uses autotools
-        $INKSCAPE_SRC/src/3rdparty/libcroco/configure --host=$TRIPLE --prefix=$INSTALL_DIR --disable-static --enable-shared \
-            CC=$CC CXX=$CXX CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" 2>&1 | tail -10
-        make -j$JOBS 2>&1 | tail -10
-        make install 2>&1 | tail -10
-    else
-        echo "WARNING: libcroco submodule not found, skipping"
+    if [ ! -d "$SRC_DIR/libcroco" ]; then
+        git clone --depth 1 https://gitlab.com/inkscape/libcroco.git $SRC_DIR/libcroco
     fi
+    cd $BUILD_DIR
+    mkdir -p libcroco-build
+    cd libcroco-build
+    cmake "$SRC_DIR/libcroco" \
+        -G Ninja \
+        -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
+        -DCMAKE_C_COMPILER="$CC" \
+        -DCMAKE_CXX_COMPILER="$CXX" \
+        -DCMAKE_AR="$AR" \
+        -DCMAKE_STRIP="$STRIP" \
+        -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=ON \
+        -DCMAKE_C_FLAGS="$CFLAGS" \
+        -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+        2>&1 | tail -10
+    /usr/local/bin/ninja -j$JOBS 2>&1 | tail -10
+    /usr/local/bin/ninja install 2>&1 | tail -10
 fi
 
 # =========================================================
