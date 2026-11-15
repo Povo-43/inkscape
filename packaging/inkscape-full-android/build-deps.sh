@@ -195,10 +195,10 @@ if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
     mkdir -p libcroco-build
     cd libcroco-build
     # Use cross-compile pkg-config with correct search path
-    local CROSS_PKG_CONFIG="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config"
+    CROSS_PKG_CONFIG="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/pkg-config"
     echo "PKG_CONFIG=$CROSS_PKG_CONFIG"
     echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
-    $CROSS_PKG_CONFIG --list-all | grep -E "glib|croco" || true
+    $CROSS_PKG_CONFIG --list-all 2>/dev/null | grep -E "glib|croco" | head -5 || true
     export PKG_CONFIG="$CROSS_PKG_CONFIG"
     cmake "$SRC_DIR/libcroco" \
         -G Ninja \
