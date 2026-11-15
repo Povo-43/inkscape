@@ -877,7 +877,7 @@ fi
 # BoostConfigVersion.cmake - required for version checking
 if [ ! -f "$INSTALL_DIR/lib/cmake/Boost-1.19.0/BoostConfigVersion.cmake" ]; then
     echo "--- Creating BoostConfigVersion.cmake ---"
-    cat > "$INSTALL_DIR/lib/cmake/Boost-1.19.0/BoostConfigVersion.cmake" << PCEOF
+    cat > "$INSTALL_DIR/lib/cmake/Boost-1.19.0/BoostConfigVersion.cmake" << 'PCEOF'
 set(PACKAGE_VERSION "1.19.0")
 
 # Check whether the requested version is compatible
