@@ -362,6 +362,7 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="-L$INSTALL/lib -lc++_shared" \
             -DCMAKE_SHARED_LINKER_FLAGS="-L$INSTALL/lib -lc++_shared" \
             -DPKG_CONFIG_EXECUTABLE=/usr/local/bin/pkg-config-cross \
+            -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/packaging/inkscape-full-android/cmake" \
             -DWITH_PYTHON=OFF \
             -DWITH_IMAGE_MAGICK=OFF \
             -DWITH_OPENMP=OFF \
