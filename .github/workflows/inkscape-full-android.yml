@@ -327,9 +327,9 @@ jobs:
             31 \
             "$PIXIEWOOD_BIN"
 
-      - name: Inkscape C++ コアをクロスコンパイル
+      - name: Inkscape C++ コアをクロスコンパイル（フルビルド）
         run: |
-          echo "=== Building Inkscape C++ Core for Android ==="
+          echo "=== Building Inkscape C++ Core for Android (FULL) ==="
           INSTALL=$GITHUB_WORKSPACE/android-install
           NDK=/opt/android-ndk-r27b
           API=31
@@ -344,7 +344,10 @@ jobs:
           cd build-android-arm64
 
           # pixiewood + 手動ビルドの依存を pkg-config に見せる
+          # PKG_CONFIG_LIBDIR を設定して host pkg-config が cross-compile .pc を使えるようにする
+          export PKG_CONFIG_LIBDIR="$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64:$INSTALL/lib/pkgconfig"
           export PKG_CONFIG_PATH="$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64:$INSTALL/lib/pkgconfig"
+          export PKG_CONFIG=/usr/bin/pkg-config
           export CMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64:$INSTALL"
 
           cmake .. \
@@ -361,6 +364,7 @@ jobs:
             -DCMAKE_CXX_FLAGS="-DANDROID -fPIC -I$INSTALL/include -std=c++20" \
             -DCMAKE_EXE_LINKER_FLAGS="-L$INSTALL/lib -lc++_shared" \
             -DCMAKE_SHARED_LINKER_FLAGS="-L$INSTALL/lib -lc++_shared" \
+            -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config \
             -DWITH_PYTHON=OFF \
             -DWITH_IMAGE_MAGICK=OFF \
             -DWITH_OPENMP=OFF \
@@ -376,21 +380,38 @@ jobs:
             -DWITH_EMF=OFF \
             -DWITH_X11=OFF \
             -DWITH_XCB=OFF \
-            2>&1 | tail -30
+            -DWITH_NLS=OFF \
+            -DWITH_PERL=OFF \
+            -DWITH_LIBVISIO=OFF \
+            -DWITH_LIBWPG=OFF \
+            -DWITH_LIBCDR=OFF \
+            -DWITH_LIBREVENGE=OFF \
+            -DWITH_BOOST=ON \
+            -DWITH_GTEST=OFF \
+            2>&1 | tail -50
 
-          # 全ターゲットビルド（Inkscape 自体）
-          /usr/local/bin/ninja -j$JOBS 2>&1 | tail -50 || true
+          # フルビルド（全ターゲット）
+          echo "=== Starting full Inkscape build ==="
+          /usr/local/bin/ninja -j$JOBS 2>&1 | tail -100
 
           # 結果確認
           echo "=== Build artifacts ==="
-          find $INSTALL -name "*.so" -o -name "*.a" | head -30
+          find $INSTALL -name "*.so" -o -name "*.a" | head -50
+          find $GITHUB_WORKSPACE/build-android-arm64 -name "inkscape" -o -name "libinkscape*.so" 2>/dev/null | head -20
+
+      - name: Inkscape 実行ファイルをコピー
+        run: |
+          # ビルド成果物をインストールディレクトリにコピー
+          find $GITHUB_WORKSPACE/build-android-arm64 -name "inkscape" -type f -exec cp {} $GITHUB_WORKSPACE/android-install/bin/ \; 2>/dev/null || true
+          find $GITHUB_WORKSPACE/build-android-arm64 -name "libinkscape*.so" -type f -exec cp {} $GITHUB_WORKSPACE/android-install/lib/ \; 2>/dev/null || true
 
       - name: ビルド成果物をアップロード
         uses: actions/upload-artifact@v4
         with:
-          name: inkscape-core
+          name: inkscape-full-android
           path: |
             android-install/**/*.so
             android-install/**/*.a
+            android-install/bin/inkscape
           retention-days: 7
           if-no-files-found: warn

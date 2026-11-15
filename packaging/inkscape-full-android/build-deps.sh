@@ -37,12 +37,18 @@ export PKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTAL
 export PKG_CONFIG_LIBDIR="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
 
 # Copy pixiewood pkg-config files FIRST, before any dependency builds
+# Search ALL pixiewood output directories for .pc files
 if [ -n "$PIXIEWOOD_DIR" ] && [ -d "$PIXIEWOOD_DIR" ]; then
-    echo "--- Copying pixiewood pkg-config files ---"
-    echo "Searching for .pc files in $PIXIEWOOD_DIR"
-    find "$PIXIEWOOD_DIR" -name "*.pc" -exec echo "Found: {}" \; -exec cp {} $INSTALL_DIR/lib/pkgconfig/ \; 2>/dev/null || true
+    echo "--- Copying ALL pixiewood pkg-config files ---"
+    # Search in meson-private, root directory, and all subdirectories
+    for search_dir in "$PIXIEWOOD_DIR" "$PIXIEWOOD_DIR/meson-private" "$PIXIEWOOD_DIR/../root" "$PIXIEWOOD_DIR/.."; do
+        if [ -d "$search_dir" ]; then
+            echo "Searching for .pc files in $search_dir"
+            find "$search_dir" -name "*.pc" -exec echo "Found: {}" \; -exec cp {} $INSTALL_DIR/lib/pkgconfig/ \; 2>/dev/null || true
+        fi
+    done
     echo "Installed .pc files:"
-    ls -la $INSTALL_DIR/lib/pkgconfig/ | head -20
+    ls -la $INSTALL_DIR/lib/pkgconfig/ | head -40
 fi
 
 # If no .pc files were found, create minimal .pc files for critical dependencies
