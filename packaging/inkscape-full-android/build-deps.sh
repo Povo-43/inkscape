@@ -31,6 +31,9 @@ BUILD_DIR=$(mktemp -d)
 SRC_DIR=$(mktemp -d)
 mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 
+# Global PKG_CONFIG_PATH for all builds
+export PKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
+
 # C++ 標準ライブラリ
 export CXXSTDLIB=-lc++_shared
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
@@ -183,6 +186,8 @@ if [ ! -f "$INSTALL_DIR/lib/libcroco-0.6.so" ]; then
     cd $BUILD_DIR
     mkdir -p libcroco-build
     cd libcroco-build
+    # Need pixiewood pkg-config for glib-2.0
+    PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
     cmake "$SRC_DIR/libcroco" \
         -G Ninja \
         -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
