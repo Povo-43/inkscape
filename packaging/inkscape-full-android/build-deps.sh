@@ -317,16 +317,20 @@ fi
 echo "--- Skipping libcroco (built by Inkscape CMake) ---"
 
 # =========================================================
-# 5. lcms2 (color management)
+# 5. lcms2 (color management) - use autotools
 # =========================================================
 if [ ! -f "$INSTALL_DIR/lib/liblcms2.so" ]; then
-    echo "--- Building lcms2 ---"
+    echo "--- Building lcms2 (autotools) ---"
     LCMS_VER=2.16
     fetch lcms2 "https://github.com/mm2/Little-CMS/archive/refs/tags/lcms$LCMS_VER.tar.gz"
-    # The tarball extracts to Little-CMS-lcms2.16
     LCMS_DIR="$SRC_DIR/Little-CMS-lcms2.16"
     if [ -d "$LCMS_DIR" ]; then
-        build_cmake lcms2 "$LCMS_DIR"
+        echo "--- Building lcms2 (autotools) ---"
+        cd $LCMS_DIR
+        ./configure --host=$TRIPLE --prefix=$INSTALL_DIR --disable-static --enable-shared \
+            CC=$CC CXX=$CXX CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" 2>&1 | tail -10
+        make -j$JOBS 2>&1 | tail -10
+        make install 2>&1 | tail -10
     else
         echo "ERROR: lcms2 source not found at $LCMS_DIR"
         exit 1
