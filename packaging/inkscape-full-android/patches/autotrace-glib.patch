@@ -1,0 +1,31 @@
+--- a/src/3rdparty/autotrace/CMakeLists.txt
++++ b/src/3rdparty/autotrace/CMakeLists.txt
+@@ -1,3 +1,6 @@
++cmake_minimum_required(VERSION 3.12)
++project(autotrace LANGUAGES C CXX)
++add_compile_definitions(HAVE_CONFIG_H)
+ add_library(autotrace_LIB STATIC)
+ 
+ set(INC include/autotrace)
+@@ -52,6 +55,18 @@
+ ${INC}/types.h
+ ${SRC}/vector.c
+ ${SRC}/vector.h
+ ${SRC}/xstd.h
+ )
+ 
++# Skip find_package(GLIB) - we provide our own
++set(GLIB_FOUND TRUE)
++message("- Found 'GLIB' (provided via CMake variables)")
++add_library(GLIB::GLIB INTERFACE IMPORTED)
++set_target_properties(GLIB::GLIB PROPERTIES
++    INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0; /home/runner/work/inkscape/inkscape/android-install/include/glib-2.0/include"
++    INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libglib-2.0.so"
++)
++
+ find_package(PkgConfig REQUIRED)
+ pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
+-target_link_libraries(autotrace_LIB PUBLIC PkgConfig::GLIB Intl::Intl)
++target_link_libraries(autotrace_LIB PUBLIC GLIB::GLIB)
+ target_include_directories(autotrace_LIB PUBLIC SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/include)
+ target_include_directories(autotrace_LIB PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/autotrace)

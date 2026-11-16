@@ -300,11 +300,10 @@ jobs:
           # 4. measure-tool.cpp: vformat を Glib::ustring::compose に置換
           sed -i 's/std::vformat(_("Sub Path {}"), std::make_format_args(pth))/Glib::ustring::compose(_("Sub Path %1"), pth)/' src/ui/tools/measure-tool.cpp
 
-          # 5. autotrace CMakeLists.txt
-          sed -i '1i cmake_minimum_required(VERSION 3.12)\nproject(autotrace LANGUAGES C CXX)\nadd_compile_definitions(HAVE_CONFIG_H)' src/3rdparty/autotrace/CMakeLists.txt
-          sed -i 's/target_link_libraries(autotrace_LIB PUBLIC PkgConfig::GLIB Intl::Intl)/target_link_libraries(autotrace_LIB PUBLIC GLIB::GLIB)/' src/3rdparty/autotrace/CMakeLists.txt
-          # Skip find_package(GLIB) in autotrace - we provide our own
-          sed -i '/find_package(GLIB REQUIRED)/c\    # find_package(GLIB REQUIRED) - skipped for Android cross-compile\n    set(GLIB_FOUND TRUE)\n    message("- Found '\''GLIB'\'' (provided via CMake variables)")\n    add_library(GLIB::GLIB INTERFACE IMPORTED)\n    set_target_properties(GLIB::GLIB PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0; /home/runner/work/inkscape/inkscape/android-install/include/glib-2.0/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libglib-2.0.so"\n    )' src/3rdparty/autotrace/CMakeLists.txt
+          # 5. autotrace CMakeLists.txt - apply patch
+          echo "=== Patching autotrace ==="
+          patch -p1 < packaging/inkscape-full-android/patches/autotrace-glib.patch
+          echo "=== Autotrace patch applied ==="
 
           # 6. adaptagrams CMakeLists.txt
           sed -i '1i cmake_minimum_required(VERSION 3.12)\nproject(adaptagrams LANGUAGES CXX C)' src/3rdparty/adaptagrams/CMakeLists.txt
@@ -321,11 +320,10 @@ jobs:
           # Use perl for more reliable replacement
           perl -pi -e 's/PkgConfig::GLIB/GLIB::GLIB/g' src/3rdparty/2geom/tests/CMakeLists.txt
           
-          # Also patch the performance-tests
+          # Also patch the performance-tests using patch file
           echo "=== Patching 2geom performance-tests ==="
           ls -la src/3rdparty/2geom/src/performance-tests/CMakeLists.txt
-          grep -n "PkgConfig::GLIB" src/3rdparty/2geom/src/performance-tests/CMakeLists.txt || echo "Pattern not found before patch"
-          perl -pi -e 's/PkgConfig::GLIB/GLIB::GLIB/g' src/3rdparty/2geom/src/performance-tests/CMakeLists.txt
+          patch -p1 < packaging/inkscape-full-android/patches/2geom-performance-tests.patch
           
           # Verify the patch was applied
           echo "=== Verifying 2geom tests patch ==="
