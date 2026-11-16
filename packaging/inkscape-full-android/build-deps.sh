@@ -557,6 +557,9 @@ set(JPEG_LIBRARIES "\${_IMPORT_PREFIX}/lib/libjpeg.so")
 set(JPEG_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
 set(JPEG_INCLUDE_DIR "\${_IMPORT_PREFIX}/include")
 
+# Get the install prefix from this file's location
+get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+
 add_library(JPEG::JPEG UNKNOWN IMPORTED)
 set_target_properties(JPEG::JPEG PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
@@ -580,6 +583,8 @@ set(PNG_LIBRARIES "\${_IMPORT_PREFIX}/lib/libpng.so")
 set(PNG_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
 set(PNG_PNG_INCLUDE_DIR "\${_IMPORT_PREFIX}/include")
 
+get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+
 add_library(PNG::PNG UNKNOWN IMPORTED)
 set_target_properties(PNG::PNG PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
@@ -601,6 +606,8 @@ set(ZLIB_VERSION "1.3")
 set(ZLIB_FOUND TRUE)
 set(ZLIB_LIBRARIES "\${_IMPORT_PREFIX}/lib/libz.so")
 set(ZLIB_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
+
+get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
 
 add_library(ZLIB::ZLIB UNKNOWN IMPORTED)
 set_target_properties(ZLIB::ZLIB PROPERTIES
@@ -624,6 +631,8 @@ set(TIFF_FOUND TRUE)
 set(TIFF_LIBRARIES "\${_IMPORT_PREFIX}/lib/libtiff.so")
 set(TIFF_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
 
+get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+
 add_library(TIFF::TIFF UNKNOWN IMPORTED)
 set_target_properties(TIFF::TIFF PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
@@ -645,6 +654,8 @@ set(FREETYPE_VERSION "2.13.0")
 set(FREETYPE_FOUND TRUE)
 set(FREETYPE_LIBRARIES "\${_IMPORT_PREFIX}/lib/libfreetype.so")
 set(FREETYPE_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include/freetype2")
+
+get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
 
 add_library(Freetype::Freetype UNKNOWN IMPORTED)
 set_target_properties(Freetype::Freetype PROPERTIES
@@ -668,6 +679,8 @@ set(LIBXSLT_FOUND TRUE)
 set(LIBXSLT_LIBRARIES "\${_IMPORT_PREFIX}/lib/libxslt.so")
 set(LIBXSLT_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
 
+get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+
 add_library(LibXslt::LibXslt UNKNOWN IMPORTED)
 set_target_properties(LibXslt::LibXslt PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
@@ -689,6 +702,8 @@ set(LIBXML2_VERSION "2.12.6")
 set(LIBXML2_FOUND TRUE)
 set(LIBXML2_LIBRARIES "\${_IMPORT_PREFIX}/lib/libxml2.so")
 set(LIBXML2_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include/libxml2")
+
+get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
 
 add_library(LibXml2::LibXml2 UNKNOWN IMPORTED)
 set_target_properties(LibXml2::LibXml2 PROPERTIES
