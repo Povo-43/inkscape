@@ -312,6 +312,10 @@ jobs:
           # 7. 2geom CMakeLists.txt: Boost バージョン制約削除
           sed -i 's/find_package(Boost 1.60 CONFIG REQUIRED)/find_package(Boost CONFIG REQUIRED)/' src/3rdparty/2geom/CMakeLists.txt
 
+          # 5b. 2geom tests - replace PkgConfig::GLIB with GLIB::GLIB (submodule updated to gitlab HEAD)
+          sed -i 's/target_link_libraries(${source} 2geom GTest::Main GSL::gsl PkgConfig::GLIB)/target_link_libraries(${source} 2geom GTest::Main GSL::gsl GLIB::GLIB)/' src/3rdparty/2geom/tests/CMakeLists.txt
+          sed -i 's/target_link_libraries(${source} 2geom GTest::GTest GSL::gsl PkgConfig::GLIB)/target_link_libraries(${source} 2geom GTest::GTest GSL::gsl GLIB::GLIB)/' src/3rdparty/2geom/tests/CMakeLists.txt
+
           # 8. Make Potrace conditional on WITH_POTRACE
           sed -i 's/find_package(Potrace REQUIRED)/if(WITH_POTRACE)\n    find_package(Potrace REQUIRED)/' CMakeScripts/DefineDependsandFlags.cmake
           sed -i 's/list(APPEND INKSCAPE_LIBS Potrace::Potrace)/    list(APPEND INKSCAPE_LIBS Potrace::Potrace)\nendif()/' CMakeScripts/DefineDependsandFlags.cmake
