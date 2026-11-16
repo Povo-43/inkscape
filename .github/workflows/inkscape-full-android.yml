@@ -309,6 +309,10 @@ jobs:
           # 6. adaptagrams CMakeLists.txt
           sed -i '1i cmake_minimum_required(VERSION 3.12)\nproject(adaptagrams LANGUAGES CXX C)' src/3rdparty/adaptagrams/CMakeLists.txt
 
+          # 5b. 2geom tests - replace PkgConfig::GLIB with GLIB::GLIB
+          sed -i 's/target_link_libraries(${source} 2geom GTest::Main GSL::gsl PkgConfig::GLIB)/target_link_libraries(${source} 2geom GTest::Main GSL::gsl GLIB::GLIB)/' src/3rdparty/2geom/tests/CMakeLists.txt
+          sed -i 's/target_link_libraries(${source} 2geom GTest::GTest GSL::gsl PkgConfig::GLIB)/target_link_libraries(${source} 2geom GTest::GTest GSL::gsl GLIB::GLIB)/' src/3rdparty/2geom/tests/CMakeLists.txt
+
           # 7. 2geom CMakeLists.txt: Boost バージョン制約削除
           sed -i 's/find_package(Boost 1.60 CONFIG REQUIRED)/find_package(Boost CONFIG REQUIRED)/' src/3rdparty/2geom/CMakeLists.txt
 
