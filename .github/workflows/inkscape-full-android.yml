@@ -329,7 +329,7 @@ jobs:
           # Also patch the performance-tests using patch file
           echo "=== Patching 2geom performance-tests ==="
           ls -la src/3rdparty/2geom/src/performance-tests/CMakeLists.txt
-          patch -p1 < packaging/inkscape-full-android/patches/2geom-performance-tests.patch
+          (cd src/3rdparty/2geom && patch -p1 < ../../../packaging/inkscape-full-android/patches/2geom-performance-tests.patch)
           
           # Verify the patch was applied
           echo "=== Verifying 2geom tests patch ==="
