@@ -300,13 +300,14 @@ jobs:
           # 4. measure-tool.cpp: vformat を Glib::ustring::compose に置換
           sed -i 's/std::vformat(_("Sub Path {}"), std::make_format_args(pth))/Glib::ustring::compose(_("Sub Path %1"), pth)/' src/ui/tools/measure-tool.cpp
 
-          # 5. autotrace CMakeLists.txt - apply patch
-          echo "=== Patching autotrace ==="
-          echo "Checking if patch file exists..."
-          ls -la packaging/inkscape-full-android/patches/autotrace-glib.patch
-          echo "=== Current autotrace CMakeLists.txt before patch ==="
-          head -80 src/3rdparty/autotrace/CMakeLists.txt
-          patch -p1 < packaging/inkscape-full-android/patches/autotrace-glib.patch 2>&1 || (echo "PATCH FAILED" && exit 1)
+          # 5. autotrace CMakeLists.txt - use sed for reliable changes
+          echo "=== Patching autotrace with sed ==="
+          # Add cmake_minimum_required, project, add_compile_definitions at the top
+          sed -i '1i cmake_minimum_required(VERSION 3.12)\nproject(autotrace LANGUAGES C CXX)\nadd_compile_definitions(HAVE_CONFIG_H)' src/3rdparty/autotrace/CMakeLists.txt
+          # Replace PkgConfig::GLIB Intl::Intl with GLIB::GLIB and add our own GLIB target before find_package
+          sed -i '/find_package(PkgConfig REQUIRED)/i\
+# Skip find_package(GLIB) - we provide our own\nset(GLIB_FOUND TRUE)\nmessage("- Found '\''GLIB'\'' (provided via CMake variables)")\nadd_library(GLIB::GLIB INTERFACE IMPORTED)\nset_target_properties(GLIB::GLIB PROPERTIES\n    INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0; /home/runner/work/inkscape/inkscape/android-install/include/glib-2.0/include"\n    INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libglib-2.0.so"\n)' src/3rdparty/autotrace/CMakeLists.txt
+          sed -i 's/target_link_libraries(autotrace_LIB PUBLIC PkgConfig::GLIB Intl::Intl)/target_link_libraries(autotrace_LIB PUBLIC GLIB::GLIB)/' src/3rdparty/autotrace/CMakeLists.txt
           echo "=== Autotrace patch applied ==="
           echo "=== Current autotrace CMakeLists.txt after patch ==="
           head -80 src/3rdparty/autotrace/CMakeLists.txt
