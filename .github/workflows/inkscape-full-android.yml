@@ -314,6 +314,9 @@ jobs:
           sed -i 's/find_package(Potrace REQUIRED)/if(WITH_POTRACE)\n    find_package(Potrace REQUIRED)/' CMakeScripts/DefineDependsandFlags.cmake
           sed -i 's/list(APPEND INKSCAPE_LIBS Potrace::Potrace)/    list(APPEND INKSCAPE_LIBS Potrace::Potrace)\nendif()/' CMakeScripts/DefineDependsandFlags.cmake
 
+          # 9. Skip harfbuzz-cairo pkg_check_modules - we provide it via CMake variables
+          sed -i '/pkg_check_modules(HARFBUZZ_CAIRO IMPORTED_TARGET harfbuzz-cairo)/c\    set(HARFBUZZ_CAIRO_FOUND TRUE)\n    message("- Found '\''harfbuzz-cairo'\'' (provided via CMake variables)")' CMakeScripts/DefineDependsandFlags.cmake
+
           echo "Patches applied"
 
       - name: 依存ライブラリをクロスコンパイル
