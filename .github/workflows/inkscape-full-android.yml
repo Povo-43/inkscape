@@ -346,6 +346,8 @@ jobs:
           sed -i '/find_package(Freetype REQUIRED)/c\    # find_package(Freetype REQUIRED) - skipped for Android cross-compile\n    set(FREETYPE_FOUND TRUE)\n    message("- Found '\''Freetype'\'' (provided via CMake variables)")\n    add_library(Freetype::Freetype INTERFACE IMPORTED)\n    set_target_properties(Freetype::Freetype PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libfreetype.so"\n    )' src/3rdparty/CMakeLists.txt
 
           echo "Patches applied"
+
+      - name: 依存ライブラリをクロスコンパイル
         run: |
           echo "=== Building Inkscape Minimal Dependencies for Android ==="
           cd $GITHUB_WORKSPACE
