@@ -1125,6 +1125,12 @@ echo "Jobs: $JOBS"
 echo ""
 
 # =========================================================
+# Fix PIXIEWOOD paths - headers are in root/, libs are in bin-ARCH/
+# These must be defined early for use in .pc file creation
+PIXIEWOOD_ROOT="${PIXIEWOOD_DIR}/../root"
+PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
+
+# =========================================================
 # Helper functions
 # =========================================================
 fetch() {
@@ -1139,10 +1145,6 @@ fetch() {
         rm -f "${name}.tar"
     fi
 }
-
-# Fix PIXIEWOOD paths - headers are in root/, libs are in bin-ARCH/
-PIXIEWOOD_ROOT="${PIXIEWOOD_DIR}/../root"
-PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
 }
 
 build_cmake() {
