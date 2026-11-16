@@ -335,6 +335,9 @@ jobs:
           # 15. Skip pkg_check_modules(MM ...) - we provide it via CMake variables (cairomm-1.16, pangomm-2.48, gdk-pixbuf-2.0, graphene-1.0)
           sed -i '/pkg_check_modules(/,/graphene-1.0)/c\    set(MM_FOUND TRUE)\n    message("- Found '\''MM'\'' (provided via CMake variables)")\n    # The individual targets are already added via INKSCAPE_DEP patch' CMakeScripts/DefineDependsandFlags.cmake
 
+          # 15. Skip pkg_check_modules(GTK ...) - we provide it via CMake variables (skip pixiewood's GTK that creates PkgConfig::GLIB)
+          sed -i '/pkg_check_modules(GTK IMPORTED_TARGET gtk4>=4.14.0)/c\    set(GTK_FOUND TRUE)\n    message("- Found '\''GTK'\'' (provided via CMake variables)")\n    # GTK dependencies are added via individual targets\n    list(APPEND INKSCAPE_LIBS \n        PkgConfig::GTKMM\n    )' CMakeScripts/DefineDependsandFlags.cmake
+
           echo "Patches applied"
 
       - name: 依存ライブラリをクロスコンパイル
