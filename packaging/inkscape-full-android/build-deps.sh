@@ -40,20 +40,9 @@ export PKG_CONFIG_PATH="${INSTALL_DIR}/lib/pkgconfig:${PIXIEWOOD_DIR}/meson-priv
 # PKG_CONFIG_LIBDIR tells pkg-config to ONLY look in cross-compile directories - IMPORTANT: INSTALL_DIR FIRST
 export PKG_CONFIG_LIBDIR="${INSTALL_DIR}/lib/pkgconfig:${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}"
 
-# Copy pixiewood pkg-config files FIRST, before any dependency builds
-# Search ALL pixiewood output directories for .pc files
-if [ -n "$PIXIEWOOD_DIR" ] && [ -d "$PIXIEWOOD_DIR" ]; then
-    echo "--- Copying ALL pixiewood pkg-config files ---"
-    # Search in meson-private, root directory, and all subdirectories
-    for search_dir in "$PIXIEWOOD_DIR" "$PIXIEWOOD_DIR/meson-private" "$PIXIEWOOD_DIR/../root" "$PIXIEWOOD_DIR/.."; do
-        if [ -d "$search_dir" ]; then
-            echo "Searching for .pc files in $search_dir"
-            find "$search_dir" -name "*.pc" -exec echo "Found: {}" \; -exec cp {} $INSTALL_DIR/lib/pkgconfig/ \; 2>/dev/null || true
-        fi
-    done
-    echo "Installed .pc files:"
-    ls -la $INSTALL_DIR/lib/pkgconfig/ | head -40
-fi
+# Do NOT copy pixiewood pkg-config files - they have wrong paths
+# We create all required .pc files ourselves with correct paths
+echo "--- Skipping pixiewood pkg-config files (will create our own) ---"
 
 # If no .pc files were found, create minimal .pc files for critical dependencies
 # This is needed because pixiewood may not install .pc files
