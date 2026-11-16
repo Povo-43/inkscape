@@ -333,7 +333,7 @@ jobs:
           sed -i '/find_package(Intl REQUIRED)/c\    set(Intl_FOUND TRUE)\n    message("- Found '\''Intl'\'' (provided via CMake variables)")\n    add_library(Intl::Intl INTERFACE IMPORTED)\n    set_target_properties(Intl::Intl PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libintl.so"\n    )' CMakeScripts/DefineDependsandFlags.cmake
 
           # 15. Skip pkg_check_modules(MM ...) - we provide it via CMake variables (cairomm-1.16, pangomm-2.48, gdk-pixbuf-2.0, graphene-1.0)
-          sed -i '/pkg_check_modules(MM REQUIRED IMPORTED_TARGET cairomm-1.16 pangomm-2.48 gdk-pixbuf-2.0 graphene-1.0)/c\    set(MM_FOUND TRUE)\n    message("- Found '\''MM'\'' (provided via CMake variables)")\n    # The individual targets are already added via INKSCAPE_DEP patch' CMakeScripts/DefineDependsandFlags.cmake
+          sed -i '/pkg_check_modules(/,/graphene-1.0)/c\    set(MM_FOUND TRUE)\n    message("- Found '\''MM'\'' (provided via CMake variables)")\n    # The individual targets are already added via INKSCAPE_DEP patch' CMakeScripts/DefineDependsandFlags.cmake
 
           echo "Patches applied"
 
