@@ -35,10 +35,10 @@ mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 PIXIEWOOD_ROOT="${PIXIEWOOD_DIR}/../root"
 PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
 
-# Global PKG_CONFIG_PATH for all builds
-export PKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
-# PKG_CONFIG_LIBDIR tells pkg-config to ONLY look in cross-compile directories
-export PKG_CONFIG_LIBDIR="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
+# Global PKG_CONFIG_PATH for all builds - IMPORTANT: INSTALL_DIR FIRST so our .pc files take precedence
+export PKG_CONFIG_PATH="${INSTALL_DIR}/lib/pkgconfig:${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}"
+# PKG_CONFIG_LIBDIR tells pkg-config to ONLY look in cross-compile directories - IMPORTANT: INSTALL_DIR FIRST
+export PKG_CONFIG_LIBDIR="${INSTALL_DIR}/lib/pkgconfig:${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}"
 
 # Copy pixiewood pkg-config files FIRST, before any dependency builds
 # Search ALL pixiewood output directories for .pc files
