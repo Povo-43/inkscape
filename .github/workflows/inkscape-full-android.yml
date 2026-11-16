@@ -343,7 +343,7 @@ jobs:
           cd build-android-arm64
 
           # Create pkg-config wrapper for cross-compilation
-          printf '#!/bin/bash\nexport PKG_CONFIG_LIBDIR="/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64:/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig"\nexport PKG_CONFIG_PATH="/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64:/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig"\nexec /usr/bin/pkg-config "$@"\n' > /usr/local/bin/pkg-config-cross
+          printf '#!/bin/bash\nexport PKG_CONFIG_LIBDIR="/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64"\nexport PKG_CONFIG_PATH="/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64"\nexec /usr/bin/pkg-config "$@"\n' > /usr/local/bin/pkg-config-cross
           chmod +x /usr/local/bin/pkg-config-cross
 
           # pixiewood + 手動ビルドの依存を pkg-config に見せる
