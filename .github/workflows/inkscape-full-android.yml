@@ -332,6 +332,9 @@ jobs:
           # 14. Skip find_package(Intl REQUIRED) - we provide it via CMake variables
           sed -i '/find_package(Intl REQUIRED)/c\    set(Intl_FOUND TRUE)\n    message("- Found '\''Intl'\'' (provided via CMake variables)")\n    add_library(Intl::Intl INTERFACE IMPORTED)\n    set_target_properties(Intl::Intl PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libintl.so"\n    )' CMakeScripts/DefineDependsandFlags.cmake
 
+          # 15. Skip pkg_check_modules(MM ...) - we provide it via CMake variables (cairomm-1.16, pangomm-2.48, gdk-pixbuf-2.0, graphene-1.0)
+          sed -i '/pkg_check_modules(MM REQUIRED IMPORTED_TARGET cairomm-1.16 pangomm-2.48 gdk-pixbuf-2.0 graphene-1.0)/c\    set(MM_FOUND TRUE)\n    message("- Found '\''MM'\'' (provided via CMake variables)")\n    # The individual targets are already added via INKSCAPE_DEP patch' CMakeScripts/DefineDependsandFlags.cmake
+
           echo "Patches applied"
 
       - name: 依存ライブラリをクロスコンパイル
@@ -387,7 +390,7 @@ jobs:
             -DCMAKE_SHARED_LINKER_FLAGS="-L$INSTALL/lib -lc++_shared" \
             -DPKG_CONFIG_EXECUTABLE=/usr/local/bin/pkg-config-cross \
             -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/packaging/inkscape-full-android/cmake" \
-            -DCMAKE_PREFIX_PATH="$INSTALL;$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64" \
+            -DCMAKE_PREFIX_PATH="$INSTALL" \
             -DPNG_INCLUDE_DIR="$INSTALL/include" \
             -DPNG_PNG_INCLUDE_DIR="$INSTALL/include" \
             -DPNG_LIBRARY="$INSTALL/lib/libpng.so" \
