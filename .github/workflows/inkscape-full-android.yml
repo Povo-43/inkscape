@@ -382,6 +382,8 @@ jobs:
             -DLIBXML2_LIBRARIES="$INSTALL/lib/libxml2.so" \
             -DTIFF_INCLUDE_DIR="$INSTALL/include" \
             -DTIFF_LIBRARY="$INSTALL/lib/libtiff.so" \
+            -DFREETYPE_INCLUDE_DIRS="$INSTALL/include/freetype2" \
+            -DFREETYPE_LIBRARY="$INSTALL/lib/libfreetype.so" \
             -DWITH_PYTHON=OFF \
             -DWITH_IMAGE_MAGICK=OFF \
             -DWITH_OPENMP=OFF \
