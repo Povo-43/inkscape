@@ -360,8 +360,9 @@ jobs:
           sed -i '/pkg_search_module(ICU_I18N REQUIRED IMPORTED_TARGET icu-i18n)/c\    set(ICU_I18N_FOUND TRUE)\n    message("- Found '\''icu-i18n'\'' (provided via CMake variables)")\n    add_library(PkgConfig::ICU_I18N INTERFACE IMPORTED)\n    set_target_properties(PkgConfig::ICU_I18N PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libicui18n.so"\n    )' CMakeScripts/DefineDependsandFlags.cmake
 
           # 14. Add GLIB::GLIB target at top of DefineDependsandFlags.cmake for cross-compile
-          sed -i '/^set(INKSCAPE_LIBS "")/a\
-# Android cross-compile: provide GLIB::GLIB target\nset(GLIB_FOUND TRUE)\nmessage("- Found '\''GLIB'\'' (provided via CMake variables)")\nadd_library(GLIB::GLIB INTERFACE IMPORTED)\nset_target_properties(GLIB::GLIB PROPERTIES\n    INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0; /home/runner/work/inkscape/inkscape/android-install/include/glib-2.0/include"\n    INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libglib-2.0.so"\n)' CMakeScripts/DefineDependsandFlags.cmake
+          echo "=== Patching DefineDependsandFlags.cmake for GLIB ==="
+          patch -p1 < packaging/inkscape-full-android/patches/define-depends-glib.patch
+          echo "=== GLIB patch applied ==="
 
           # 14. Skip find_package(Intl REQUIRED) - we provide it via CMake variables
           sed -i '/find_package(Intl REQUIRED)/c\    set(Intl_FOUND TRUE)\n    message("- Found '\''Intl'\'' (provided via CMake variables)")\n    add_library(Intl::Intl INTERFACE IMPORTED)\n    set_target_properties(Intl::Intl PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libintl.so"\n    )' CMakeScripts/DefineDependsandFlags.cmake
