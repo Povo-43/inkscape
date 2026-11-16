@@ -430,6 +430,12 @@ jobs:
             -DWITH_LIBWPG=OFF \
             -DWITH_LIBCDR=OFF \
             -DWITH_LIBREVENGE=OFF \
+            -DWITH_INTERNAL_DEPIXELIZE=ON \
+            -DWITH_INTERNAL_AUTOTRACE=ON \
+            -DWITH_INTERNAL_ADAPTAGRAMS=ON \
+            -DWITH_INTERNAL_UEMF=ON \
+            -DWITH_INTERNAL_2GEOM=ON \
+            -DWITH_INTERNAL_CAPYPDF=ON \
             -DWITH_BOOST=ON \
             -DWITH_GTEST=OFF \
             -DWITH_GETTEXT=OFF \
