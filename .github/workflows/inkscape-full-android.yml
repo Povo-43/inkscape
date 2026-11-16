@@ -385,6 +385,8 @@ jobs:
             -DTIFF_LIBRARY="$INSTALL/lib/libtiff.so" \
             -DFREETYPE_INCLUDE_DIRS="$INSTALL/include/freetype2" \
             -DFREETYPE_LIBRARY="$INSTALL/lib/libfreetype.so" \
+            -DHARFBUZZ_CAIRO_INCLUDE_DIR="$INSTALL/include" \
+            -DHARFBUZZ_CAIRO_LIBRARY="$INSTALL/lib/libharfbuzz-cairo.so" \
             -DWITH_PYTHON=OFF \
             -DWITH_IMAGE_MAGICK=OFF \
             -DWITH_OPENMP=OFF \
