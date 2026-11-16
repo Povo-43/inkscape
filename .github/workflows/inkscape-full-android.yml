@@ -315,7 +315,7 @@ jobs:
           sed -i 's/list(APPEND INKSCAPE_LIBS Potrace::Potrace)/    list(APPEND INKSCAPE_LIBS Potrace::Potrace)\nendif()/' CMakeScripts/DefineDependsandFlags.cmake
 
           # 9. Skip harfbuzz-cairo pkg_check_modules - we provide it via CMake variables
-          sed -i '/pkg_check_modules(HARFBUZZ_CAIRO IMPORTED_TARGET harfbuzz-cairo)/c\    set(HARFBUZZ_CAIRO_FOUND TRUE)\n    message("- Found '\''harfbuzz-cairo'\'' (provided via CMake variables)")' CMakeScripts/DefineDependsandFlags.cmake
+          sed -i '/pkg_check_modules(HARFBUZZ_CAIRO IMPORTED_TARGET harfbuzz-cairo)/c\    set(HARFBUZZ_CAIRO_FOUND TRUE)\n    message("- Found '\''harfbuzz-cairo'\'' (provided via CMake variables)")\n    # Create the imported target that Inkscape CMakeLists.txt expects\n    add_library(PkgConfig::HARFBUZZ_CAIRO INTERFACE IMPORTED)\n    set_target_properties(PkgConfig::HARFBUZZ_CAIRO PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "${INSTALL}/include"\n        INTERFACE_LINK_LIBRARIES "${INSTALL}/lib/libharfbuzz-cairo.so"\n    )' CMakeScripts/DefineDependsandFlags.cmake
 
           echo "Patches applied"
 
