@@ -347,10 +347,11 @@ jobs:
           chmod +x /usr/local/bin/pkg-config-cross
 
           # pixiewood + 手動ビルドの依存を pkg-config に見せる
-          export PKG_CONFIG_LIBDIR="$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64:$INSTALL/lib/pkgconfig"
-          export PKG_CONFIG_PATH="$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64:$INSTALL/lib/pkgconfig"
+          # IMPORTANT: Put our install directory FIRST so our corrected .pc files take precedence over pixiewood's
+          export PKG_CONFIG_LIBDIR="$INSTALL/lib/pkgconfig:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64"
+          export PKG_CONFIG_PATH="$INSTALL/lib/pkgconfig:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64"
           export PKG_CONFIG=/usr/local/bin/pkg-config-cross
-          export CMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64:$INSTALL"
+          export CMAKE_PREFIX_PATH="$INSTALL:$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64"
 
           cmake .. \
             -G Ninja \
