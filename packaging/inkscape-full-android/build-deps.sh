@@ -581,6 +581,14 @@ set_target_properties(JPEG::JPEG PROPERTIES
     IMPORTED_LOCATION_RELEASE "\${_IMPORT_PREFIX}/lib/libjpeg.so"
     IMPORTED_CONFIGURATIONS "RELEASE"
 )
+# Explicitly set location for all configs
+set_target_properties(JPEG::JPEG PROPERTIES
+    IMPORTED_LOCATION "\${_IMPORT_PREFIX}/lib/libjpeg.so"
+    IMPORTED_LOCATION_DEBUG "\${_IMPORT_PREFIX}/lib/libjpeg.so"
+    IMPORTED_LOCATION_RELEASE "\${_IMPORT_PREFIX}/lib/libjpeg.so"
+    IMPORTED_LOCATION_MINSIZEREL "\${_IMPORT_PREFIX}/lib/libjpeg.so"
+    IMPORTED_LOCATION_RELWITHDEBINFO "\${_IMPORT_PREFIX}/lib/libjpeg.so"
+)
 PCEOF
     echo "Created JPEGConfig.cmake"
 fi
@@ -606,6 +614,14 @@ set_target_properties(PNG::PNG PROPERTIES
     IMPORTED_LOCATION "\${_IMPORT_PREFIX}/lib/libpng.so"
     IMPORTED_LOCATION_RELEASE "\${_IMPORT_PREFIX}/lib/libpng.so"
     IMPORTED_CONFIGURATIONS "RELEASE"
+)
+# Explicitly set location for all configs
+set_target_properties(PNG::PNG PROPERTIES
+    IMPORTED_LOCATION "\${_IMPORT_PREFIX}/lib/libpng.so"
+    IMPORTED_LOCATION_DEBUG "\${_IMPORT_PREFIX}/lib/libpng.so"
+    IMPORTED_LOCATION_RELEASE "\${_IMPORT_PREFIX}/lib/libpng.so"
+    IMPORTED_LOCATION_MINSIZEREL "\${_IMPORT_PREFIX}/lib/libpng.so"
+    IMPORTED_LOCATION_RELWITHDEBINFO "\${_IMPORT_PREFIX}/lib/libpng.so"
 )
 PCEOF
     echo "Created PNGConfig.cmake"
@@ -657,6 +673,14 @@ set_target_properties(TIFF::TIFF PROPERTIES
     IMPORTED_LOCATION_RELEASE "\${_IMPORT_PREFIX}/lib/libtiff.so"
     IMPORTED_CONFIGURATIONS "RELEASE"
 )
+# Explicitly set location for all configs
+set_target_properties(TIFF::TIFF PROPERTIES
+    IMPORTED_LOCATION "\${_IMPORT_PREFIX}/lib/libtiff.so"
+    IMPORTED_LOCATION_DEBUG "\${_IMPORT_PREFIX}/lib/libtiff.so"
+    IMPORTED_LOCATION_RELEASE "\${_IMPORT_PREFIX}/lib/libtiff.so"
+    IMPORTED_LOCATION_MINSIZEREL "\${_IMPORT_PREFIX}/lib/libtiff.so"
+    IMPORTED_LOCATION_RELWITHDEBINFO "\${_IMPORT_PREFIX}/lib/libtiff.so"
+)
 PCEOF
     echo "Created TIFFConfig.cmake"
 fi
@@ -684,6 +708,14 @@ set_target_properties(Freetype::Freetype PROPERTIES
     IMPORTED_LOCATION "\${_IMPORT_PREFIX}/lib/libfreetype.so"
     IMPORTED_LOCATION_RELEASE "\${_IMPORT_PREFIX}/lib/libfreetype.so"
     IMPORTED_CONFIGURATIONS "RELEASE"
+)
+# Explicitly set location for all configs
+set_target_properties(Freetype::Freetype PROPERTIES
+    IMPORTED_LOCATION "\${_IMPORT_PREFIX}/lib/libfreetype.so"
+    IMPORTED_LOCATION_DEBUG "\${_IMPORT_PREFIX}/lib/libfreetype.so"
+    IMPORTED_LOCATION_RELEASE "\${_IMPORT_PREFIX}/lib/libfreetype.so"
+    IMPORTED_LOCATION_MINSIZEREL "\${_IMPORT_PREFIX}/lib/libfreetype.so"
+    IMPORTED_LOCATION_RELWITHDEBINFO "\${_IMPORT_PREFIX}/lib/libfreetype.so"
 )
 PCEOF
     echo "Created FreetypeConfig.cmake"
