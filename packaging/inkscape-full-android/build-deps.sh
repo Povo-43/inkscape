@@ -31,6 +31,10 @@ BUILD_DIR=$(mktemp -d)
 SRC_DIR=$(mktemp -d)
 mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 
+# Fix PIXIEWOOD paths - headers are in root/, libs are in bin-ARCH/
+PIXIEWOOD_ROOT="${PIXIEWOOD_DIR}/../root"
+PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
+
 # Global PKG_CONFIG_PATH for all builds
 export PKG_CONFIG_PATH="${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}:${INSTALL_DIR}/lib/pkgconfig"
 # PKG_CONFIG_LIBDIR tells pkg-config to ONLY look in cross-compile directories
@@ -1123,12 +1127,6 @@ echo "Install: $INSTALL_DIR"
 echo "Target: $TRIPLE (API $API)"
 echo "Jobs: $JOBS"
 echo ""
-
-# =========================================================
-# Fix PIXIEWOOD paths - headers are in root/, libs are in bin-ARCH/
-# These must be defined early for use in .pc file creation
-PIXIEWOOD_ROOT="${PIXIEWOOD_DIR}/../root"
-PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
 
 # =========================================================
 # Helper functions
