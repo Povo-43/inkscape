@@ -63,7 +63,7 @@ if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glib-2.0.pc" ]; then
     # Find actual library locations
     GLIB_LIB=$(find "$PIXIEWOOD_DIR" -name "libglib-2.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
     # glib.h is at ${PIXIEWOOD_DIR}/root/include/glib-2.0/glib.h
-    GLIB_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    GLIB_INCLUDE="${PIXIEWOOD_ROOT}/include"
     
     cat > "$INSTALL_DIR/lib/pkgconfig/glib-2.0.pc" << PCEOF
 prefix=$INSTALL_DIR
@@ -145,7 +145,7 @@ if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libxml-2.0.pc" ]; then
     # Find libxml2 from pixiewood
     LIBXML_LIB=$(find "$PIXIEWOOD_DIR" -name "libxml2.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
     # libxml is at ${PIXIEWOOD_DIR}/root/include/libxml2
-    LIBXML_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    LIBXML_INCLUDE="${PIXIEWOOD_ROOT}/include"
     
     cat > "$INSTALL_DIR/lib/pkgconfig/libxml-2.0.pc" << PCEOF
 prefix=$INSTALL_DIR
@@ -171,7 +171,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/cairo.pc" ]; then
     echo "--- Creating cairo.pc ---"
     CAIRO_LIB=$(find "$PIXIEWOOD_DIR" -name "libcairo.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    CAIRO_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    CAIRO_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/cairo.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -192,7 +192,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/cairo-gobject.pc" ]; then
     echo "--- Creating cairo-gobject.pc ---"
     CAIRO_GOBJECT_LIB=$(find "$PIXIEWOOD_DIR" -name "libcairo-gobject.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    CAIRO_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    CAIRO_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/cairo-gobject.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -213,7 +213,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/freetype2.pc" ]; then
     echo "--- Creating freetype2.pc ---"
     FT_LIB=$(find "$PIXIEWOOD_DIR" -name "libfreetype.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    FT_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    FT_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/freetype2.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -234,7 +234,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/pango-1.0.pc" ]; then
     echo "--- Creating pango-1.0.pc ---"
     PANGO_LIB=$(find "$PIXIEWOOD_DIR" -name "libpango-1.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    PANGO_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    PANGO_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/pango-1.0.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -255,7 +255,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/harfbuzz.pc" ]; then
     echo "--- Creating harfbuzz.pc ---"
     HB_LIB=$(find "$PIXIEWOOD_DIR" -name "libharfbuzz.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    HB_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    HB_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/harfbuzz.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -276,7 +276,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/pangocairo.pc" ]; then
     echo "--- Creating pangocairo.pc ---"
     PANGO_LIB=$(find "$PIXIEWOOD_DIR" -name "libpangocairo-1.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    PANGO_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    PANGO_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/pangocairo.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -297,7 +297,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/pangoft2.pc" ]; then
     echo "--- Creating pangoft2.pc ---"
     PANGO_LIB=$(find "$PIXIEWOOD_DIR" -name "libpangoft2-1.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    PANGO_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    PANGO_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/pangoft2.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -318,7 +318,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/fontconfig.pc" ]; then
     echo "--- Creating fontconfig.pc ---"
     FC_LIB=$(find "$PIXIEWOOD_DIR" -name "libfontconfig.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    FC_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    FC_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/fontconfig.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -339,7 +339,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/bdw-gc.pc" ]; then
     echo "--- Creating bdw-gc.pc ---"
     GC_LIB=$(find "$PIXIEWOOD_DIR" -name "libgc.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    GC_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    GC_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/bdw-gc.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -360,7 +360,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/harfbuzz-cairo.pc" ]; then
     echo "--- Creating harfbuzz-cairo.pc ---"
     HB_LIB=$(find "$PIXIEWOOD_DIR" -name "libharfbuzz.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    HB_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    HB_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/harfbuzz-cairo.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -381,7 +381,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/icu-uc.pc" ]; then
     echo "--- Creating icu-uc.pc ---"
     ICU_LIB=$(find "$PIXIEWOOD_DIR" -name "libicuuc.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    ICU_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    ICU_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/icu-uc.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -402,7 +402,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/icu-i18n.pc" ]; then
     echo "--- Creating icu-i18n.pc ---"
     ICU_LIB=$(find "$PIXIEWOOD_DIR" -name "libicui18n.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    ICU_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    ICU_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/icu-i18n.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -423,7 +423,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/intl.pc" ]; then
     echo "--- Creating intl.pc ---"
     INTL_LIB=$(find "$PIXIEWOOD_DIR" -name "libintl.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    INTL_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    INTL_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/intl.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -444,7 +444,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/icu-uc.pc" ]; then
     echo "--- Creating icu-uc.pc ---"
     ICU_LIB=$(find "$PIXIEWOOD_DIR" -name "libicuuc.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    ICU_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    ICU_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/icu-uc.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -465,7 +465,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/icu-i18n.pc" ]; then
     echo "--- Creating icu-i18n.pc ---"
     ICU_LIB=$(find "$PIXIEWOOD_DIR" -name "libicui18n.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    ICU_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    ICU_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/icu-i18n.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -486,7 +486,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libpng.pc" ]; then
     echo "--- Creating libpng.pc ---"
     PNG_LIB=$(find "$PIXIEWOOD_DIR" -name "libpng.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    PNG_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    PNG_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/libpng.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -507,7 +507,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/zlib.pc" ]; then
     echo "--- Creating zlib.pc ---"
     ZLIB_LIB=$(find "$PIXIEWOOD_DIR" -name "libz.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    ZLIB_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    ZLIB_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/zlib.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -528,7 +528,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libjpeg.pc" ]; then
     echo "--- Creating libjpeg.pc ---"
     JPEG_LIB=$(find "$PIXIEWOOD_DIR" -name "libjpeg.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    JPEG_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    JPEG_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/libjpeg.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -720,7 +720,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/intl.pc" ]; then
     echo "--- Creating intl.pc ---"
     INTL_LIB=$(find "$PIXIEWOOD_DIR" -name "libintl.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    INTL_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    INTL_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/intl.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -741,7 +741,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/cairomm-1.16.pc" ]; then
     echo "--- Creating cairomm-1.16.pc ---"
     CAIROMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libcairomm-1.16.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    CAIROMM_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    CAIROMM_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/cairomm-1.16.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -762,7 +762,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/pangomm-2.48.pc" ]; then
     echo "--- Creating pangomm-2.48.pc ---"
     PANGOMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libpangomm-2.48.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    PANGOMM_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    PANGOMM_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/pangomm-2.48.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -783,7 +783,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/gdk-pixbuf-2.0.pc" ]; then
     echo "--- Creating gdk-pixbuf-2.0.pc ---"
     GDKPIXBUF_LIB=$(find "$PIXIEWOOD_DIR" -name "libgdk_pixbuf-2.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    GDKPIXBUF_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    GDKPIXBUF_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/gdk-pixbuf-2.0.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -804,7 +804,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/graphene-1.0.pc" ]; then
     echo "--- Creating graphene-1.0.pc ---"
     GRAPHENE_LIB=$(find "$PIXIEWOOD_DIR" -name "libgraphene-1.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    GRAPHENE_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    GRAPHENE_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/graphene-1.0.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -825,7 +825,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/sigc++-3.0.pc" ]; then
     echo "--- Creating sigc++-3.0.pc ---"
     SIGC_LIB=$(find "$PIXIEWOOD_DIR" -name "libsigc-3.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    SIGC_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    SIGC_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/sigc++-3.0.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -846,7 +846,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" ]; then
     echo "--- Creating glibmm-2.68.pc ---"
     GLIBMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libglibmm-2.68.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    GLIBMM_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    GLIBMM_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -867,7 +867,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/gtk4.pc" ]; then
     echo "--- Creating gtk4.pc ---"
     GTK4_LIB=$(find "$PIXIEWOOD_DIR" -name "libgtk-4.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    GTK4_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    GTK4_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/gtk4.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -888,7 +888,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/giomm-2.68.pc" ]; then
     echo "--- Creating giomm-2.68.pc ---"
     GIOMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libgiomm-2.68.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    GIOMM_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    GIOMM_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/giomm-2.68.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -909,7 +909,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/gtkmm-4.0.pc" ]; then
     echo "--- Creating gtkmm-4.0.pc ---"
     GTKMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libgtkmm-4.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    GTKMM_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    GTKMM_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/gtkmm-4.0.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -930,7 +930,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libspelling-1.pc" ]; then
     echo "--- Creating libspelling-1.pc ---"
     SPELL_LIB=$(find "$PIXIEWOOD_DIR" -name "libspelling-1.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    SPELL_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    SPELL_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/libspelling-1.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -951,7 +951,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/gtksourceview-5.pc" ]; then
     echo "--- Creating gtksourceview-5.pc ---"
     GSV_LIB=$(find "$PIXIEWOOD_DIR" -name "libgtksourceview-5.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    GSV_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    GSV_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/gtksourceview-5.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -972,7 +972,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/enchant-2.pc" ]; then
     echo "--- Creating enchant-2.pc ---"
     ENCHANT_LIB=$(find "$PIXIEWOOD_DIR" -name "libenchant-2.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    ENCHANT_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    ENCHANT_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/enchant-2.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -997,7 +997,7 @@ if [ ! -f "$INSTALL_DIR/lib/cmake/Boost-1.19.0/BoostConfig.cmake" ]; then
     echo "--- Creating BoostConfig.cmake ---"
     mkdir -p "$INSTALL_DIR/lib/cmake/Boost-1.19.0"
     BOOST_LIB=$(find "$PIXIEWOOD_DIR" -name "libboost_system.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    BOOST_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    BOOST_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/cmake/Boost-1.19.0/BoostConfig.cmake" << PCEOF
 # Boost CMake configuration for Android cross-compile
 set(Boost_VERSION 101900)
@@ -1051,7 +1051,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libxslt.pc" ]; then
     echo "--- Creating libxslt.pc ---"
     XSLT_LIB=$(find "$PIXIEWOOD_DIR" -name "libxslt.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    XSLT_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    XSLT_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/libxslt.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -1075,7 +1075,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/epoxy.pc" ]; then
     echo "--- Creating epoxy.pc ---"
     EPOXY_LIB=$(find "$PIXIEWOOD_DIR" -name "libepoxy.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    EPOXY_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    EPOXY_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/epoxy.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -1096,7 +1096,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libtiff.pc" ]; then
     echo "--- Creating libtiff.pc ---"
     TIFF_LIB=$(find "$PIXIEWOOD_DIR" -name "libtiff.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    TIFF_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    TIFF_INCLUDE="${PIXIEWOOD_ROOT}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/libtiff.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -1138,6 +1138,11 @@ fetch() {
         tar xf "${name}.tar" || tar xjf "${name}.tar" || tar xzf "${name}.tar"
         rm -f "${name}.tar"
     fi
+}
+
+# Fix PIXIEWOOD paths - headers are in root/, libs are in bin-ARCH/
+PIXIEWOOD_ROOT="${PIXIEWOOD_DIR}/../root"
+PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
 }
 
 build_cmake() {
