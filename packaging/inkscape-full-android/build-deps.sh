@@ -937,6 +937,27 @@ Cflags: -I${EPOXY_INCLUDE}
 PCEOF
     echo "Created epoxy.pc"
 fi
+
+# tiff
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libtiff.pc" ]; then
+    echo "--- Creating libtiff.pc ---"
+    TIFF_LIB=$(find "$PIXIEWOOD_DIR" -name "libtiff.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    TIFF_INCLUDE="${PIXIEWOOD_DIR}/root/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/libtiff.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: libtiff
+Description: TIFF image format library
+Version: 4.6.0
+Requires: zlib, libjpeg
+Libs: -L${TIFF_LIB} -ltiff
+Cflags: -I${TIFF_INCLUDE}
+PCEOF
+    echo "Created libtiff.pc"
+fi
 # compat ヘッダーはグローバルに強制インクルードしない（NDK ヘッダーと競合するため）
 # 必要な箇所で個別にインクルードする
 export CXXFLAGS="-DANDROID -fPIC -I$INSTALL_DIR/include -std=c++20"
