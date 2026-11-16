@@ -555,8 +555,8 @@ if [ ! -f "$INSTALL_DIR/lib/cmake/JPEG/JPEGConfig.cmake" ]; then
     mkdir -p "$INSTALL_DIR/lib/cmake/JPEG"
     cat > "$INSTALL_DIR/lib/cmake/JPEG/JPEGConfig.cmake" << PCEOF
 # JPEG CMake configuration for Android cross-compile
-# Get the install prefix from this file's location
-get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+# Use absolute path for Android cross-compile
+set(_IMPORT_PREFIX "/home/runner/work/inkscape/inkscape/android-install")
 
 set(JPEG_VERSION "9e")
 set(JPEG_FOUND TRUE)
@@ -581,7 +581,8 @@ if [ ! -f "$INSTALL_DIR/lib/cmake/PNG/PNGConfig.cmake" ]; then
     mkdir -p "$INSTALL_DIR/lib/cmake/PNG"
     cat > "$INSTALL_DIR/lib/cmake/PNG/PNGConfig.cmake" << PCEOF
 # PNG CMake configuration for Android cross-compile
-get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+# Use absolute path for Android cross-compile
+set(_IMPORT_PREFIX "/home/runner/work/inkscape/inkscape/android-install")
 
 set(PNG_VERSION "1.6.43")
 set(PNG_FOUND TRUE)
@@ -606,7 +607,8 @@ if [ ! -f "$INSTALL_DIR/lib/cmake/ZLIB/ZLIBConfig.cmake" ]; then
     mkdir -p "$INSTALL_DIR/lib/cmake/ZLIB"
     cat > "$INSTALL_DIR/lib/cmake/ZLIB/ZLIBConfig.cmake" << PCEOF
 # ZLIB CMake configuration for Android cross-compile
-get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+# Use absolute path for Android cross-compile
+set(_IMPORT_PREFIX "/home/runner/work/inkscape/inkscape/android-install")
 
 set(ZLIB_VERSION "1.3")
 set(ZLIB_FOUND TRUE)
@@ -630,7 +632,8 @@ if [ ! -f "$INSTALL_DIR/lib/cmake/TIFF/TIFFConfig.cmake" ]; then
     mkdir -p "$INSTALL_DIR/lib/cmake/TIFF"
     cat > "$INSTALL_DIR/lib/cmake/TIFF/TIFFConfig.cmake" << PCEOF
 # TIFF CMake configuration for Android cross-compile
-get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+# Use absolute path for Android cross-compile
+set(_IMPORT_PREFIX "/home/runner/work/inkscape/inkscape/android-install")
 
 set(TIFF_VERSION "4.6.0")
 set(TIFF_FOUND TRUE)
@@ -654,7 +657,8 @@ if [ ! -f "$INSTALL_DIR/lib/cmake/Freetype/FreetypeConfig.cmake" ]; then
     mkdir -p "$INSTALL_DIR/lib/cmake/Freetype"
     cat > "$INSTALL_DIR/lib/cmake/Freetype/FreetypeConfig.cmake" << PCEOF
 # FreeType CMake configuration for Android cross-compile
-get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+# Use absolute path for Android cross-compile
+set(_IMPORT_PREFIX "/home/runner/work/inkscape/inkscape/android-install")
 
 set(FREETYPE_VERSION "2.13.0")
 set(FREETYPE_FOUND TRUE)
@@ -678,7 +682,8 @@ if [ ! -f "$INSTALL_DIR/lib/cmake/LibXslt/LibXsltConfig.cmake" ]; then
     mkdir -p "$INSTALL_DIR/lib/cmake/LibXslt"
     cat > "$INSTALL_DIR/lib/cmake/LibXslt/LibXsltConfig.cmake" << PCEOF
 # LibXslt CMake configuration for Android cross-compile
-get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+# Use absolute path for Android cross-compile
+set(_IMPORT_PREFIX "/home/runner/work/inkscape/inkscape/android-install")
 
 set(LIBXSLT_VERSION "1.1.38")
 set(LIBXSLT_FOUND TRUE)
@@ -702,7 +707,8 @@ if [ ! -f "$INSTALL_DIR/lib/cmake/LibXml2/LibXml2Config.cmake" ]; then
     mkdir -p "$INSTALL_DIR/lib/cmake/LibXml2"
     cat > "$INSTALL_DIR/lib/cmake/LibXml2/LibXml2Config.cmake" << PCEOF
 # LibXml2 CMake configuration for Android cross-compile
-get_filename_component(_IMPORT_PREFIX "\${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+# Use absolute path for Android cross-compile
+set(_IMPORT_PREFIX "/home/runner/work/inkscape/inkscape/android-install")
 
 set(LIBXML2_VERSION "2.12.6")
 set(LIBXML2_FOUND TRUE)
