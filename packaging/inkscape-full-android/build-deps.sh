@@ -372,7 +372,7 @@ Description: HarfBuzz Cairo integration
 Version: 8.0.0
 Requires: harfbuzz, cairo
 Libs: -L${HB_LIB} -lharfbuzz-cairo
-Cflags: -I${HB_INCLUDE}/harfbuzz
+Cflags: -I${HB_INCLUDE}
 PCEOF
     echo "Created harfbuzz-cairo.pc"
 fi
@@ -438,27 +438,6 @@ Libs: -L${INTL_LIB} -lintl
 Cflags: -I${INTL_INCLUDE}
 PCEOF
     echo "Created intl.pc"
-fi
-
-# harfbuzz-cairo
-if [ ! -f "$INSTALL_DIR/lib/pkgconfig/harfbuzz-cairo.pc" ]; then
-    echo "--- Creating harfbuzz-cairo.pc ---"
-    HB_LIB=$(find "$PIXIEWOOD_DIR" -name "libharfbuzz.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    HB_INCLUDE="${PIXIEWOOD_DIR}/root/include"
-    cat > "$INSTALL_DIR/lib/pkgconfig/harfbuzz-cairo.pc" << PCEOF
-prefix=$INSTALL_DIR
-exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib
-includedir=\${prefix}/include
-
-Name: harfbuzz-cairo
-Description: HarfBuzz Cairo integration
-Version: 8.0.0
-Requires: harfbuzz, cairo
-Libs: -L${HB_LIB} -lharfbuzz-cairo
-Cflags: -I${HB_INCLUDE}/harfbuzz
-PCEOF
-    echo "Created harfbuzz-cairo.pc"
 fi
 
 # icu-uc
@@ -564,6 +543,148 @@ Libs: -L${JPEG_LIB} -ljpeg
 Cflags: -I${JPEG_INCLUDE}
 PCEOF
     echo "Created libjpeg.pc"
+fi
+
+# JPEG CMake config - for CMake's FindJPEG
+if [ ! -f "$INSTALL_DIR/lib/cmake/JPEG/JPEGConfig.cmake" ]; then
+    echo "--- Creating JPEGConfig.cmake ---"
+    mkdir -p "$INSTALL_DIR/lib/cmake/JPEG"
+    cat > "$INSTALL_DIR/lib/cmake/JPEG/JPEGConfig.cmake" << PCEOF
+# JPEG CMake configuration for Android cross-compile
+set(JPEG_VERSION "9e")
+set(JPEG_FOUND TRUE)
+set(JPEG_LIBRARIES "\${_IMPORT_PREFIX}/lib/libjpeg.so")
+set(JPEG_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
+set(JPEG_INCLUDE_DIR "\${_IMPORT_PREFIX}/include")
+
+add_library(JPEG::JPEG INTERFACE IMPORTED)
+set_target_properties(JPEG::JPEG PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
+    INTERFACE_LINK_LIBRARIES "\${_IMPORT_PREFIX}/lib/libjpeg.so"
+)
+PCEOF
+    echo "Created JPEGConfig.cmake"
+fi
+
+# PNG CMake config - for CMake's FindPNG
+if [ ! -f "$INSTALL_DIR/lib/cmake/PNG/PNGConfig.cmake" ]; then
+    echo "--- Creating PNGConfig.cmake ---"
+    mkdir -p "$INSTALL_DIR/lib/cmake/PNG"
+    cat > "$INSTALL_DIR/lib/cmake/PNG/PNGConfig.cmake" << PCEOF
+# PNG CMake configuration for Android cross-compile
+set(PNG_VERSION "1.6.43")
+set(PNG_FOUND TRUE)
+set(PNG_LIBRARIES "\${_IMPORT_PREFIX}/lib/libpng.so")
+set(PNG_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
+set(PNG_PNG_INCLUDE_DIR "\${_IMPORT_PREFIX}/include")
+
+add_library(PNG::PNG INTERFACE IMPORTED)
+set_target_properties(PNG::PNG PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
+    INTERFACE_LINK_LIBRARIES "\${_IMPORT_PREFIX}/lib/libpng.so"
+)
+PCEOF
+    echo "Created PNGConfig.cmake"
+fi
+
+# ZLIB CMake config - for CMake's FindZLIB
+if [ ! -f "$INSTALL_DIR/lib/cmake/ZLIB/ZLIBConfig.cmake" ]; then
+    echo "--- Creating ZLIBConfig.cmake ---"
+    mkdir -p "$INSTALL_DIR/lib/cmake/ZLIB"
+    cat > "$INSTALL_DIR/lib/cmake/ZLIB/ZLIBConfig.cmake" << PCEOF
+# ZLIB CMake configuration for Android cross-compile
+set(ZLIB_VERSION "1.3")
+set(ZLIB_FOUND TRUE)
+set(ZLIB_LIBRARIES "\${_IMPORT_PREFIX}/lib/libz.so")
+set(ZLIB_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
+
+add_library(ZLIB::ZLIB INTERFACE IMPORTED)
+set_target_properties(ZLIB::ZLIB PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
+    INTERFACE_LINK_LIBRARIES "\${_IMPORT_PREFIX}/lib/libz.so"
+)
+PCEOF
+    echo "Created ZLIBConfig.cmake"
+fi
+
+# TIFF CMake config - for CMake's FindTIFF
+if [ ! -f "$INSTALL_DIR/lib/cmake/TIFF/TIFFConfig.cmake" ]; then
+    echo "--- Creating TIFFConfig.cmake ---"
+    mkdir -p "$INSTALL_DIR/lib/cmake/TIFF"
+    cat > "$INSTALL_DIR/lib/cmake/TIFF/TIFFConfig.cmake" << PCEOF
+# TIFF CMake configuration for Android cross-compile
+set(TIFF_VERSION "4.6.0")
+set(TIFF_FOUND TRUE)
+set(TIFF_LIBRARIES "\${_IMPORT_PREFIX}/lib/libtiff.so")
+set(TIFF_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
+
+add_library(TIFF::TIFF INTERFACE IMPORTED)
+set_target_properties(TIFF::TIFF PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
+    INTERFACE_LINK_LIBRARIES "\${_IMPORT_PREFIX}/lib/libtiff.so"
+)
+PCEOF
+    echo "Created TIFFConfig.cmake"
+fi
+
+# FreeType CMake config - for CMake's FindFreetype
+if [ ! -f "$INSTALL_DIR/lib/cmake/Freetype/FreetypeConfig.cmake" ]; then
+    echo "--- Creating FreetypeConfig.cmake ---"
+    mkdir -p "$INSTALL_DIR/lib/cmake/Freetype"
+    cat > "$INSTALL_DIR/lib/cmake/Freetype/FreetypeConfig.cmake" << PCEOF
+# FreeType CMake configuration for Android cross-compile
+set(FREETYPE_VERSION "2.13.0")
+set(FREETYPE_FOUND TRUE)
+set(FREETYPE_LIBRARIES "\${_IMPORT_PREFIX}/lib/libfreetype.so")
+set(FREETYPE_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include/freetype2")
+
+add_library(Freetype::Freetype INTERFACE IMPORTED)
+set_target_properties(Freetype::Freetype PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include/freetype2"
+    INTERFACE_LINK_LIBRARIES "\${_IMPORT_PREFIX}/lib/libfreetype.so"
+)
+PCEOF
+    echo "Created FreetypeConfig.cmake"
+fi
+
+# LibXslt CMake config - for CMake's FindLibXslt
+if [ ! -f "$INSTALL_DIR/lib/cmake/LibXslt/LibXsltConfig.cmake" ]; then
+    echo "--- Creating LibXsltConfig.cmake ---"
+    mkdir -p "$INSTALL_DIR/lib/cmake/LibXslt"
+    cat > "$INSTALL_DIR/lib/cmake/LibXslt/LibXsltConfig.cmake" << PCEOF
+# LibXslt CMake configuration for Android cross-compile
+set(LIBXSLT_VERSION "1.1.38")
+set(LIBXSLT_FOUND TRUE)
+set(LIBXSLT_LIBRARIES "\${_IMPORT_PREFIX}/lib/libxslt.so")
+set(LIBXSLT_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
+
+add_library(LibXslt::LibXslt INTERFACE IMPORTED)
+set_target_properties(LibXslt::LibXslt PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
+    INTERFACE_LINK_LIBRARIES "\${_IMPORT_PREFIX}/lib/libxslt.so"
+)
+PCEOF
+    echo "Created LibXsltConfig.cmake"
+fi
+
+# LibXml2 CMake config - for CMake's FindLibXml2
+if [ ! -f "$INSTALL_DIR/lib/cmake/LibXml2/LibXml2Config.cmake" ]; then
+    echo "--- Creating LibXml2Config.cmake ---"
+    mkdir -p "$INSTALL_DIR/lib/cmake/LibXml2"
+    cat > "$INSTALL_DIR/lib/cmake/LibXml2/LibXml2Config.cmake" << PCEOF
+# LibXml2 CMake configuration for Android cross-compile
+set(LIBXML2_VERSION "2.12.6")
+set(LIBXML2_FOUND TRUE)
+set(LIBXML2_LIBRARIES "\${_IMPORT_PREFIX}/lib/libxml2.so")
+set(LIBXML2_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include/libxml2")
+
+add_library(LibXml2::LibXml2 INTERFACE IMPORTED)
+set_target_properties(LibXml2::LibXml2 PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include/libxml2"
+    INTERFACE_LINK_LIBRARIES "\${_IMPORT_PREFIX}/lib/libxml2.so"
+)
+PCEOF
+    echo "Created LibXml2Config.cmake"
 fi
 
 # intl (libintl)
