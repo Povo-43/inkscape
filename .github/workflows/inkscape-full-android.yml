@@ -302,7 +302,7 @@ jobs:
 
           # 5. autotrace CMakeLists.txt - apply patch
           echo "=== Patching autotrace ==="
-          patch -p1 < packaging/inkscape-full-android/patches/autotrace-glib.patch
+          patch -p1 < packaging/inkscape-full-android/patches/autotrace-glib.patch || (echo "PATCH FAILED" && exit 1)
           echo "=== Autotrace patch applied ==="
 
           # 6. adaptagrams CMakeLists.txt
