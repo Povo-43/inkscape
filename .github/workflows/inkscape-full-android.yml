@@ -302,8 +302,14 @@ jobs:
 
           # 5. autotrace CMakeLists.txt - apply patch
           echo "=== Patching autotrace ==="
-          patch -p1 < packaging/inkscape-full-android/patches/autotrace-glib.patch || (echo "PATCH FAILED" && exit 1)
+          echo "Checking if patch file exists..."
+          ls -la packaging/inkscape-full-android/patches/autotrace-glib.patch
+          echo "=== Current autotrace CMakeLists.txt before patch ==="
+          head -80 src/3rdparty/autotrace/CMakeLists.txt
+          patch -p1 < packaging/inkscape-full-android/patches/autotrace-glib.patch 2>&1 || (echo "PATCH FAILED" && exit 1)
           echo "=== Autotrace patch applied ==="
+          echo "=== Current autotrace CMakeLists.txt after patch ==="
+          head -80 src/3rdparty/autotrace/CMakeLists.txt
 
           # 6. adaptagrams CMakeLists.txt
           sed -i '1i cmake_minimum_required(VERSION 3.12)\nproject(adaptagrams LANGUAGES CXX C)' src/3rdparty/adaptagrams/CMakeLists.txt
