@@ -1143,7 +1143,6 @@ fetch() {
         rm -f "${name}.tar"
     fi
 }
-}
 
 build_cmake() {
     local name=$1 dir=$2
