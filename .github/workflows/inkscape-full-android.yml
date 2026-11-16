@@ -312,9 +312,19 @@ jobs:
           # 7. 2geom CMakeLists.txt: Boost バージョン制約削除
           sed -i 's/find_package(Boost 1.60 CONFIG REQUIRED)/find_package(Boost CONFIG REQUIRED)/' src/3rdparty/2geom/CMakeLists.txt
 
-          # 5b. 2geom tests - replace PkgConfig::GLIB with GLIB::GLIB (submodule updated to gitlab HEAD)
-          sed -i 's/target_link_libraries(${source} 2geom GTest::Main GSL::gsl PkgConfig::GLIB)/target_link_libraries(${source} 2geom GTest::Main GSL::gsl GLIB::GLIB)/' src/3rdparty/2geom/tests/CMakeLists.txt
-          sed -i 's/target_link_libraries(${source} 2geom GTest::GTest GSL::gsl PkgConfig::GLIB)/target_link_libraries(${source} 2geom GTest::GTest GSL::gsl GLIB::GLIB)/' src/3rdparty/2geom/tests/CMakeLists.txt
+          # 5b. 2geom tests - replace PkgConfig::GLIB with GLIB::GLIB
+          echo "=== Patching 2geom tests ==="
+          ls -la src/3rdparty/2geom/tests/CMakeLists.txt
+          echo "=== Before patch ==="
+          grep -n "PkgConfig::GLIB" src/3rdparty/2geom/tests/CMakeLists.txt || echo "Pattern not found before patch"
+          
+          # Use perl for more reliable replacement
+          perl -pi -e 's/PkgConfig::GLIB/GLIB::GLIB/g' src/3rdparty/2geom/tests/CMakeLists.txt
+          
+          # Verify the patch was applied
+          echo "=== Verifying 2geom tests patch ==="
+          grep -n "GLIB::GLIB" src/3rdparty/2geom/tests/CMakeLists.txt || echo "PATCH FAILED: GLIB::GLIB not found"
+          grep -n "PkgConfig::GLIB" src/3rdparty/2geom/tests/CMakeLists.txt && echo "PATCH FAILED: PkgConfig::GLIB still present" || echo "PATCH SUCCESS: All PkgConfig::GLIB replaced"
 
           # 8. Make Potrace conditional on WITH_POTRACE
           sed -i 's/find_package(Potrace REQUIRED)/if(WITH_POTRACE)\n    find_package(Potrace REQUIRED)/' CMakeScripts/DefineDependsandFlags.cmake
