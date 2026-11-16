@@ -1,13 +1,17 @@
 --- a/src/3rdparty/autotrace/CMakeLists.txt
 +++ b/src/3rdparty/autotrace/CMakeLists.txt
-@@ -1,3 +1,6 @@
-+cmake_minimum_required(VERSION 3.12)
-+project(autotrace LANGUAGES C CXX)
-+add_compile_definitions(HAVE_CONFIG_H)
+@@ -1,6 +1,19 @@
  add_library(autotrace_LIB STATIC)
  
  set(INC include/autotrace)
-@@ -52,6 +55,18 @@
++cmake_minimum_required(VERSION 3.12)
++project(autotrace LANGUAGES C CXX)
++add_compile_definitions(HAVE_CONFIG_H)
++
+ set(SRC src/autotrace)
+ target_sources(autotrace_LIB PRIVATE
+     ${SRC}/config.h
+@@ -54,6 +67,18 @@
  ${INC}/types.h
  ${SRC}/vector.c
  ${SRC}/vector.h
