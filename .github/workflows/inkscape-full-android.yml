@@ -387,6 +387,7 @@ jobs:
             -DFREETYPE_LIBRARY="$INSTALL/lib/libfreetype.so" \
             -DHARFBUZZ_CAIRO_INCLUDE_DIR="$INSTALL/include" \
             -DHARFBUZZ_CAIRO_LIBRARY="$INSTALL/lib/libharfbuzz-cairo.so" \
+            -DHAVE_HARFBUZZ_CAIRO=ON \
             -DWITH_PYTHON=OFF \
             -DWITH_IMAGE_MAGICK=OFF \
             -DWITH_OPENMP=OFF \
