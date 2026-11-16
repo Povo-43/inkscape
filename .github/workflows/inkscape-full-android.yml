@@ -323,6 +323,12 @@ jobs:
           # 11. Remove the INKSCAPE_DEP from INKSCAPE_LIBS
           sed -i '/list(APPEND INKSCAPE_LIBS PkgConfig::INKSCAPE_DEP)/d' CMakeScripts/DefineDependsandFlags.cmake
 
+          # 12. Skip ICU_UC pkg_search_module - we provide it via CMake variables
+          sed -i '/pkg_search_module(ICU_UC REQUIRED IMPORTED_TARGET icu-uc)/c\    set(ICU_UC_FOUND TRUE)\n    message("- Found '\''icu-uc'\'' (provided via CMake variables)")\n    add_library(PkgConfig::ICU_UC INTERFACE IMPORTED)\n    set_target_properties(PkgConfig::ICU_UC PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libicuuc.so"\n    )' CMakeScripts/DefineDependsandFlags.cmake
+
+          # 13. Skip ICU_I18N pkg_search_module - we provide it via CMake variables
+          sed -i '/pkg_search_module(ICU_I18N REQUIRED IMPORTED_TARGET icu-i18n)/c\    set(ICU_I18N_FOUND TRUE)\n    message("- Found '\''icu-i18n'\'' (provided via CMake variables)")\n    add_library(PkgConfig::ICU_I18N INTERFACE IMPORTED)\n    set_target_properties(PkgConfig::ICU_I18N PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libicui18n.so"\n    )' CMakeScripts/DefineDependsandFlags.cmake
+
           echo "Patches applied"
 
       - name: 依存ライブラリをクロスコンパイル
