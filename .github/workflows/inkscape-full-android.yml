@@ -318,7 +318,10 @@ jobs:
           sed -i '/pkg_check_modules(HARFBUZZ_CAIRO IMPORTED_TARGET harfbuzz-cairo)/c\    set(HARFBUZZ_CAIRO_FOUND TRUE)\n    message("- Found '\''harfbuzz-cairo'\'' (provided via CMake variables)")\n    # Create the imported target that Inkscape CMakeLists.txt expects\n    add_library(PkgConfig::HARFBUZZ_CAIRO INTERFACE IMPORTED)\n    set_target_properties(PkgConfig::HARFBUZZ_CAIRO PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libharfbuzz-cairo.so"\n    )' CMakeScripts/DefineDependsandFlags.cmake
 
           # 10. Skip INKSCAPE_DEP (pixiewood target) - we provide dependencies manually
-          sed -i '/pkg_check_modules(INKSCAPE_DEP IMPORTED_TARGET cairomm-1.16 pangomm-2.48 gdk-pixbuf-2.0 graphene-1.0)/c\    set(INKSCAPE_DEP_FOUND TRUE)\n    message("- Found '\''INKSCAPE_DEP'\'' (provided manually)")\n    # We manually add the libraries instead of using PkgConfig::INKSCAPE_DEP\n    list(APPEND INKSCAPE_LIBS \n        PkgConfig::CAIROMM\n        PkgConfig::PANGOMM\n        PkgConfig::GDK_PIXBUF\n        PkgConfig::GRAPHENE\n    )' CMakeScripts/DefineDependsandFlags.cmake
+          sed -i '/pkg_check_modules(INKSCAPE_DEP REQUIRED IMPORTED_TARGET harfbuzz/,/lcms2)/c\    set(INKSCAPE_DEP_FOUND TRUE)\n    message("- Found '\''INKSCAPE_DEP'\'' (provided manually)")\n    # We manually add the libraries instead of using PkgConfig::INKSCAPE_DEP\n    list(APPEND INKSCAPE_LIBS \n        PkgConfig::CAIROMM\n        PkgConfig::PANGOMM\n        PkgConfig::GDK_PIXBUF\n        PkgConfig::GRAPHENE\n    )' CMakeScripts/DefineDependsandFlags.cmake
+
+          # 11. Remove the INKSCAPE_DEP from INKSCAPE_LIBS
+          sed -i '/list(APPEND INKSCAPE_LIBS PkgConfig::INKSCAPE_DEP)/d' CMakeScripts/DefineDependsandFlags.cmake
 
           echo "Patches applied"
 
