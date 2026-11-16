@@ -20,6 +20,7 @@
     <cairo/>
     <gdk-pixbuf/>
     <gtk/>
+    <freetype/>
   </dependencies>
   <build target="inkscape-android-gtkmm4">
     <architectures>
