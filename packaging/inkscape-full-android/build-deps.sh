@@ -72,6 +72,27 @@ Libs: -L${GLIB_LIB} -lglib-2.0
 Cflags: -I${GLIB_INCLUDE}/glib-2.0 -I${GLIB_INCLUDE}/glib-2.0/include
 PCEOF
     
+    # Copy Freetype headers from pixiewood to our include directory
+    if [ -d "${PIXIEWOOD_ROOT}/include/freetype2" ]; then
+        echo "--- Copying Freetype headers from pixiewood ---"
+        mkdir -p "${INSTALL_DIR}/include/freetype2"
+        cp -r "${PIXIEWOOD_ROOT}/include/freetype2"/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
+        echo "Copied Freetype headers to ${INSTALL_DIR}/include/freetype2"
+    else
+        echo "Warning: Freetype headers not found in pixiewood at ${PIXIEWOOD_ROOT}/include/freetype2"
+        # Create a symlink to the system freetype2 if available
+        if [ -d "/usr/include/freetype2" ]; then
+            mkdir -p "${INSTALL_DIR}/include/freetype2"
+            cp -r /usr/include/freetype2/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
+        fi
+    fi
+    
+    # Create symlink for freetype2 in include (some CMake scripts expect this)
+    if [ ! -e "${INSTALL_DIR}/include/freetype2" ] && [ -d "/usr/include/freetype2" ]; then
+        mkdir -p "${INSTALL_DIR}/include/freetype2"
+        cp -r /usr/include/freetype2/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
+    fi
+    
     cat > "$INSTALL_DIR/lib/pkgconfig/gobject-2.0.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -644,6 +665,8 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/cmake/Freetype/FreetypeConfig.cmake" ]; then
     echo "--- Creating FreetypeConfig.cmake ---"
     mkdir -p "$INSTALL_DIR/lib/cmake/Freetype"
+    # Freetype is provided by pixiewood via GTK
+    # Headers are at pixiewood root/include/freetype2
     cat > "$INSTALL_DIR/lib/cmake/Freetype/FreetypeConfig.cmake" << PCEOF
 # FreeType CMake configuration for Android cross-compile
 # Use absolute path for Android cross-compile
@@ -652,11 +675,12 @@ set(_IMPORT_PREFIX "/home/runner/work/inkscape/inkscape/android-install")
 set(FREETYPE_VERSION "2.13.0")
 set(FREETYPE_FOUND TRUE)
 set(FREETYPE_LIBRARIES "\${_IMPORT_PREFIX}/lib/libfreetype.so")
-set(FREETYPE_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include/freetype2")
+# Headers are in pixiewood's root/include/freetype2, but we copy them to our include
+set(FREETYPE_INCLUDE_DIRS "\${_IMPORT_PREFIX}/include")
 
 add_library(Freetype::Freetype UNKNOWN IMPORTED)
 set_target_properties(Freetype::Freetype PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include/freetype2"
+    INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
     IMPORTED_LOCATION "\${_IMPORT_PREFIX}/lib/libfreetype.so"
     IMPORTED_LOCATION_RELEASE "\${_IMPORT_PREFIX}/lib/libfreetype.so"
     IMPORTED_CONFIGURATIONS "RELEASE"
