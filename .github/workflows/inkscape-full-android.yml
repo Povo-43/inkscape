@@ -302,7 +302,7 @@ jobs:
 
           # 5. autotrace CMakeLists.txt
           sed -i '1i cmake_minimum_required(VERSION 3.12)\nproject(autotrace LANGUAGES C CXX)\nadd_compile_definitions(HAVE_CONFIG_H)' src/3rdparty/autotrace/CMakeLists.txt
-          sed -i 's/target_link_libraries(autotrace_LIB PUBLIC PkgConfig::GLIB Intl::Intl)/target_link_libraries(autotrace_LIB PUBLIC PkgConfig::GLIB)/' src/3rdparty/autotrace/CMakeLists.txt
+          sed -i 's/target_link_libraries(autotrace_LIB PUBLIC PkgConfig::GLIB Intl::Intl)/target_link_libraries(autotrace_LIB PUBLIC GLIB::GLIB)/' src/3rdparty/autotrace/CMakeLists.txt
           # Skip find_package(GLIB) in autotrace - we provide our own
           sed -i '/find_package(GLIB REQUIRED)/c\    # find_package(GLIB REQUIRED) - skipped for Android cross-compile\n    set(GLIB_FOUND TRUE)\n    message("- Found '\''GLIB'\'' (provided via CMake variables)")\n    add_library(GLIB::GLIB INTERFACE IMPORTED)\n    set_target_properties(GLIB::GLIB PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0; /home/runner/work/inkscape/inkscape/android-install/include/glib-2.0/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libglib-2.0.so"\n    )' src/3rdparty/autotrace/CMakeLists.txt
 
