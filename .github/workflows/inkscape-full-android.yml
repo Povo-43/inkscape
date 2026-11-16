@@ -303,6 +303,8 @@ jobs:
           # 5. autotrace CMakeLists.txt
           sed -i '1i cmake_minimum_required(VERSION 3.12)\nproject(autotrace LANGUAGES C CXX)\nadd_compile_definitions(HAVE_CONFIG_H)' src/3rdparty/autotrace/CMakeLists.txt
           sed -i 's/target_link_libraries(autotrace_LIB PUBLIC PkgConfig::GLIB Intl::Intl)/target_link_libraries(autotrace_LIB PUBLIC PkgConfig::GLIB)/' src/3rdparty/autotrace/CMakeLists.txt
+          # Skip find_package(GLIB) in autotrace - we provide our own
+          sed -i '/find_package(GLIB REQUIRED)/c\    # find_package(GLIB REQUIRED) - skipped for Android cross-compile\n    set(GLIB_FOUND TRUE)\n    message("- Found '\''GLIB'\'' (provided via CMake variables)")\n    add_library(GLIB::GLIB INTERFACE IMPORTED)\n    set_target_properties(GLIB::GLIB PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0; /home/runner/work/inkscape/inkscape/android-install/include/glib-2.0/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libglib-2.0.so"\n    )' src/3rdparty/autotrace/CMakeLists.txt
 
           # 6. adaptagrams CMakeLists.txt
           sed -i '1i cmake_minimum_required(VERSION 3.12)\nproject(adaptagrams LANGUAGES CXX C)' src/3rdparty/adaptagrams/CMakeLists.txt
@@ -328,6 +330,9 @@ jobs:
 
           # 13. Skip ICU_I18N pkg_search_module - we provide it via CMake variables
           sed -i '/pkg_search_module(ICU_I18N REQUIRED IMPORTED_TARGET icu-i18n)/c\    set(ICU_I18N_FOUND TRUE)\n    message("- Found '\''icu-i18n'\'' (provided via CMake variables)")\n    add_library(PkgConfig::ICU_I18N INTERFACE IMPORTED)\n    set_target_properties(PkgConfig::ICU_I18N PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libicui18n.so"\n    )' CMakeScripts/DefineDependsandFlags.cmake
+
+          # 14. Skip find_package(GLIB REQUIRED) - we provide it via CMake variables (skip pixiewood's GLIB)
+          sed -i '/find_package(GLIB REQUIRED)/c\    set(GLIB_FOUND TRUE)\n    message("- Found '\''GLIB'\'' (provided via CMake variables)")\n    add_library(GLIB::GLIB INTERFACE IMPORTED)\n    set_target_properties(GLIB::GLIB PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0; /home/runner/work/inkscape/inkscape/android-install/include/glib-2.0/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libglib-2.0.so"\n    )' CMakeScripts/DefineDependsandFlags.cmake
 
           # 14. Skip find_package(Intl REQUIRED) - we provide it via CMake variables
           sed -i '/find_package(Intl REQUIRED)/c\    set(Intl_FOUND TRUE)\n    message("- Found '\''Intl'\'' (provided via CMake variables)")\n    add_library(Intl::Intl INTERFACE IMPORTED)\n    set_target_properties(Intl::Intl PROPERTIES\n        INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include"\n        INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libintl.so"\n    )' CMakeScripts/DefineDependsandFlags.cmake
