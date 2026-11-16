@@ -857,13 +857,17 @@ set(Boost_LIBRARY_DIRS "\${_IMPORT_PREFIX}/lib")
 set(Boost_FOUND TRUE)
 
 # Create imported targets for required components
-foreach(comp system thread filesystem program_options regex date_time atomic chrono)
+foreach(comp system thread filesystem program_options regex date_time atomic chrono headers)
     if(NOT TARGET Boost::\${comp})
         add_library(Boost::\${comp} INTERFACE IMPORTED)
         set_target_properties(Boost::\${comp} PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "\${_IMPORT_PREFIX}/include"
-            INTERFACE_LINK_LIBRARIES "boost_\${comp}"
         )
+        if(NOT "\${comp}" STREQUAL "headers")
+            set_target_properties(Boost::\${comp} PROPERTIES
+                INTERFACE_LINK_LIBRARIES "boost_\${comp}"
+            )
+        endif()
     endif()
 endforeach()
 
