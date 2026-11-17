@@ -94,25 +94,48 @@ PCEOF
     fi
     
     # Copy glib headers from pixiewood to our include directory
-    # The subprojects are in the source directory: packaging/android-gtkmm4/subprojects/
-    # Use GITHUB_WORKSPACE which is the root of the repo
-    PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/packaging/android-gtkmm4"
-    echo "PIXIEWOOD_SOURCE_DIR=${PIXIEWOOD_SOURCE_DIR}"
-    echo "=== Checking source directory ==="
-    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/" 2>/dev/null || echo "subprojects not found at source"
-    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glib/" 2>/dev/null || echo "glib subproject not found at source"
-    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glib/glib" 2>/dev/null || echo "glib/glib not found at source"
-    # Also check build directory
-    echo "=== Checking build directory ==="
+    # Try multiple locations: pixiewood build dir, pixiewood install dir, and system headers as fallback
+    echo "--- Searching for glib headers ---"
     echo "PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
-    ls -la "${PIXIEWOOD_DIR}/" 2>/dev/null || echo "PIXIEWOOD_DIR not found"
-    ls -la "${PIXIEWOOD_DIR}/subprojects/" 2>/dev/null || echo "subprojects not found at build"
-    ls -la "${PIXIEWOOD_DIR}/subprojects/glib/" 2>/dev/null || echo "glib subproject not found at build"
-    ls -la "${PIXIEWOOD_DIR}/subprojects/glib/glib" 2>/dev/null || echo "glib/glib not found at build"
-    # Also check the parent directory for subprojects
-    echo "=== Checking PIXIEWOOD_DIR parent ==="
-    ls -la "${PIXIEWOOD_DIR}/../" 2>/dev/null || echo "PIXIEWOOD_DIR parent not found"
-    ls -la "${PIXIEWOOD_DIR}/../subprojects/" 2>/dev/null || echo "subprojects not found at PIXIEWOOD_DIR parent"
+    echo "PIXIEWOOD_ROOT=${PIXIEWOOD_ROOT}"
+    
+    # First try: pixiewood build directory (bin-aarch64/subprojects/glib/glib/)
+    if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib" ]; then
+        echo "--- Copying glib headers from pixiewood build directory ---"
+        mkdir -p "${INSTALL_DIR}/include/glib-2.0"
+        cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
+        # Also copy generated headers if they exist
+        if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib/generated" ]; then
+            cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib/generated"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
+        fi
+        # The internal glib headers are in a subdirectory
+        if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib/glib" ]; then
+            cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib/glib"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
+        fi
+        echo "Copied glib headers to ${INSTALL_DIR}/include/glib-2.0"
+    # Second try: pixiewood install directory (root/include/glib-2.0/)
+    elif [ -d "${PIXIEWOOD_ROOT}/include/glib-2.0" ]; then
+        echo "--- Copying glib headers from pixiewood install directory ---"
+        mkdir -p "${INSTALL_DIR}/include/glib-2.0"
+        cp -r "${PIXIEWOOD_ROOT}/include/glib-2.0"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
+        echo "Copied glib headers to ${INSTALL_DIR}/include/glib-2.0"
+    # Third try: system glib headers (fallback for cross-compile)
+    elif [ -d "/usr/include/glib-2.0" ]; then
+        echo "--- Copying glib headers from system (fallback) ---"
+        mkdir -p "${INSTALL_DIR}/include/glib-2.0"
+        cp -r /usr/include/glib-2.0/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
+        # Also copy the glibconfig.h from the build directory
+        if [ -d "/usr/lib/aarch64-linux-gnu/glib-2.0/include" ]; then
+            mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
+            cp -r /usr/lib/aarch64-linux-gnu/glib-2.0/include/* "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
+        elif [ -d "/usr/lib/x86_64-linux-gnu/glib-2.0/include" ]; then
+            mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
+            cp -r /usr/lib/x86_64-linux-gnu/glib-2.0/include/* "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
+        fi
+        echo "Copied system glib headers to ${INSTALL_DIR}/include/glib-2.0 (fallback)"
+    else
+        echo "Warning: glib-2.0 headers not found in any location"
+    fi
     
     echo "--- Searching for glib headers in pixiewood ---"
     echo "PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
