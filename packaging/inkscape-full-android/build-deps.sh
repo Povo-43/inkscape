@@ -193,6 +193,15 @@ PCEOF
         echo "Copied libraries from pixiewood root"
     fi
     
+    # Also try the android app's merged native libs (where the final APK libs are)
+    ANDROID_LIBS="${PIXIEWOOD_DIR}/../../android/app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib/arm64-v8a"
+    if [ -d "${ANDROID_LIBS}" ]; then
+        echo "--- Copying libraries from Android app merged native libs ---"
+        cp -f "${ANDROID_LIBS}"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f "${ANDROID_LIBS}"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        echo "Copied libraries from Android app merged native libs"
+    fi
+    
     # Fallback to system libraries (host libraries - for linking only)
     # Only use if pixiewood didn't provide them
     if [ ! -f "${INSTALL_DIR}/lib/libglib-2.0.so" ] && [ -f "/usr/lib/aarch64-linux-gnu/libglib-2.0.so" ]; then
