@@ -406,7 +406,7 @@ jobs:
             $GITHUB_WORKSPACE/android-install \
             /opt/android-ndk-r27b \
             31 \
-            "$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64"
+            "$GITHUB_WORKSPACE/.pixiewood/bin-aarch64"
 
       - name: Inkscape C++ コアをクロスコンパイル（フルビルド）
         run: |
