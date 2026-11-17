@@ -1251,6 +1251,9 @@ if [ ! -f "$INSTALL_DIR/lib/libpotrace.so" ]; then
     # potrace is included in freetype, skip standalone build
 fi
 
+# Close the main glib-2.0.pc check block (started at line 54)
+fi
+
 echo ""
 echo "=== Minimal dependency build complete ==="
 ls -la $INSTALL_DIR/lib/*.so 2>/dev/null || true
