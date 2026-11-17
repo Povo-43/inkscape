@@ -248,13 +248,11 @@ jobs:
           ls -la
           echo "=== Checking for pixiewood ==="
           find . -name ".pixiewood" -type d 2>/dev/null | head -10
-          echo "=== Checking packaging directory ==="
-          ls -la packaging/ 2>/dev/null || echo "packaging not found"
-          ls -la packaging/android-gtkmm4/ 2>/dev/null || echo "android-gtkmm4 not found"
-          ls -la packaging/android-gtkmm4/.pixiewood/ 2>/dev/null || echo ".pixiewood not found"
-          ls -la packaging/android-gtkmm4/.pixiewood/root/ 2>/dev/null | head -20 || echo "root not found"
-          ls -la packaging/android-gtkmm4/.pixiewood/root/lib/ 2>/dev/null | head -20 || echo "root/lib not found"
-          ls -la packaging/android-gtkmm4/.pixiewood/root/lib/arm64-v8a/ 2>/dev/null | head -20 || echo "root/lib/arm64-v8a not found"
+          echo "=== Checking pixiewood at root level ==="
+          ls -la .pixiewood/ 2>/dev/null || echo ".pixiewood not found at root"
+          ls -la .pixiewood/root/ 2>/dev/null | head -20 || echo "root not found"
+          ls -la .pixiewood/root/lib/ 2>/dev/null | head -20 || echo "root/lib not found"
+          ls -la .pixiewood/root/lib/arm64-v8a/ 2>/dev/null | head -20 || echo "root/lib/arm64-v8a not found"
 
       - name: Android NDK をセットアップ
         run: |
