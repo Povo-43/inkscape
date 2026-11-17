@@ -14,3 +14,18 @@
      ADD_CUSTOM_TARGET(copy-perf ALL COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/src/2geom/lib2geom.dll ${CMAKE_BINARY_DIR}/src/performance-tests/lib2geom.dll)
      ADD_DEPENDENCIES(copy-perf 2geom)
  ENDIF()
+
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -41,8 +41,8 @@ IF(2GEOM_TESTS)
+         SET_TARGET_PROPERTIES(${source} PROPERTIES OUTPUT_NAME ${source})
+         IF(NOT MSVC)
+             SET_TARGET_PROPERTIES(${source} PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
+         ENDIF()
+-        target_link_libraries(${source} 2geom GTest::Main GSL::gsl PkgConfig::GLIB)
+-        target_link_libraries(${source} 2geom GTest::GTest GSL::gsl PkgConfig::GLIB)
++        target_link_libraries(${source} 2geom GTest::Main GSL::gsl GLIB::GLIB)
++        target_link_libraries(${source} 2geom GTest::GTest GSL::gsl GLIB::GLIB)
+         add_dependencies(tests ${source})
+     ENDFOREACH(source)
+ ENDIF()
