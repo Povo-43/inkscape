@@ -322,13 +322,14 @@ jobs:
           # 4. measure-tool.cpp: vformat を Glib::ustring::compose に置換
           sed -i 's/std::vformat(_("Sub Path {}"), std::make_format_args(pth))/Glib::ustring::compose(_("Sub Path %1"), pth)/' src/ui/tools/measure-tool.cpp
 
-          # 5. autotrace CMakeLists.txt - apply patch
+          # 5. autotrace CMakeLists.txt - apply sed-based patch
           echo "=== Patching autotrace ==="
-          echo "Checking if patch file exists..."
-          ls -la packaging/inkscape-full-android/patches/autotrace-glib.patch
           echo "=== Current autotrace CMakeLists.txt before patch ==="
           head -80 src/3rdparty/autotrace/CMakeLists.txt
-          patch -p1 < packaging/inkscape-full-android/patches/autotrace-glib.patch 2>&1 || (echo "PATCH FAILED" && exit 1)
+          # Insert cmake_minimum_required, project, and add_compile_definitions at the top
+          sed -i '1i cmake_minimum_required(VERSION 3.12)\nproject(autotrace LANGUAGES C CXX)\nadd_compile_definitions(HAVE_CONFIG_H)' src/3rdparty/autotrace/CMakeLists.txt
+          # Replace find_package(PkgConfig REQUIRED) + pkg_check_modules(GLIB...) + target_link_libraries with just GLIB::GLIB
+          sed -i '/find_package(PkgConfig REQUIRED)/,/target_link_libraries(autotrace_LIB PUBLIC PkgConfig::GLIB Intl::Intl)/c\# Skip find_package(GLIB) - we provide our own GLIB::GLIB target at top level\ntarget_link_libraries(autotrace_LIB PUBLIC GLIB::GLIB)' src/3rdparty/autotrace/CMakeLists.txt
           echo "=== Autotrace patch applied ==="
           echo "=== Current autotrace CMakeLists.txt after patch ==="
           head -80 src/3rdparty/autotrace/CMakeLists.txt
