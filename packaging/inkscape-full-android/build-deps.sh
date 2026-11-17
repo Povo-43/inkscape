@@ -34,7 +34,8 @@ mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 # Fix PIXIEWOOD paths - headers are in root/, libs are in bin-ARCH/
 # PIXIEWOOD_DIR is the build directory (e.g., .pixiewood/bin-aarch64)
 # PIXIEWOOD_ROOT is the install directory (e.g., .pixiewood/root)
-PIXIEWOOD_ROOT="${PIXIEWOOD_DIR}/../../root"
+# Use realpath to resolve the path properly
+PIXIEWOOD_ROOT=$(realpath "${PIXIEWOOD_DIR}/../../root")
 PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
 
 # Global PKG_CONFIG_PATH for all builds - IMPORTANT: INSTALL_DIR FIRST so our .pc files take precedence
@@ -209,9 +210,9 @@ PCEOF
     ls -la "${PIXIEWOOD_DIR}/../" 2>/dev/null | head -20 || echo "PIXIEWOOD_DIR/../ not found"
     ls -la "${PIXIEWOOD_DIR}/../../" 2>/dev/null | head -20 || echo "PIXIEWOOD_DIR/../../ not found"
     
-    # Also try the android app's merged native libs (where the final APK libs are)
-    ANDROID_LIBS="${PIXIEWOOD_DIR}/../../android/app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib/arm64-v8a"
-    if [ -d "${ANDROID_LIBS}" ]; then
+    # Also try the Android app's merged native libs (where the final APK libs are)
+    ANDROID_LIBS=$(realpath "${PIXIEWOOD_DIR}/../../android/app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib/arm64-v8a" 2>/dev/null || echo "")
+    if [ -n "${ANDROID_LIBS}" ] && [ -d "${ANDROID_LIBS}" ]; then
         echo "--- Copying libraries from Android app merged native libs ---"
         cp -f "${ANDROID_LIBS}"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
         cp -f "${ANDROID_LIBS}"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
