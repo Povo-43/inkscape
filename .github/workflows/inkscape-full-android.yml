@@ -239,20 +239,27 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: gtk4-stack
-          path: .
+          path: gtk4-stack-download
 
       - name: GTK4 スタックの確認
         run: |
           echo "=== Checking downloaded GTK4 stack ==="
           echo "=== Workspace root ==="
           ls -la
-          echo "=== Checking for pixiewood ==="
-          find . -name ".pixiewood" -type d 2>/dev/null | head -10
-          echo "=== Checking pixiewood at packaging/android-gtkmm4/ ==="
-          ls -la packaging/android-gtkmm4/.pixiewood/ 2>/dev/null || echo ".pixiewood not found at packaging/android-gtkmm4/"
-          ls -la packaging/android-gtkmm4/.pixiewood/root/ 2>/dev/null | head -20 || echo "root not found"
-          ls -la packaging/android-gtkmm4/.pixiewood/root/lib/ 2>/dev/null | head -20 || echo "root/lib not found"
-          ls -la packaging/android-gtkmm4/.pixiewood/root/lib/arm64-v8a/ 2>/dev/null | head -20 || echo "root/lib/arm64-v8a not found"
+          echo "=== Download directory ==="
+          ls -la gtk4-stack-download/
+          echo "=== Checking for pixiewood in download dir ==="
+          find gtk4-stack-download -name ".pixiewood" -type d 2>/dev/null | head -10
+          echo "=== Checking pixiewood at download dir root ==="
+          ls -la gtk4-stack-download/.pixiewood/ 2>/dev/null || echo ".pixiewood not found at download root"
+          ls -la gtk4-stack-download/.pixiewood/root/ 2>/dev/null | head -20 || echo "root not found"
+          ls -la gtk4-stack-download/.pixiewood/root/lib/ 2>/dev/null | head -20 || echo "root/lib not found"
+          ls -la gtk4-stack-download/.pixiewood/root/lib/arm64-v8a/ 2>/dev/null | head -20 || echo "root/lib/arm64-v8a not found"
+          echo "=== Checking pixiewood at packaging/android-gtkmm4/ in download dir ==="
+          ls -la gtk4-stack-download/packaging/android-gtkmm4/.pixiewood/ 2>/dev/null || echo ".pixiewood not found at packaging/android-gtkmm4/"
+          ls -la gtk4-stack-download/packaging/android-gtkmm4/.pixiewood/root/ 2>/dev/null | head -20 || echo "root not found"
+          ls -la gtk4-stack-download/packaging/android-gtkmm4/.pixiewood/root/lib/ 2>/dev/null | head -20 || echo "root/lib not found"
+          ls -la gtk4-stack-download/packaging/android-gtkmm4/.pixiewood/root/lib/arm64-v8a/ 2>/dev/null | head -20 || echo "root/lib/arm64-v8a not found"
 
       - name: Android NDK をセットアップ
         run: |
@@ -400,11 +407,14 @@ jobs:
         run: |
           echo "=== Building Inkscape Minimal Dependencies for Android ==="
           cd $GITHUB_WORKSPACE
+          # Copy pixiewood from download dir to expected location
+          cp -r gtk4-stack-download/.pixiewood . 2>/dev/null || true
+          cp -r gtk4-stack-download/packaging/android-gtkmm4/.pixiewood packaging/android-gtkmm4/ 2>/dev/null || true
           bash packaging/inkscape-full-android/build-deps.sh \
             $GITHUB_WORKSPACE/android-install \
             /opt/android-ndk-r27b \
             31 \
-            "$GITHUB_WORKSPACE/packaging/android-gtkmm4/.pixiewood/bin-aarch64"
+            "$GITHUB_WORKSPACE/.pixiewood/bin-aarch64"
 
       - name: Inkscape C++ コアをクロスコンパイル（フルビルド）
         run: |
