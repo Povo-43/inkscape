@@ -239,6 +239,11 @@ PCEOF
         ln -sf libtiff.so.6 "${INSTALL_DIR}/lib/libtiff.so"
         echo "Created symlink libtiff.so -> libtiff.so.6"
     fi
+    # Also create symlink for libz if needed (zlib)
+    if [ -f "${INSTALL_DIR}/lib/libz.so.1" ] && [ ! -f "${INSTALL_DIR}/lib/libz.so" ]; then
+        ln -sf libz.so.1 "${INSTALL_DIR}/lib/libz.so"
+        echo "Created symlink libz.so -> libz.so.1"
+    fi
     
     # Fallback to system libraries (host libraries - for linking only)
     # Only use if pixiewood didn't provide them
