@@ -146,15 +146,15 @@ PCEOF
     mkdir -p "${INSTALL_DIR}/lib"
     
     echo "=== PIXIEWOOD_DIR subprojects ==="
-    ls -la "${PIXIEWOOD_DIR}/../subprojects/" 2>/dev/null | head -40
+    ls -la "${PIXIEWOOD_DIR}/../subprojects/" 2>/dev/null | head -40 || echo "Directory not found"
     echo "=== PIXIEWOOD_DIR ../subprojects/glib ==="
-    ls -la "${PIXIEWOOD_DIR}/../subprojects/glib/" 2>/dev/null | head -40
+    ls -la "${PIXIEWOOD_DIR}/../subprojects/glib/" 2>/dev/null | head -40 || echo "Directory not found"
     echo "=== PIXIEWOOD_DIR ../subprojects/glib/glib ==="
-    ls -la "${PIXIEWOOD_DIR}/../subprojects/glib/glib/" 2>/dev/null | head -40
+    ls -la "${PIXIEWOOD_DIR}/../subprojects/glib/glib/" 2>/dev/null | head -40 || echo "Directory not found"
     echo "=== PIXIEWOOD_DIR ../subprojects/cairo ==="
-    ls -la "${PIXIEWOOD_DIR}/../subprojects/cairo/" 2>/dev/null | head -40
+    ls -la "${PIXIEWOOD_DIR}/../subprojects/cairo/" 2>/dev/null | head -40 || echo "Directory not found"
     echo "=== PIXIEWOOD_DIR ../subprojects/pango ==="
-    ls -la "${PIXIEWOOD_DIR}/../subprojects/pango/" 2>/dev/null | head -40
+    ls -la "${PIXIEWOOD_DIR}/../subprojects/pango/" 2>/dev/null | head -40 || echo "Directory not found"
     
     # List of libraries to copy from pixiewood build directory
     # These are the libraries that Inkscape links against
