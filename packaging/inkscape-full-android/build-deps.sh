@@ -183,7 +183,7 @@ PCEOF
     
     echo "--- Copying libraries from pixiewood build directory ---"
     echo "=== Debug: listing subprojects ==="
-    ls -la "${PIXIEWOOD_DIR}/subprojects/" 2>/dev/null | head -40
+    ls -la "${PIXIEWOOD_DIR}/subprojects/" 2>/dev/null | head -40 || true
     
     for lib_dir in "${LIB_DIRS[@]}"; do
         if [ -d "${PIXIEWOOD_DIR}/subprojects/${lib_dir}" ]; then
