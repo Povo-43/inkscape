@@ -32,7 +32,7 @@ SRC_DIR=$(mktemp -d)
 mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 
 # Fix PIXIEWOOD paths - headers are in root/, libs are in bin-ARCH/
-PIXIEWOOD_ROOT="${PIXIEWOOD_DIR}/../root"
+PIXIEWOOD_ROOT="${PIXIEWOOD_DIR}/root"
 PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
 
 # Global PKG_CONFIG_PATH for all builds - IMPORTANT: INSTALL_DIR FIRST so our .pc files take precedence
@@ -51,11 +51,11 @@ if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glib-2.0.pc" ]; then
     
     # Get library paths from pixiewood build output
     PIXIEWOOD_LIB="$PIXIEWOOD_DIR"
-    PIXIEWOOD_INCLUDE="$PIXIEWOOD_DIR/../root/include"
+    PIXIEWOOD_INCLUDE="${PIXIEWOOD_ROOT}/include"
     
     # Find actual library locations
     GLIB_LIB=$(find "$PIXIEWOOD_DIR" -name "libglib-2.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    # glib.h is at ${PIXIEWOOD_DIR}/root/include/glib-2.0/glib.h
+    # glib.h is at ${PIXIEWOOD_ROOT}/include/glib-2.0/glib.h
     GLIB_INCLUDE="${PIXIEWOOD_ROOT}/include"
     
     cat > "$INSTALL_DIR/lib/pkgconfig/glib-2.0.pc" << PCEOF
