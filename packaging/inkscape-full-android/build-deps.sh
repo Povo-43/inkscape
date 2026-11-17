@@ -109,6 +109,8 @@ PCEOF
     # First try: pixiewood build directory (bin-aarch64/subprojects/glib/glib/)
     if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib" ]; then
         echo "--- Copying glib headers from pixiewood build directory ---"
+        echo "DEBUG: Checking ${PIXIEWOOD_DIR}/subprojects/glib/glib/"
+        ls -la "${PIXIEWOOD_DIR}/subprojects/glib/glib/" 2>/dev/null | head -20 || echo "Directory not found"
         mkdir -p "${INSTALL_DIR}/include/glib-2.0"
         # Copy main glib headers (glib.h, gobject.h, etc.)
         cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
@@ -117,6 +119,8 @@ PCEOF
             cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib/generated"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
         fi
         # The internal glib headers (glibconfig.h, etc.) are in a subdirectory - copy to glib-2.0/glib/
+        echo "DEBUG: Checking ${PIXIEWOOD_DIR}/subprojects/glib/glib/glib/"
+        ls -la "${PIXIEWOOD_DIR}/subprojects/glib/glib/glib/" 2>/dev/null | head -20 || echo "Directory not found"
         if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib/glib" ]; then
             mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
             cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib/glib"/* "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
@@ -125,9 +129,13 @@ PCEOF
     # Second try: pixiewood install directory (root/include/glib-2.0/)
     elif [ -d "${PIXIEWOOD_ROOT}/include/glib-2.0" ]; then
         echo "--- Copying glib headers from pixiewood install directory ---"
+        echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/include/glib-2.0/"
+        ls -la "${PIXIEWOOD_ROOT}/include/glib-2.0/" 2>/dev/null | head -20 || echo "Directory not found"
         mkdir -p "${INSTALL_DIR}/include/glib-2.0"
         cp -r "${PIXIEWOOD_ROOT}/include/glib-2.0"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
         # Also copy the glib subdirectory (where glibconfig.h is)
+        echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/include/glib-2.0/glib/"
+        ls -la "${PIXIEWOOD_ROOT}/include/glib-2.0/glib/" 2>/dev/null | head -20 || echo "Directory not found"
         if [ -d "${PIXIEWOOD_ROOT}/include/glib-2.0/glib" ]; then
             mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
             cp -r "${PIXIEWOOD_ROOT}/include/glib-2.0/glib"/* "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
@@ -136,9 +144,13 @@ PCEOF
     # Third try: system glib headers (fallback for cross-compile)
     elif [ -d "/usr/include/glib-2.0" ]; then
         echo "--- Copying glib headers from system (fallback) ---"
+        echo "DEBUG: Checking /usr/include/glib-2.0/"
+        ls -la /usr/include/glib-2.0/ 2>/dev/null | head -20 || echo "Directory not found"
         mkdir -p "${INSTALL_DIR}/include/glib-2.0"
         cp -r /usr/include/glib-2.0/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
         # Also copy the glibconfig.h from the build directory
+        echo "DEBUG: Checking /usr/lib/aarch64-linux-gnu/glib-2.0/include/"
+        ls -la /usr/lib/aarch64-linux-gnu/glib-2.0/include/ 2>/dev/null | head -20 || echo "Directory not found"
         if [ -d "/usr/lib/aarch64-linux-gnu/glib-2.0/include" ]; then
             mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
             cp -r /usr/lib/aarch64-linux-gnu/glib-2.0/include/* "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
