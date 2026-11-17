@@ -104,9 +104,15 @@ PCEOF
     ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glib/glib" 2>/dev/null || echo "glib/glib not found at source"
     # Also check build directory
     echo "=== Checking build directory ==="
+    echo "PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
+    ls -la "${PIXIEWOOD_DIR}/" 2>/dev/null || echo "PIXIEWOOD_DIR not found"
     ls -la "${PIXIEWOOD_DIR}/subprojects/" 2>/dev/null || echo "subprojects not found at build"
     ls -la "${PIXIEWOOD_DIR}/subprojects/glib/" 2>/dev/null || echo "glib subproject not found at build"
     ls -la "${PIXIEWOOD_DIR}/subprojects/glib/glib" 2>/dev/null || echo "glib/glib not found at build"
+    # Also check the parent directory for subprojects
+    echo "=== Checking PIXIEWOOD_DIR parent ==="
+    ls -la "${PIXIEWOOD_DIR}/../" 2>/dev/null || echo "PIXIEWOOD_DIR parent not found"
+    ls -la "${PIXIEWOOD_DIR}/../subprojects/" 2>/dev/null || echo "subprojects not found at PIXIEWOOD_DIR parent"
     
     echo "--- Searching for glib headers in pixiewood ---"
     echo "PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
