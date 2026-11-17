@@ -7,7 +7,7 @@
 +message("- Found 'GLIB' (provided via CMake variables)")
 +add_library(GLIB::GLIB INTERFACE IMPORTED)
 +set_target_properties(GLIB::GLIB PROPERTIES
-+    INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0;/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0/glib"
++    INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0;/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0/include"
 +    INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libglib-2.0.so"
 +)
  set(INKSCAPE_CXX_FLAGS "")
