@@ -94,10 +94,12 @@ PCEOF
     fi
     
     # Copy glib headers from pixiewood to our include directory
-    # Try multiple locations: pixiewood build dir, pixiewood install dir, and system headers as fallback
+    # Set up paths first
+    PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/packaging/android-gtkmm4"
     echo "--- Searching for glib headers ---"
     echo "PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
     echo "PIXIEWOOD_ROOT=${PIXIEWOOD_ROOT}"
+    echo "PIXIEWOOD_SOURCE_DIR=${PIXIEWOOD_SOURCE_DIR}"
     
     # First try: pixiewood build directory (bin-aarch64/subprojects/glib/glib/)
     if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib" ]; then
