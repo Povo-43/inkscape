@@ -255,7 +255,8 @@ jobs:
             build-essential cmake ninja-build pkg-config \
             python3-pip curl xz-utils git \
             autoconf automake libtool gettext \
-            glslc
+            glslc \
+            libglib2.0-dev
 
       - name: Meson をセットアップ
         run: python3 -m pip install meson ninja
