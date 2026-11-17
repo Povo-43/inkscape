@@ -224,6 +224,21 @@ PCEOF
             echo "Copied libraries from ${lib_dir}"
         fi
     done
+    # Create symlink for libpng.so -> libpng16.so (Inkscape looks for libpng.so)
+    if [ -f "${INSTALL_DIR}/lib/libpng16.so" ] && [ ! -f "${INSTALL_DIR}/lib/libpng.so" ]; then
+        ln -sf libpng16.so "${INSTALL_DIR}/lib/libpng.so"
+        echo "Created symlink libpng.so -> libpng16.so"
+    fi
+    # Also create symlink for libjpeg if needed
+    if [ -f "${INSTALL_DIR}/lib/libjpeg.so.8" ] && [ ! -f "${INSTALL_DIR}/lib/libjpeg.so" ]; then
+        ln -sf libjpeg.so.8 "${INSTALL_DIR}/lib/libjpeg.so"
+        echo "Created symlink libjpeg.so -> libjpeg.so.8"
+    fi
+    # Also create symlink for libtiff if needed
+    if [ -f "${INSTALL_DIR}/lib/libtiff.so.6" ] && [ ! -f "${INSTALL_DIR}/lib/libtiff.so" ]; then
+        ln -sf libtiff.so.6 "${INSTALL_DIR}/lib/libtiff.so"
+        echo "Created symlink libtiff.so -> libtiff.so.6"
+    fi
     
     # Fallback to system libraries (host libraries - for linking only)
     # Only use if pixiewood didn't provide them
