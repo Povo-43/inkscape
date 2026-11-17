@@ -32,7 +32,9 @@ SRC_DIR=$(mktemp -d)
 mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 
 # Fix PIXIEWOOD paths - headers are in root/, libs are in bin-ARCH/
-PIXIEWOOD_ROOT="${PIXIEWOOD_DIR}/root"
+# PIXIEWOOD_DIR is the build directory (e.g., .pixiewood/bin-aarch64)
+# PIXIEWOOD_ROOT is the install directory (e.g., .pixiewood/root)
+PIXIEWOOD_ROOT="${PIXIEWOOD_DIR}/../../root"
 PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
 
 # Global PKG_CONFIG_PATH for all builds - IMPORTANT: INSTALL_DIR FIRST so our .pc files take precedence
@@ -144,15 +146,15 @@ PCEOF
     mkdir -p "${INSTALL_DIR}/lib"
     
     echo "=== PIXIEWOOD_DIR subprojects ==="
-    ls -la "${PIXIEWOOD_DIR}/subprojects/" 2>/dev/null | head -40
-    echo "=== PIXIEWOOD_DIR subprojects/glib ==="
-    ls -la "${PIXIEWOOD_DIR}/subprojects/glib/" 2>/dev/null | head -40
-    echo "=== PIXIEWOOD_DIR subprojects/glib/glib ==="
-    ls -la "${PIXIEWOOD_DIR}/subprojects/glib/glib/" 2>/dev/null | head -40
-    echo "=== PIXIEWOOD_DIR subprojects/cairo ==="
-    ls -la "${PIXIEWOOD_DIR}/subprojects/cairo/" 2>/dev/null | head -40
-    echo "=== PIXIEWOOD_DIR subprojects/pango ==="
-    ls -la "${PIXIEWOOD_DIR}/subprojects/pango/" 2>/dev/null | head -40
+    ls -la "${PIXIEWOOD_DIR}/../subprojects/" 2>/dev/null | head -40
+    echo "=== PIXIEWOOD_DIR ../subprojects/glib ==="
+    ls -la "${PIXIEWOOD_DIR}/../subprojects/glib/" 2>/dev/null | head -40
+    echo "=== PIXIEWOOD_DIR ../subprojects/glib/glib ==="
+    ls -la "${PIXIEWOOD_DIR}/../subprojects/glib/glib/" 2>/dev/null | head -40
+    echo "=== PIXIEWOOD_DIR ../subprojects/cairo ==="
+    ls -la "${PIXIEWOOD_DIR}/../subprojects/cairo/" 2>/dev/null | head -40
+    echo "=== PIXIEWOOD_DIR ../subprojects/pango ==="
+    ls -la "${PIXIEWOOD_DIR}/../subprojects/pango/" 2>/dev/null | head -40
     
     # List of libraries to copy from pixiewood build directory
     # These are the libraries that Inkscape links against
@@ -183,13 +185,13 @@ PCEOF
     
     echo "--- Copying libraries from pixiewood build directory ---"
     for lib_dir in "${LIB_DIRS[@]}"; do
-        if [ -d "${PIXIEWOOD_DIR}/subprojects/${lib_dir}" ]; then
+        if [ -d "${PIXIEWOOD_DIR}/../subprojects/${lib_dir}" ]; then
             echo "Processing ${lib_dir}..."
-            cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
-            cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            cp -f "${PIXIEWOOD_DIR}/../subprojects/${lib_dir}"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            cp -f "${PIXIEWOOD_DIR}/../subprojects/${lib_dir}"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
             echo "Copied libraries from ${lib_dir}"
         else
-            echo "Directory not found: ${PIXIEWOOD_DIR}/subprojects/${lib_dir}"
+            echo "Directory not found: ${PIXIEWOOD_DIR}/../subprojects/${lib_dir}"
         fi
     done
     
