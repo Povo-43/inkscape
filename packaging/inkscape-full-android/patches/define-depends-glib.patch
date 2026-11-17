@@ -1,5 +1,5 @@
---- a/CMakeScripts/DefineDependsandFlags.cmake	2026-11-16 23:01:05.491366623 +0000
-+++ b/CMakeScripts/DefineDependsandFlags.cmake	2026-11-16 23:01:05.497298209 +0000
+--- a/CMakeScripts/DefineDependsandFlags.cmake
++++ b/CMakeScripts/DefineDependsandFlags.cmake
 @@ -1,4 +1,12 @@
  set(INKSCAPE_LIBS "")
 +# Android cross-compile: provide GLIB::GLIB target
@@ -7,9 +7,8 @@
 +message("- Found 'GLIB' (provided via CMake variables)")
 +add_library(GLIB::GLIB INTERFACE IMPORTED)
 +set_target_properties(GLIB::GLIB PROPERTIES
-+    INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/android-install/include/glib-2.0; /home/runner/work/inkscape/inkscape/android-install/include/glib-2.0/include"
-+    INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/android-install/lib/libglib-2.0.so"
++    INTERFACE_INCLUDE_DIRECTORIES "/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/root/include/glib-2.0; /home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/root/include/glib-2.0/include"
++    INTERFACE_LINK_LIBRARIES "/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/root/lib/libglib-2.0.so"
 +)
  set(INKSCAPE_CXX_FLAGS "")
  set(INKSCAPE_CXX_FLAGS_DEBUG "")
- 
