@@ -211,6 +211,7 @@ jobs:
             packaging/android-gtkmm4/bin-*/
           retention-days: 7
           if-no-files-found: warn
+          include-hidden-files: true
 
       - name: meson ログ (失敗時)
         if: failure()
