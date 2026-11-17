@@ -1091,8 +1091,9 @@ fetch() {
     local name=$1 url=$2
     if [ ! -d "$SRC_DIR/$name" ]; then
         echo "--- Downloading $name ---"
-        curl -sL "$url" -o "$SRC_DIR/${name}.tar" || {
-            echo "Failed to download $name"; return 1;
+        # Use longer timeout and retry
+        curl -sL --connect-timeout 30 --max-time 300 --retry 3 --retry-delay 5 "$url" -o "$SRC_DIR/${name}.tar" || {
+            echo "Failed to download $name from $url"; return 1;
         }
         cd $SRC_DIR
         tar xf "${name}.tar" || tar xjf "${name}.tar" || tar xzf "${name}.tar"
@@ -1199,7 +1200,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/libgsl.so" ]; then
     echo "--- Building GSL ---"
     GSL_VER=2.8
-    fetch gsl "https://ftp.gnu.org/gnu/gsl/gsl-$GSL_VER.tar.gz"
+    fetch gsl "https://ftp.gnu.org/gnu/gsl/gsl-$GSL_VER.tar.gz" || fetch gsl "https://mirror.ibcp.fr/pub/gnu/gsl/gsl-$GSL_VER.tar.gz" || fetch gsl "https://ftpmirror.gnu.org/gsl/gsl-$GSL_VER.tar.gz"
     cd $BUILD_DIR
     mkdir -p gsl-build
     cd gsl-build
