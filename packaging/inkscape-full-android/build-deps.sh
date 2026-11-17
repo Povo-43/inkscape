@@ -153,7 +153,9 @@ PCEOF
     echo "--- Copying libraries from pixiewood install directory ---"
     echo "DEBUG: PIXIEWOOD_ROOT=${PIXIEWOOD_ROOT}"
     echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/lib/arm64-v8a/"
-    ls -la "${PIXIEWOOD_ROOT}/lib/arm64-v8a/" 2>/dev/null || echo "Directory not found"
+    ls -la "${PIXIEWOOD_ROOT}/" 2>/dev/null | head -20 || echo "PIXIEWOOD_ROOT not found"
+    ls -la "${PIXIEWOOD_ROOT}/lib/" 2>/dev/null | head -20 || echo "lib directory not found"
+    ls -la "${PIXIEWOOD_ROOT}/lib/arm64-v8a/" 2>/dev/null || echo "arm64-v8a directory not found"
     if [ -d "${PIXIEWOOD_ROOT}/lib/arm64-v8a" ]; then
         echo "Found arm64-v8a directory, copying .so files..."
         cp -f "${PIXIEWOOD_ROOT}/lib/arm64-v8a"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
@@ -161,7 +163,7 @@ PCEOF
         echo "Copied libraries from pixiewood root/arm64-v8a"
     elif [ -d "${PIXIEWOOD_ROOT}/lib" ]; then
         echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/lib/"
-        ls -la "${PIXIEWOOD_ROOT}/lib/" 2>/dev/null || echo "lib directory not found"
+        ls -la "${PIXIEWOOD_ROOT}/lib/" 2>/dev/null | head -20 || echo "lib directory not found"
         cp -f "${PIXIEWOOD_ROOT}/lib"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
         cp -f "${PIXIEWOOD_ROOT}/lib"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
         echo "Copied libraries from pixiewood root"
