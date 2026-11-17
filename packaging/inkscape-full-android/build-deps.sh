@@ -139,42 +139,84 @@ PCEOF
         echo "Warning: glib-2.0 headers not found in any location"
     fi
     
-    # Copy glib libraries from pixiewood build directory to android-install/lib/
-    echo "--- Copying glib libraries from pixiewood ---"
+    # Copy all required libraries from pixiewood build directory to android-install/lib/
+    echo "--- Copying all libraries from pixiewood ---"
     mkdir -p "${INSTALL_DIR}/lib"
-    if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib" ]; then
-        # Copy the built .so files from the meson build directory
-        cp -f "${PIXIEWOOD_DIR}/subprojects/glib/glib"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
-        cp -f "${PIXIEWOOD_DIR}/subprojects/glib/gobject"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
-        cp -f "${PIXIEWOOD_DIR}/subprojects/glib/gthread"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
-        cp -f "${PIXIEWOOD_DIR}/subprojects/glib/gmodule"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
-        cp -f "${PIXIEWOOD_DIR}/subprojects/glib/gio"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
-        cp -f "${PIXIEWOOD_DIR}/subprojects/glib/girepository"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
-        echo "Copied glib libraries to ${INSTALL_DIR}/lib"
-    elif [ -d "${PIXIEWOOD_ROOT}/lib" ]; then
-        # Try the install directory
-        cp -f "${PIXIEWOOD_ROOT}/lib"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
-        echo "Copied glib libraries from pixiewood root"
-    else
-        # Fallback to system libraries
-        if [ -f "/usr/lib/aarch64-linux-gnu/libglib-2.0.so" ]; then
-            cp -f /usr/lib/aarch64-linux-gnu/libglib-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-            cp -f /usr/lib/aarch64-linux-gnu/libgobject-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-            cp -f /usr/lib/aarch64-linux-gnu/libgthread-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-            cp -f /usr/lib/aarch64-linux-gnu/libgmodule-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-            cp -f /usr/lib/aarch64-linux-gnu/libgio-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-            echo "Copied system glib libraries to ${INSTALL_DIR}/lib"
-        elif [ -f "/usr/lib/x86_64-linux-gnu/libglib-2.0.so" ]; then
-            cp -f /usr/lib/x86_64-linux-gnu/libglib-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-            cp -f /usr/lib/x86_64-linux-gnu/libgobject-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-            cp -f /usr/lib/x86_64-linux-gnu/libgthread-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-            cp -f /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-            cp -f /usr/lib/x86_64-linux-gnu/libgio-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-            echo "Copied system glib libraries (x86_64) to ${INSTALL_DIR}/lib"
-        else
-            echo "Warning: glib libraries not found in any location"
+    
+    # List of libraries to copy from pixiewood build directory
+    # These are the libraries that Inkscape links against
+    LIB_DIRS=(
+        "glib/glib"
+        "glib/gobject"
+        "glib/gthread"
+        "glib/gmodule"
+        "glib/gio"
+        "glib/girepository"
+        "fribidi"
+        "pango/pango"
+        "pango/pangoft2"
+        "pango/pangocairo"
+        "cairo/src"
+        "cairo/util/cairo-gobject"
+        "harfbuzz/src"
+        "freetype2"
+        "fontconfig"
+        "pixman-0.44.2/pixman"
+        "libpng-1.6.49/libpng16"
+        "tiff-4.7.0/libtiff"
+        "libepoxy/src"
+        "libjpeg"
+        "zlib"
+        "fribidi"
+    )
+    
+    echo "--- Copying libraries from pixiewood build directory ---"
+    for lib_dir in "${LIB_DIRS[@]}"; do
+        if [ -d "${PIXIEWOOD_DIR}/subprojects/${lib_dir}" ]; then
+            cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            echo "Copied libraries from ${lib_dir}"
         fi
+    done
+    
+    # Also try the install directory
+    if [ -d "${PIXIEWOOD_ROOT}/lib" ]; then
+        cp -f "${PIXIEWOOD_ROOT}/lib"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_ROOT}/lib"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        echo "Copied libraries from pixiewood root"
     fi
+    
+    # Fallback to system libraries (host libraries - for linking only)
+    # Only use if pixiewood didn't provide them
+    if [ ! -f "${INSTALL_DIR}/lib/libglib-2.0.so" ] && [ -f "/usr/lib/aarch64-linux-gnu/libglib-2.0.so" ]; then
+        echo "--- Using system libraries as fallback ---"
+        cp -f /usr/lib/aarch64-linux-gnu/libglib-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libgobject-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libgthread-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libgmodule-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libgio-2.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libpng.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libjpeg.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libtiff.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libfreetype.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libfontconfig.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libharfbuzz.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libharfbuzz-cairo.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libpango-1.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libpangoft2-1.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libpangocairo-1.0.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libcairo.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libcairo-gobject.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libharfbuzz.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libfribidi.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libepoxy.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libpixman-1.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f /usr/lib/aarch64-linux-gnu/libtiff.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        echo "Copied system libraries as fallback"
+    fi
+    
+    echo "=== Library copy complete ==="
+    ls -la "${INSTALL_DIR}/lib/" | head -30
     
     cat > "$INSTALL_DIR/lib/pkgconfig/gobject-2.0.pc" << PCEOF
 prefix=$INSTALL_DIR
