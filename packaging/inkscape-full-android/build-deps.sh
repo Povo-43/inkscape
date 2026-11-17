@@ -206,6 +206,25 @@ PCEOF
         echo "Copied libraries from Android app merged native libs"
     fi
     
+    # Also copy from the build directory's subprojects for libraries not installed
+    # These are libraries like libpng, libjpeg, libtiff that may not be installed to root/
+    echo "--- Copying additional libraries from pixiewood build directory ---"
+    BUILD_LIB_DIRS=(
+        "libpng-1.6.49/libpng16"
+        "libjpeg"
+        "tiff-4.7.0/libtiff"
+        "fribidi"
+        "zlib"
+    )
+    for lib_dir in "${BUILD_LIB_DIRS[@]}"; do
+        if [ -d "${PIXIEWOOD_DIR}/subprojects/${lib_dir}" ]; then
+            echo "Copying libraries from ${lib_dir}..."
+            cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            echo "Copied libraries from ${lib_dir}"
+        fi
+    done
+    
     # Fallback to system libraries (host libraries - for linking only)
     # Only use if pixiewood didn't provide them
     if [ ! -f "${INSTALL_DIR}/lib/libglib-2.0.so" ] && [ -f "/usr/lib/aarch64-linux-gnu/libglib-2.0.so" ]; then
