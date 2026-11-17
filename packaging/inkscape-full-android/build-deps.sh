@@ -94,9 +94,9 @@ PCEOF
     fi
     
     # Copy glib headers from pixiewood to our include directory
-    # The subprojects are in the source directory, not the build directory
-    # PIXIEWOOD_DIR is the build dir (.pixiewood/bin-aarch64), source is PIXIEWOOD_DIR/../../..
-    PIXIEWOOD_SOURCE_DIR="${PIXIEWOOD_DIR}/../../.."
+    # The subprojects are in the source directory: packaging/android-gtkmm4/subprojects/
+    # PIXIEWOOD_DIR is the build dir (.pixiewood/bin-aarch64), source is PIXIEWOOD_DIR/../..
+    PIXIEWOOD_SOURCE_DIR="${PIXIEWOOD_DIR}/../.."
     
     echo "--- Searching for glib headers in pixiewood ---"
     echo "PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
