@@ -110,14 +110,16 @@ PCEOF
     if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib" ]; then
         echo "--- Copying glib headers from pixiewood build directory ---"
         mkdir -p "${INSTALL_DIR}/include/glib-2.0"
+        # Copy main glib headers (glib.h, gobject.h, etc.)
         cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
         # Also copy generated headers if they exist
         if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib/generated" ]; then
             cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib/generated"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
         fi
-        # The internal glib headers are in a subdirectory
+        # The internal glib headers (glibconfig.h, etc.) are in a subdirectory - copy to glib-2.0/glib/
         if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib/glib" ]; then
-            cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib/glib"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
+            mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
+            cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib/glib"/* "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
         fi
         echo "Copied glib headers to ${INSTALL_DIR}/include/glib-2.0"
     # Second try: pixiewood install directory (root/include/glib-2.0/)
@@ -125,6 +127,11 @@ PCEOF
         echo "--- Copying glib headers from pixiewood install directory ---"
         mkdir -p "${INSTALL_DIR}/include/glib-2.0"
         cp -r "${PIXIEWOOD_ROOT}/include/glib-2.0"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
+        # Also copy the glib subdirectory (where glibconfig.h is)
+        if [ -d "${PIXIEWOOD_ROOT}/include/glib-2.0/glib" ]; then
+            mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
+            cp -r "${PIXIEWOOD_ROOT}/include/glib-2.0/glib"/* "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
+        fi
         echo "Copied glib headers to ${INSTALL_DIR}/include/glib-2.0"
     # Third try: system glib headers (fallback for cross-compile)
     elif [ -d "/usr/include/glib-2.0" ]; then
