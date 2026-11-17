@@ -112,18 +112,17 @@ PCEOF
         echo "DEBUG: Checking ${PIXIEWOOD_DIR}/subprojects/glib/glib/"
         ls -la "${PIXIEWOOD_DIR}/subprojects/glib/glib/" 2>/dev/null | head -20 || echo "Directory not found"
         mkdir -p "${INSTALL_DIR}/include/glib-2.0"
-        # Copy main glib headers (glib.h, gobject.h, etc.)
+        # Copy main glib headers (glib.h, gobject.h, glibconfig.h, etc.)
         cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
         # Also copy generated headers if they exist
         if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib/generated" ]; then
             cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib/generated"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
         fi
-        # The internal glib headers (glibconfig.h, etc.) are in a subdirectory - copy to glib-2.0/glib/
-        echo "DEBUG: Checking ${PIXIEWOOD_DIR}/subprojects/glib/glib/glib/"
-        ls -la "${PIXIEWOOD_DIR}/subprojects/glib/glib/glib/" 2>/dev/null | head -20 || echo "Directory not found"
-        if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib/glib" ]; then
-            mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
-            cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib/glib"/* "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
+        # The glibconfig.h is already in the main glib build directory, not in a nested glib/ subdirectory
+        # Copy it to the glib subdirectory for CMake to find it
+        mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
+        if [ -f "${PIXIEWOOD_DIR}/subprojects/glib/glib/glibconfig.h" ]; then
+            cp "${PIXIEWOOD_DIR}/subprojects/glib/glib/glibconfig.h" "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
         fi
         echo "Copied glib headers to ${INSTALL_DIR}/include/glib-2.0"
     # Second try: pixiewood install directory (root/include/glib-2.0/)
@@ -139,6 +138,11 @@ PCEOF
         if [ -d "${PIXIEWOOD_ROOT}/include/glib-2.0/glib" ]; then
             mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
             cp -r "${PIXIEWOOD_ROOT}/include/glib-2.0/glib"/* "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
+        fi
+        # Also check if glibconfig.h is at the top level of include/glib-2.0/
+        if [ -f "${PIXIEWOOD_ROOT}/include/glib-2.0/glibconfig.h" ]; then
+            mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
+            cp "${PIXIEWOOD_ROOT}/include/glib-2.0/glibconfig.h" "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
         fi
         echo "Copied glib headers to ${INSTALL_DIR}/include/glib-2.0"
     # Third try: system glib headers (fallback for cross-compile)
@@ -157,6 +161,11 @@ PCEOF
         elif [ -d "/usr/lib/x86_64-linux-gnu/glib-2.0/include" ]; then
             mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
             cp -r /usr/lib/x86_64-linux-gnu/glib-2.0/include/* "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
+        fi
+        # Also check if glibconfig.h is at the top level of /usr/include/glib-2.0/
+        if [ -f "/usr/include/glib-2.0/glibconfig.h" ]; then
+            mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
+            cp /usr/include/glib-2.0/glibconfig.h "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
         fi
         echo "Copied system glib headers to ${INSTALL_DIR}/include/glib-2.0 (fallback)"
     else
