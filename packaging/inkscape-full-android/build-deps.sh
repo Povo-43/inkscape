@@ -94,13 +94,28 @@ PCEOF
     fi
     
     # Copy glib headers from pixiewood to our include directory
+    # First try the pixiewood root install directory
     if [ -d "${PIXIEWOOD_ROOT}/include/glib-2.0" ]; then
-        echo "--- Copying glib headers from pixiewood ---"
+        echo "--- Copying glib headers from pixiewood root ---"
         mkdir -p "${INSTALL_DIR}/include/glib-2.0"
         cp -r "${PIXIEWOOD_ROOT}/include/glib-2.0"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
         echo "Copied glib headers to ${INSTALL_DIR}/include/glib-2.0"
+    # If not there, try the meson build directory (subprojects/glib)
+    elif [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib" ]; then
+        echo "--- Copying glib headers from pixiewood meson build directory ---"
+        mkdir -p "${INSTALL_DIR}/include/glib-2.0"
+        cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
+        # Also copy the generated headers from the build directory
+        if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib/generated" ]; then
+            cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib/generated"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
+        fi
+        # glib-2.0 includes are also in the build directory
+        if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib-2.0" ]; then
+            cp -r "${PIXIEWOOD_DIR}/subprojects/glib/glib-2.0"/* "${INSTALL_DIR}/include/glib-2.0/" 2>/dev/null || true
+        fi
+        echo "Copied glib headers to ${INSTALL_DIR}/include/glib-2.0"
     else
-        echo "Warning: glib-2.0 headers not found in pixiewood at ${PIXIEWOOD_ROOT}/include/glib-2.0"
+        echo "Warning: glib-2.0 headers not found in pixiewood at ${PIXIEWOOD_ROOT}/include/glib-2.0 or ${PIXIEWOOD_DIR}/subprojects/glib/glib"
     fi
     
     cat > "$INSTALL_DIR/lib/pkgconfig/gobject-2.0.pc" << PCEOF
