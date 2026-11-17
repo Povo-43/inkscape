@@ -261,7 +261,6 @@ Cflags: -I${GLIB_INCLUDE}/glib-2.0 -I${GLIB_INCLUDE}/glib-2.0/include
 PCEOF
     
     echo "Created minimal .pc files for GLib/GObject/GIO/GModule/GThread"
-fi
 
 # Also create libxml-2.0.pc if missing (needed by libcroco)
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libxml-2.0.pc" ]; then
