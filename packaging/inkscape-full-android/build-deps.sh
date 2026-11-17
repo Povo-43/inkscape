@@ -200,9 +200,14 @@ PCEOF
     fi
     # Debug: show what's in the root directory
     echo "=== PIXIEWOOD_ROOT contents ==="
+    echo "PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
+    echo "PIXIEWOOD_ROOT=${PIXIEWOOD_ROOT}"
     ls -la "${PIXIEWOOD_ROOT}/" 2>/dev/null | head -20 || echo "PIXIEWOOD_ROOT not found"
     echo "=== PIXIEWOOD_ROOT/lib contents ==="
     ls -la "${PIXIEWOOD_ROOT}/lib/" 2>/dev/null | head -20 || echo "PIXIEWOOD_ROOT/lib not found"
+    echo "=== Full directory tree from PIXIEWOOD_DIR ==="
+    ls -la "${PIXIEWOOD_DIR}/../" 2>/dev/null | head -20 || echo "PIXIEWOOD_DIR/../ not found"
+    ls -la "${PIXIEWOOD_DIR}/../../" 2>/dev/null | head -20 || echo "PIXIEWOOD_DIR/../../ not found"
     
     # Also try the android app's merged native libs (where the final APK libs are)
     ANDROID_LIBS="${PIXIEWOOD_DIR}/../../android/app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib/arm64-v8a"
