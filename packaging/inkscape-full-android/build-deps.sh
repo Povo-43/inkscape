@@ -148,18 +148,50 @@ PCEOF
     echo "--- Copying all libraries from pixiewood ---"
     mkdir -p "${INSTALL_DIR}/lib"
     
-    # First, copy from the installed location (root/lib/arm64-v8a/)
-    # This is where pixiewood installs the built libraries
-    echo "--- Copying libraries from pixiewood install directory ---"
-    if [ -d "${PIXIEWOOD_ROOT}/lib/arm64-v8a" ]; then
-        cp -f "${PIXIEWOOD_ROOT}/lib/arm64-v8a"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
-        cp -f "${PIXIEWOOD_ROOT}/lib/arm64-v8a"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-        echo "Copied libraries from pixiewood root/arm64-v8a"
-    elif [ -d "${PIXIEWOOD_ROOT}/lib" ]; then
-        cp -f "${PIXIEWOOD_ROOT}/lib"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
-        cp -f "${PIXIEWOOD_ROOT}/lib"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
-        echo "Copied libraries from pixiewood root"
-    fi
+    # The .so files are in the pixiewood build directory (bin-aarch64/subprojects/...)
+    # We need to copy them from there
+    echo "--- Copying libraries from pixiewood build directory ---"
+    
+    # List of libraries to copy from pixiewood build directory
+    # These are the libraries that Inkscape links against
+    LIB_DIRS=(
+        "glib/glib"
+        "glib/gobject"
+        "glib/gthread"
+        "glib/gmodule"
+        "glib/gio"
+        "glib/girepository"
+        "fribidi"
+        "pango/pango"
+        "pango/pangoft2"
+        "pango/pangocairo"
+        "cairo/src"
+        "cairo/util/cairo-gobject"
+        "harfbuzz/src"
+        "freetype2"
+        "fontconfig"
+        "pixman-0.44.2/pixman"
+        "libpng-1.6.49/libpng16"
+        "tiff-4.7.0/libtiff"
+        "libepoxy/src"
+        "libjpeg"
+        "zlib"
+        "fribidi"
+        "gdk-pixbuf/gdk-pixbuf"
+        "graphene"
+    )
+    
+    echo "--- Copying libraries from pixiewood build directory ---"
+    for lib_dir in "${LIB_DIRS[@]}"; do
+        if [ -d "${PIXIEWOOD_DIR}/subprojects/${lib_dir}" ]; then
+            echo "Processing ${lib_dir}..."
+            cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            echo "Copied libraries from ${lib_dir}"
+        else
+            echo "Directory not found: ${PIXIEWOOD_DIR}/subprojects/${lib_dir}"
+        fi
+    done
     
     # Also try the Android app's merged native libs (where the final APK libs are)
     ANDROID_LIBS="${GITHUB_WORKSPACE}/.pixiewood/bin-aarch64/../../android/app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib/arm64-v8a"
