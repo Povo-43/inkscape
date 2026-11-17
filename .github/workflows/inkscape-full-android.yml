@@ -241,6 +241,14 @@ jobs:
           name: gtk4-stack
           path: .
 
+      - name: GTK4 スタックの確認
+        run: |
+          echo "=== Checking downloaded GTK4 stack ==="
+          ls -la packaging/android-gtkmm4/.pixiewood/ || echo ".pixiewood not found"
+          ls -la packaging/android-gtkmm4/.pixiewood/root/ 2>/dev/null | head -20 || echo "root not found"
+          ls -la packaging/android-gtkmm4/.pixiewood/root/lib/ 2>/dev/null | head -20 || echo "root/lib not found"
+          ls -la packaging/android-gtkmm4/.pixiewood/root/lib/arm64-v8a/ 2>/dev/null | head -20 || echo "root/lib/arm64-v8a not found"
+
       - name: Android NDK をセットアップ
         run: |
           sudo apt-get update
