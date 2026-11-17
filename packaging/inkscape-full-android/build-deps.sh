@@ -143,6 +143,17 @@ PCEOF
     echo "--- Copying all libraries from pixiewood ---"
     mkdir -p "${INSTALL_DIR}/lib"
     
+    echo "=== PIXIEWOOD_DIR subprojects ==="
+    ls -la "${PIXIEWOOD_DIR}/subprojects/" 2>/dev/null | head -40
+    echo "=== PIXIEWOOD_DIR subprojects/glib ==="
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glib/" 2>/dev/null | head -40
+    echo "=== PIXIEWOOD_DIR subprojects/glib/glib ==="
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glib/glib/" 2>/dev/null | head -40
+    echo "=== PIXIEWOOD_DIR subprojects/cairo ==="
+    ls -la "${PIXIEWOOD_DIR}/subprojects/cairo/" 2>/dev/null | head -40
+    echo "=== PIXIEWOOD_DIR subprojects/pango ==="
+    ls -la "${PIXIEWOOD_DIR}/subprojects/pango/" 2>/dev/null | head -40
+    
     # List of libraries to copy from pixiewood build directory
     # These are the libraries that Inkscape links against
     LIB_DIRS=(
@@ -173,9 +184,12 @@ PCEOF
     echo "--- Copying libraries from pixiewood build directory ---"
     for lib_dir in "${LIB_DIRS[@]}"; do
         if [ -d "${PIXIEWOOD_DIR}/subprojects/${lib_dir}" ]; then
+            echo "Processing ${lib_dir}..."
             cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
             cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
             echo "Copied libraries from ${lib_dir}"
+        else
+            echo "Directory not found: ${PIXIEWOOD_DIR}/subprojects/${lib_dir}"
         fi
     done
     
@@ -216,7 +230,7 @@ PCEOF
     fi
     
     echo "=== Library copy complete ==="
-    ls -la "${INSTALL_DIR}/lib/" | head -30
+    ls -la "${INSTALL_DIR}/lib/" | head -50
     
     cat > "$INSTALL_DIR/lib/pkgconfig/gobject-2.0.pc" << PCEOF
 prefix=$INSTALL_DIR
