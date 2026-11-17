@@ -98,9 +98,13 @@ PCEOF
     # Use GITHUB_WORKSPACE which is the root of the repo
     PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/packaging/android-gtkmm4"
     echo "PIXIEWOOD_SOURCE_DIR=${PIXIEWOOD_SOURCE_DIR}"
+    echo "=== Checking source directory ==="
+    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/" 2>/dev/null || echo "subprojects not found at source"
     ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glib/" 2>/dev/null || echo "glib subproject not found at source"
     ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glib/glib" 2>/dev/null || echo "glib/glib not found at source"
     # Also check build directory
+    echo "=== Checking build directory ==="
+    ls -la "${PIXIEWOOD_DIR}/subprojects/" 2>/dev/null || echo "subprojects not found at build"
     ls -la "${PIXIEWOOD_DIR}/subprojects/glib/" 2>/dev/null || echo "glib subproject not found at build"
     ls -la "${PIXIEWOOD_DIR}/subprojects/glib/glib" 2>/dev/null || echo "glib/glib not found at build"
     
