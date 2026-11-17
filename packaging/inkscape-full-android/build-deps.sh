@@ -208,9 +208,11 @@ PCEOF
     
     # Also copy from the build directory's subprojects for libraries not installed
     # These are libraries like libpng, libjpeg, libtiff that may not be installed to root/
+    # Note: libpng and libjpeg may be nested under gtk subproject
     echo "--- Copying additional libraries from pixiewood build directory ---"
     BUILD_LIB_DIRS=(
         "libpng-1.6.49/libpng16"
+        "gtk/subprojects/libpng-1.6.49/libpng16"
         "libjpeg"
         "tiff-4.7.0/libtiff"
         "fribidi"
