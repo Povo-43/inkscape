@@ -192,6 +192,12 @@ PCEOF
         cp -f "${PIXIEWOOD_ROOT}/lib"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
         echo "Copied libraries from pixiewood root"
     fi
+    # Also try the architecture-specific install directory
+    if [ -d "${PIXIEWOOD_ROOT}/lib/arm64-v8a" ]; then
+        cp -f "${PIXIEWOOD_ROOT}/lib/arm64-v8a"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_ROOT}/lib/arm64-v8a"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        echo "Copied libraries from pixiewood root/arm64-v8a"
+    fi
     
     # Also try the android app's merged native libs (where the final APK libs are)
     ANDROID_LIBS="${PIXIEWOOD_DIR}/../../android/app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib/arm64-v8a"
