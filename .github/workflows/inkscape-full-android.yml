@@ -354,6 +354,10 @@ jobs:
           ls -la src/3rdparty/2geom/src/performance-tests/CMakeLists.txt
           (cd src/3rdparty/2geom && patch -p1 < ../../../packaging/inkscape-full-android/patches/2geom-performance-tests.patch)
           
+          # Also patch the tests/CMakeLists.txt with sed (more reliable)
+          echo "=== Patching 2geom tests with sed ==="
+          sed -i 's/PkgConfig::GLIB/GLIB::GLIB/g' src/3rdparty/2geom/tests/CMakeLists.txt
+          
           # Verify the patch was applied
           echo "=== Verifying 2geom tests patch ==="
           grep -n "GLIB::GLIB" src/3rdparty/2geom/tests/CMakeLists.txt || echo "PATCH FAILED: GLIB::GLIB not found"
