@@ -206,8 +206,8 @@ jobs:
         with:
           name: gtk4-stack
           path: |
-            packaging/android-gtkmm4/.pixiewood/
-            packaging/android-gtkmm4/subprojects/
+            packaging/android-gtkmm4/.pixiewood
+            packaging/android-gtkmm4/subprojects
             packaging/android-gtkmm4/bin-*/
           retention-days: 7
           if-no-files-found: warn
