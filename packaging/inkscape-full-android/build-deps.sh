@@ -35,9 +35,9 @@ mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 # PIXIEWOOD_DIR is the build directory (e.g., .pixiewood/bin-aarch64)
 # PIXIEWOOD_ROOT is the install directory (e.g., .pixiewood/root)
 # PIXIEWOOD_DIR is the build directory (e.g., .pixiewood/bin-aarch64)
-# The root directory is at .pixiewood/root relative to workspace root
-# Use GITHUB_WORKSPACE to construct the absolute path
-PIXIEWOOD_ROOT="${GITHUB_WORKSPACE}/.pixiewood/root"
+# The artifact is downloaded to packaging/android-gtkmm4/.pixiewood/
+# So the root is at packaging/android-gtkmm4/.pixiewood/root
+PIXIEWOOD_ROOT="${GITHUB_WORKSPACE}/packaging/android-gtkmm4/.pixiewood/root"
 PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
 
 # Global PKG_CONFIG_PATH for all builds - IMPORTANT: INSTALL_DIR FIRST so our .pc files take precedence
@@ -194,7 +194,7 @@ PCEOF
     done
     
     # Also try the Android app's merged native libs (where the final APK libs are)
-    ANDROID_LIBS="${GITHUB_WORKSPACE}/.pixiewood/bin-aarch64/../../android/app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib/arm64-v8a"
+    ANDROID_LIBS="${GITHUB_WORKSPACE}/packaging/android-gtkmm4/.pixiewood/bin-aarch64/../../android/app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib/arm64-v8a"
     if [ -d "${ANDROID_LIBS}" ]; then
         echo "--- Copying libraries from Android app merged native libs ---"
         cp -f "${ANDROID_LIBS}"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
