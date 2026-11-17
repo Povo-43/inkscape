@@ -328,8 +328,11 @@ jobs:
           head -80 src/3rdparty/autotrace/CMakeLists.txt
           # Insert cmake_minimum_required, project, and add_compile_definitions at the top
           sed -i '1i cmake_minimum_required(VERSION 3.12)\nproject(autotrace LANGUAGES C CXX)\nadd_compile_definitions(HAVE_CONFIG_H)' src/3rdparty/autotrace/CMakeLists.txt
-          # Replace find_package(PkgConfig REQUIRED) + pkg_check_modules(GLIB...) + target_link_libraries with just GLIB::GLIB
-          sed -i '/find_package(PkgConfig REQUIRED)/,/target_link_libraries(autotrace_LIB PUBLIC PkgConfig::GLIB Intl::Intl)/c\# Skip find_package(GLIB) - we provide our own GLIB::GLIB target at top level\ntarget_link_libraries(autotrace_LIB PUBLIC GLIB::GLIB)' src/3rdparty/autotrace/CMakeLists.txt
+          # Replace find_package(PkgConfig REQUIRED) and pkg_check_modules lines
+          sed -i '/find_package(PkgConfig REQUIRED)/d' src/3rdparty/autotrace/CMakeLists.txt
+          sed -i '/pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)/d' src/3rdparty/autotrace/CMakeLists.txt
+          # Replace target_link_libraries line
+          sed -i 's/target_link_libraries(autotrace_LIB PUBLIC PkgConfig::GLIB Intl::Intl)/target_link_libraries(autotrace_LIB PUBLIC GLIB::GLIB)/' src/3rdparty/autotrace/CMakeLists.txt
           echo "=== Autotrace patch applied ==="
           echo "=== Current autotrace CMakeLists.txt after patch ==="
           head -80 src/3rdparty/autotrace/CMakeLists.txt
