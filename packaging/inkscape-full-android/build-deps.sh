@@ -326,7 +326,14 @@ EOF
         mkdir -p /tmp/libtiff-source
         cd /tmp/libtiff-source
         if [ ! -f "tiff-4.7.0.tar.gz" ]; then
-            wget -q "https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz" -O tiff-4.7.0.tar.gz || echo "Failed to download libtiff source"
+            # Try multiple mirrors with retries
+            wget -q --timeout=30 --tries=3 --retry-connrefused --waitretry=5 \
+                "https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz" -O tiff-4.7.0.tar.gz || \
+            wget -q --timeout=30 --tries=3 --retry-connrefused --waitretry=5 \
+                "https://github.com/libtiff/libtiff/releases/download/v4.7.0/tiff-4.7.0.tar.gz" -O tiff-4.7.0.tar.gz || \
+            wget -q --timeout=30 --tries=3 --retry-connrefused --waitretry=5 \
+                "https://mirrors.ocf.berkeley.edu/libtiff/tiff-4.7.0.tar.gz" -O tiff-4.7.0.tar.gz || \
+            echo "Failed to download libtiff source from all mirrors"
         fi
         tar -xzf tiff-4.7.0.tar.gz 2>/dev/null || true
         if [ -d "tiff-4.7.0" ] && [ -f "tiff-4.7.0/libtiff/tiffio.h" ]; then
@@ -343,8 +350,37 @@ EOF
             if [ -f "tiff-4.7.0/port/tiffconf.h" ]; then
                 cp -f tiff-4.7.0/port/tiffconf.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
             fi
+            # Create a minimal tiffconf.h if still missing
+            if [ ! -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h" ]; then
+                cat > "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h" << 'EOF'
+/* tiffconf.h - minimal fallback for Android cross-compile */
+#ifndef _TIFFCONF_
+#define _TIFFCONF_
+#define HAVE_FCNTL_H 1
+#define HAVE_IEEEFP 1
+#define HAVE_MMAP 1
+#define HAVE_SEARCH_H 1
+#define HAVE_STRING_H 1
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_UNISTD_H 1
+#define HOST_FILLORDER FILLORDER_LSB2MSB
+#define SIZEOF_FLOAT 4
+#define SIZEOF_INT 4
+#define SIZEOF_LONG 8
+#define SIZEOF_SHORT 2
+#define SIZEOF_VOIDP 8
+/* Define missing types for Android cross-compile */
+#define TIFF_SSIZE_T ssize_t
+#define TIFF_UINT64_T uint64_t
+#define TIFF_INT64_T int64_t
+#endif
+EOF
+                echo "Created minimal tiffconf.h fallback"
+            fi
             LIBTIFF_HEADERS_COPIED=true
             echo "Copied libtiff headers from downloaded source"
+        else
+            echo "Failed to download or extract libtiff source"
         fi
     fi
     
