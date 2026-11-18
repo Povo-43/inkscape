@@ -277,7 +277,9 @@ jobs:
             python3-pip curl xz-utils git \
             autoconf automake libtool gettext \
             glslc \
-            libglib2.0-dev
+            libglib2.0-dev \
+            libfreetype2-dev \
+            libpng-dev
 
       - name: Meson をセットアップ
         run: python3 -m pip install meson ninja
