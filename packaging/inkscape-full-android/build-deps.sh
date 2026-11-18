@@ -154,7 +154,53 @@ PCEOF
         cp -r /usr/include/freetype2/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
     fi
     
-    # Copy glib headers from pixiewood to our include directory
+    # Also copy libjpeg-turbo headers (jpeglib.h, jerror.h, etc.)
+    echo "--- Copying libjpeg-turbo headers ---"
+    if [ -d "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1" ]; then
+        echo "--- Copying libjpeg-turbo headers from pixiewood build directory ---"
+        mkdir -p "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1"
+        cp -r "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1"/*.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+        # Create symlink for standard include path
+        mkdir -p "${INSTALL_DIR}/include"
+        ln -sf libjpeg-turbo-3.1.1/jpeglib.h "${INSTALL_DIR}/include/jpeglib.h" 2>/dev/null || true
+        ln -sf libjpeg-turbo-3.1.1/jerror.h "${INSTALL_DIR}/include/jerror.h" 2>/dev/null || true
+        ln -sf libjpeg-turbo-3.1.1/jmorecfg.h "${INSTALL_DIR}/include/jmorecfg.h" 2>/dev/null || true
+        echo "Copied libjpeg-turbo headers from pixiewood build directory"
+    elif [ -f "/usr/include/jpeglib.h" ]; then
+        echo "--- Copying libjpeg headers from system (fallback) ---"
+        mkdir -p "${INSTALL_DIR}/include"
+        cp -f /usr/include/jpeglib.h "${INSTALL_DIR}/include/" 2>/dev/null || true
+        cp -f /usr/include/jerror.h "${INSTALL_DIR}/include/" 2>/dev/null || true
+        cp -f /usr/include/jmorecfg.h "${INSTALL_DIR}/include/" 2>/dev/null || true
+        echo "Copied system libjpeg headers (fallback)"
+    else
+        echo "Warning: libjpeg headers not found"
+    fi
+    
+    # Also copy libtiff headers (tiff.h, tiffconf.h, etc.)
+    echo "--- Copying libtiff headers ---"
+    if [ -d "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff" ]; then
+        echo "--- Copying libtiff headers from pixiewood build directory ---"
+        mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
+        cp -r "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff"/*.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        # Create symlink for standard include path
+        mkdir -p "${INSTALL_DIR}/include"
+        ln -sf tiff-4.7.0/libtiff/tiff.h "${INSTALL_DIR}/include/tiff.h" 2>/dev/null || true
+        ln -sf tiff-4.7.0/libtiff/tiffconf.h "${INSTALL_DIR}/include/tiffconf.h" 2>/dev/null || true
+        ln -sf tiff-4.7.0/libtiff/tiffio.h "${INSTALL_DIR}/include/tiffio.h" 2>/dev/null || true
+        echo "Copied libtiff headers from pixiewood build directory"
+    elif [ -f "/usr/include/tiff.h" ]; then
+        echo "--- Copying libtiff headers from system (fallback) ---"
+        mkdir -p "${INSTALL_DIR}/include"
+        cp -f /usr/include/tiff.h "${INSTALL_DIR}/include/" 2>/dev/null || true
+        cp -f /usr/include/tiffconf.h "${INSTALL_DIR}/include/" 2>/dev/null || true
+        cp -f /usr/include/tiffio.h "${INSTALL_DIR}/include/" 2>/dev/null || true
+        echo "Copied system libtiff headers (fallback)"
+    else
+        echo "Warning: libtiff headers not found"
+    fi
+    
+    # Create symlink for freetype2 in include (some CMake scripts expect this)
     echo "--- Searching for glib headers ---"
     echo "PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
     echo "PIXIEWOOD_ROOT=${PIXIEWOOD_ROOT}"

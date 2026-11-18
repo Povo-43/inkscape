@@ -472,8 +472,8 @@ jobs:
             -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/packaging/inkscape-full-android/cmake" \
             -DCMAKE_PREFIX_PATH="$INSTALL" \
             -DCMAKE_FIND_ROOT_PATH="$INSTALL" \
-            -DPNG_INCLUDE_DIR="$INSTALL/include" \
-            -DPNG_PNG_INCLUDE_DIR="$INSTALL/include" \
+            -DPNG_INCLUDE_DIR="$INSTALL/include/libpng16" \
+            -DPNG_PNG_INCLUDE_DIR="$INSTALL/include/libpng16" \
             -DPNG_LIBRARY="$INSTALL/lib/libpng.so" \
             -DPNG_LIBRARY_RELEASE="$INSTALL/lib/libpng.so" \
             -DPNG_LIBRARY_DEBUG="$INSTALL/lib/libpng.so" \
@@ -483,7 +483,7 @@ jobs:
             -DZLIB_LIBRARY="$INSTALL/lib/libz.so" \
             -DZLIB_LIBRARY_RELEASE="$INSTALL/lib/libz.so" \
             -DZLIB_LIBRARY_DEBUG="$INSTALL/lib/libz.so" \
-            -DJPEG_INCLUDE_DIR="$INSTALL/include" \
+            -DJPEG_INCLUDE_DIR="$INSTALL/include/libjpeg-turbo-3.1.1" \
             -DJPEG_LIBRARY="$INSTALL/lib/libjpeg.so" \
             -DJPEG_LIBRARY_RELEASE="$INSTALL/lib/libjpeg.so" \
             -DJPEG_LIBRARY_DEBUG="$INSTALL/lib/libjpeg.so" \
@@ -491,11 +491,11 @@ jobs:
             -DLIBXSLT_LIBRARIES="$INSTALL/lib/libxslt.so" \
             -DLIBXML2_INCLUDE_DIR="$INSTALL/include/libxml2" \
             -DLIBXML2_LIBRARIES="$INSTALL/lib/libxml2.so" \
-            -DTIFF_INCLUDE_DIR="$INSTALL/include" \
+            -DTIFF_INCLUDE_DIR="$INSTALL/include/tiff-4.7.0/libtiff" \
             -DTIFF_LIBRARY="$INSTALL/lib/libtiff.so" \
             -DTIFF_LIBRARY_RELEASE="$INSTALL/lib/libtiff.so" \
             -DTIFF_LIBRARY_DEBUG="$INSTALL/lib/libtiff.so" \
-            -DFREETYPE_INCLUDE_DIRS="$INSTALL/include" \
+            -DFREETYPE_INCLUDE_DIRS="$INSTALL/include/freetype2" \
             -DFREETYPE_LIBRARY="$INSTALL/lib/libfreetype.so" \
             -DFREETYPE_LIBRARY_RELEASE="$INSTALL/lib/libfreetype.so" \
             -DFREETYPE_LIBRARY_DEBUG="$INSTALL/lib/libfreetype.so" \
