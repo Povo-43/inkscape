@@ -159,10 +159,33 @@ PCEOF
         echo "Copied libpng headers from pixiewood install directory"
     else
         echo "Warning: libpng headers not found in pixiewood"
-        # Fallback to system
+        # Fallback to system headers (libpng-dev package)
         if [ -f "/usr/include/png.h" ]; then
+            echo "--- Copying libpng headers from system (fallback) ---"
+            mkdir -p "${INSTALL_DIR}/include/libpng16"
+            cp -f /usr/include/png.h "${INSTALL_DIR}/include/libpng16/" 2>/dev/null || true
+            cp -f /usr/include/pngconf.h "${INSTALL_DIR}/include/libpng16/" 2>/dev/null || true
+            # Also copy to standard include path
             cp -f /usr/include/png.h "${INSTALL_DIR}/include/" 2>/dev/null || true
             cp -f /usr/include/pngconf.h "${INSTALL_DIR}/include/" 2>/dev/null || true
+            # Create symlink for standard include path
+            mkdir -p "${INSTALL_DIR}/include"
+            ln -sf libpng16/png.h "${INSTALL_DIR}/include/png.h" 2>/dev/null || true
+            ln -sf libpng16/pngconf.h "${INSTALL_DIR}/include/pngconf.h" 2>/dev/null || true
+            # pnglibconf.h might not exist on system, generate a minimal one
+            if [ ! -f "${INSTALL_DIR}/include/libpng16/pnglibconf.h" ]; then
+                cat > "${INSTALL_DIR}/include/libpng16/pnglibconf.h" << 'EOF'
+/* pnglibconf.h - Generated for cross-compile fallback */
+#ifndef PNGLCONF_H
+#define PNGLCONF_H
+#define PNG_BUILD_GRAYSCALE_PALETTE_SUPPORTED
+#define PNG_MAX_GAMMA_8 11
+#define PNG_MAX_GAMMA_16 11
+#endif
+EOF
+            fi
+            ln -sf libpng16/pnglibconf.h "${INSTALL_DIR}/include/pnglibconf.h" 2>/dev/null || true
+            echo "Copied system libpng headers as fallback"
         fi
     fi
     
