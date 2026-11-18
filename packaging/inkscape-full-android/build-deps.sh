@@ -291,21 +291,38 @@ EOF
         fi
     fi
     
-    # Also check source directory for libtiff headers
+    # Also check source directory for libtiff headers - check more broadly
     echo "DEBUG: Checking source directory for tiff"
-    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/" 2>/dev/null | head -10 || echo "source libtiff not found"
-    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff" ] && [ -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffio.h" ]; then
+    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/" 2>/dev/null | head -20 || echo "source tiff-4.7.0 not found"
+    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/" 2>/dev/null | head -10 || echo "source libtiff directory not found"
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0" ] && [ -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/tiffio.h" ]; then
         if [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
             echo "--- Copying libtiff headers from pixiewood source directory ---"
             mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
         else
             echo "--- Also copying libtiff headers from pixiewood source directory ---"
         fi
-        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiff.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
-        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffconf.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
-        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffio.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/tiffio.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/tiff.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/tiffconf.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/tiffconf.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
         LIBTIFF_HEADERS_COPIED=true
         echo "Copied libtiff headers from pixiewood source directory"
+    fi
+    
+    # Also check if tiff headers are in libtiff subdirectory of source
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff" ] && [ -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffio.h" ]; then
+        if [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
+            echo "--- Copying libtiff headers from pixiewood source libtiff directory ---"
+            mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
+        else
+            echo "--- Also copying libtiff headers from pixiewood source libtiff directory ---"
+        fi
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffio.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiff.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffconf.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        LIBTIFF_HEADERS_COPIED=true
+        echo "Copied libtiff headers from pixiewood source libtiff directory"
     fi
     
     # If neither build nor source directory has headers, search more broadly in pixiewood build
