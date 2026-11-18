@@ -40,8 +40,8 @@ mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 PIXIEWOOD_ROOT="${GITHUB_WORKSPACE}/.pixiewood/root"
 PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
 
-# PIXIEWOOD_SOURCE_DIR is the source directory from local repo checkout (packaging/android-gtkmm4/)
-PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/packaging/android-gtkmm4"
+# PIXIEWOOD_SOURCE_DIR is the source directory from downloaded artifact (contains pixiewood subprojects)
+PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/gtk4-stack-download/packaging/android-gtkmm4"
 
 # Global PKG_CONFIG_PATH for all builds - IMPORTANT: INSTALL_DIR FIRST so our .pc files take precedence
 export PKG_CONFIG_PATH="${INSTALL_DIR}/lib/pkgconfig:${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}"
