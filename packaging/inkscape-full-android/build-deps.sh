@@ -209,15 +209,15 @@ EOF
     # Also copy libjpeg-turbo headers (jpeglib.h, jerror.h, etc.)
     echo "--- Copying libjpeg-turbo headers ---"
     LIBJPEG_HEADERS_COPIED=false
-    # Try build directory first (has generated jconfig.h)
+    # Try build directory first (has generated jconfig.h in build subdirectory)
     if [ -d "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1" ]; then
         echo "--- Copying libjpeg-turbo headers from pixiewood build directory ---"
         mkdir -p "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1"
-        # Copy generated jconfig.h if it exists
-        if [ -f "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1/jconfig.h" ]; then
-            cp -f "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1/jconfig.h" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
-            echo "Copied generated jconfig.h from pixiewood build directory"
-        fi
+        # Search for jconfig.h in build subdirectories
+        find "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1" -name "jconfig.h" 2>/dev/null | head -1 | while read jconfig; do
+            cp -f "$jconfig" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+            echo "Copied generated jconfig.h from $(dirname $jconfig)"
+        done
         # Check if actual headers exist in build directory
         if [ -f "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1/jpeglib.h" ]; then
             cp -r "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1"/*.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
@@ -246,11 +246,11 @@ EOF
         cp -f /usr/include/jpeglib.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
         cp -f /usr/include/jerror.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
         cp -f /usr/include/jmorecfg.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
-        # Also copy jconfig.h from pixiewood build directory (it's generated there)
-        if [ -f "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1/jconfig.h" ]; then
-            cp -f "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1/jconfig.h" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
-            echo "Also copied generated jconfig.h from pixiewood build directory"
-        fi
+        # Also search for jconfig.h in pixiewood build directory (it's generated in build subdirectory)
+        find "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1" -name "jconfig.h" 2>/dev/null | head -1 | while read jconfig; do
+            cp -f "$jconfig" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+            echo "Also copied generated jconfig.h from $(dirname $jconfig)"
+        done
         LIBJPEG_HEADERS_COPIED=true
         echo "Copied system libjpeg headers as fallback"
     fi
