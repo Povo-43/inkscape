@@ -40,6 +40,9 @@ mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 PIXIEWOOD_ROOT="${GITHUB_WORKSPACE}/.pixiewood/root"
 PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
 
+# PIXIEWOOD_SOURCE_DIR is the source directory (packaging/android-gtkmm4/)
+PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/packaging/android-gtkmm4"
+
 # Global PKG_CONFIG_PATH for all builds - IMPORTANT: INSTALL_DIR FIRST so our .pc files take precedence
 export PKG_CONFIG_PATH="${INSTALL_DIR}/lib/pkgconfig:${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}"
 # PKG_CONFIG_LIBDIR tells pkg-config to ONLY look in cross-compile directories - IMPORTANT: INSTALL_DIR FIRST
@@ -165,8 +168,6 @@ PCEOF
     fi
     
     # Copy glib headers from pixiewood to our include directory
-    # Set up paths first
-    PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/packaging/android-gtkmm4"
     echo "--- Searching for glib headers ---"
     echo "PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
     echo "PIXIEWOOD_ROOT=${PIXIEWOOD_ROOT}"
