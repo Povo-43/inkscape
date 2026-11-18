@@ -122,44 +122,47 @@ PCEOF
     ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/libpng-1.6.49/" 2>/dev/null | head -20 || echo "libpng-1.6.49 source not found"
     echo "DEBUG: Checking libpng build directory..."
     ls -la "${PIXIEWOOD_DIR}/subprojects/libpng-1.6.49/" 2>/dev/null | head -20 || echo "libpng-1.6.49 build not found"
-    # First try source directory (where png.h and pngconf.h actually are)
-    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/libpng-1.6.49" ]; then
+    
+    # Try to find and copy libpng headers from any available location
+    LIBPNG_HEADERS_COPIED=false
+    
+    # Try source directory first (where png.h and pngconf.h actually are)
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/libpng-1.6.49" ] && [ -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libpng-1.6.49/png.h" ]; then
         echo "--- Copying libpng headers from pixiewood source directory ---"
         mkdir -p "${INSTALL_DIR}/include/libpng16"
         cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libpng-1.6.49/png.h" "${INSTALL_DIR}/include/libpng16/" 2>/dev/null || true
         cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libpng-1.6.49/pngconf.h" "${INSTALL_DIR}/include/libpng16/" 2>/dev/null || true
         cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libpng-1.6.49/pnglibconf.h" "${INSTALL_DIR}/include/libpng16/" 2>/dev/null || true
-        # Create symlink for standard include path
-        mkdir -p "${INSTALL_DIR}/include"
-        ln -sf libpng16/png.h "${INSTALL_DIR}/include/png.h" 2>/dev/null || true
-        ln -sf libpng16/pngconf.h "${INSTALL_DIR}/include/pngconf.h" 2>/dev/null || true
-        ln -sf libpng16/pnglibconf.h "${INSTALL_DIR}/include/pnglibconf.h" 2>/dev/null || true
+        LIBPNG_HEADERS_COPIED=true
         echo "Copied libpng headers from pixiewood source directory"
-    # Try build directory for generated pnglibconf.h
-    elif [ -d "${PIXIEWOOD_DIR}/subprojects/libpng-1.6.49" ]; then
-        echo "--- Copying libpng headers from pixiewood build directory ---"
-        mkdir -p "${INSTALL_DIR}/include/libpng16"
-        cp -f "${PIXIEWOOD_DIR}/subprojects/libpng-1.6.49/pnglibconf.h" "${INSTALL_DIR}/include/libpng16/" 2>/dev/null || true
-        # Also copy from source if available
-        if [ -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libpng-1.6.49/png.h" ]; then
-            cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libpng-1.6.49/png.h" "${INSTALL_DIR}/include/libpng16/" 2>/dev/null || true
-            cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libpng-1.6.49/pngconf.h" "${INSTALL_DIR}/include/libpng16/" 2>/dev/null || true
+    fi
+    
+    # Also try build directory for generated pnglibconf.h
+    if [ -d "${PIXIEWOOD_DIR}/subprojects/libpng-1.6.49" ] && [ -f "${PIXIEWOOD_DIR}/subprojects/libpng-1.6.49/pnglibconf.h" ]; then
+        if [ "$LIBPNG_HEADERS_COPIED" = false ]; then
+            echo "--- Copying libpng headers from pixiewood build directory ---"
+            mkdir -p "${INSTALL_DIR}/include/libpng16"
+        else
+            echo "--- Also copying generated pnglibconf.h from pixiewood build directory ---"
         fi
-        # Create symlink for standard include path
-        mkdir -p "${INSTALL_DIR}/include"
-        ln -sf libpng16/png.h "${INSTALL_DIR}/include/png.h" 2>/dev/null || true
-        ln -sf libpng16/pngconf.h "${INSTALL_DIR}/include/pngconf.h" 2>/dev/null || true
-        ln -sf libpng16/pnglibconf.h "${INSTALL_DIR}/include/pnglibconf.h" 2>/dev/null || true
-        echo "Copied libpng headers from pixiewood build + source directory"
-    elif [ -d "${PIXIEWOOD_ROOT}/include" ] && [ -f "${PIXIEWOOD_ROOT}/include/png.h" ]; then
+        cp -f "${PIXIEWOOD_DIR}/subprojects/libpng-1.6.49/pnglibconf.h" "${INSTALL_DIR}/include/libpng16/" 2>/dev/null || true
+        LIBPNG_HEADERS_COPIED=true
+        echo "Copied generated pnglibconf.h from pixiewood build directory"
+    fi
+    
+    # Try install directory
+    if [ -d "${PIXIEWOOD_ROOT}/include" ] && [ -f "${PIXIEWOOD_ROOT}/include/png.h" ]; then
         echo "--- Copying libpng headers from pixiewood install directory ---"
         cp -f "${PIXIEWOOD_ROOT}/include/png.h" "${INSTALL_DIR}/include/" 2>/dev/null || true
         cp -f "${PIXIEWOOD_ROOT}/include/pngconf.h" "${INSTALL_DIR}/include/" 2>/dev/null || true
         cp -f "${PIXIEWOOD_ROOT}/include/pnglibconf.h" "${INSTALL_DIR}/include/" 2>/dev/null || true
+        LIBPNG_HEADERS_COPIED=true
         echo "Copied libpng headers from pixiewood install directory"
-    else
-        echo "Warning: libpng headers not found in pixiewood"
-        # Fallback to system headers (libpng-dev package)
+    fi
+    
+    # If no headers were copied from pixiewood, fall back to system headers
+    if [ "$LIBPNG_HEADERS_COPIED" = false ]; then
+        echo "Warning: libpng headers not found in pixiewood, using system headers (fallback)"
         if [ -f "/usr/include/png.h" ]; then
             echo "--- Copying libpng headers from system (fallback) ---"
             mkdir -p "${INSTALL_DIR}/include/libpng16"
@@ -187,6 +190,14 @@ EOF
             ln -sf libpng16/pnglibconf.h "${INSTALL_DIR}/include/pnglibconf.h" 2>/dev/null || true
             echo "Copied system libpng headers as fallback"
         fi
+    fi
+    
+    # Create symlinks for standard include path (if headers were copied from pixiewood)
+    if [ "$LIBPNG_HEADERS_COPIED" = true ] && [ -f "${INSTALL_DIR}/include/libpng16/png.h" ]; then
+        mkdir -p "${INSTALL_DIR}/include"
+        ln -sf libpng16/png.h "${INSTALL_DIR}/include/png.h" 2>/dev/null || true
+        ln -sf libpng16/pngconf.h "${INSTALL_DIR}/include/pngconf.h" 2>/dev/null || true
+        ln -sf libpng16/pnglibconf.h "${INSTALL_DIR}/include/pnglibconf.h" 2>/dev/null || true
     fi
     
     # Create symlink for freetype2 in include (some CMake scripts expect this)
