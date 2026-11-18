@@ -260,6 +260,17 @@ PCEOF
         echo "Copied libz from pixiewood install directory"
     fi
     
+    # Also try to copy from system (host) libraries - pixiewood may use host zlib
+    if [ ! -f "${INSTALL_DIR}/lib/libz.so.1" ] && [ -f "/usr/lib/aarch64-linux-gnu/libz.so.1" ]; then
+        echo "--- Copying libz from system (host) ---"
+        cp -f /usr/lib/aarch64-linux-gnu/libz.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        echo "Copied libz from system"
+    elif [ ! -f "${INSTALL_DIR}/lib/libz.so.1" ] && [ -f "/usr/lib/x86_64-linux-gnu/libz.so.1" ]; then
+        echo "--- Copying libz from system (x86_64) ---"
+        cp -f /usr/lib/x86_64-linux-gnu/libz.so* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        echo "Copied libz from system (x86_64)"
+    fi
+    
     # Now try to create symlink again
     if [ -f "${INSTALL_DIR}/lib/libz.so.1" ] && [ ! -f "${INSTALL_DIR}/lib/libz.so" ]; then
         ln -sf libz.so.1 "${INSTALL_DIR}/lib/libz.so"
