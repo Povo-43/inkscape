@@ -464,8 +464,8 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=$INSTALL \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON \
-            -DCMAKE_C_FLAGS="-DANDROID -fPIC -I$INSTALL/include" \
-            -DCMAKE_CXX_FLAGS="-DANDROID -fPIC -I$INSTALL/include -std=c++20" \
+            -DCMAKE_C_FLAGS="-DANDROID -fPIC -I$INSTALL/include -I$INSTALL/include/freetype2 -I$INSTALL/include/libpng16 -I$INSTALL/include/libjpeg-turbo-3.1.1 -I$INSTALL/include/tiff-4.7.0/libtiff" \
+            -DCMAKE_CXX_FLAGS="-DANDROID -fPIC -I$INSTALL/include -I$INSTALL/include/freetype2 -I$INSTALL/include/libpng16 -I$INSTALL/include/libjpeg-turbo-3.1.1 -I$INSTALL/include/tiff-4.7.0/libtiff -std=c++20" \
             -DCMAKE_EXE_LINKER_FLAGS="-L$INSTALL/lib -lc++_shared" \
             -DCMAKE_SHARED_LINKER_FLAGS="-L$INSTALL/lib -lc++_shared" \
             -DPKG_CONFIG_EXECUTABLE=/usr/local/bin/pkg-config-cross \
