@@ -81,13 +81,19 @@ Cflags: -I${GLIB_INCLUDE}/glib-2.0 -I${GLIB_INCLUDE}/glib-2.0/include
 PCEOF
     
     # Copy Freetype headers from pixiewood to our include directory
-    # Freetype headers are in the SOURCE directory, not the build directory
-    # PIXIEWOOD_SOURCE_DIR is the source directory (packaging/android-gtkmm4/)
+    # Freetype headers are in the source directory's subprojects/freetype/include/freetype2/
+    # But the subproject is named 'freetype' in the source
     echo "--- Copying Freetype headers ---"
     echo "DEBUG: PIXIEWOOD_SOURCE_DIR=${PIXIEWOOD_SOURCE_DIR}"
+    echo "DEBUG: PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
     echo "DEBUG: Checking for freetype in source directory..."
-    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include/" 2>/dev/null | head -10 || echo "freetype source not found"
     ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/" 2>/dev/null | head -10 || echo "freetype source not found"
+    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include/" 2>/dev/null | head -10 || echo "freetype/include not found"
+    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include/freetype2/" 2>/dev/null | head -10 || echo "freetype/include/freetype2 not found"
+    # Also check build directory for generated headers
+    echo "DEBUG: Checking build directory for freetype..."
+    ls -la "${PIXIEWOOD_DIR}/subprojects/freetype/" 2>/dev/null | head -10 || echo "freetype build not found"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/freetype/include/" 2>/dev/null | head -10 || echo "freetype build include not found"
     
     # Try to find freetype headers in source directory
     if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include/freetype2" ]; then
