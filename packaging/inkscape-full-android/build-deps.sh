@@ -220,6 +220,11 @@ EOF
             echo "Copied libjpeg-turbo headers from pixiewood build directory"
         else
             echo "Warning: libjpeg-turbo headers (jpeglib.h) not found in build directory"
+            # But still copy generated jconfig.h if it exists
+            if [ -f "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1/jconfig.h" ]; then
+                cp -f "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1/jconfig.h" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+                echo "Copied generated jconfig.h from pixiewood build directory"
+            fi
         fi
     fi
     
@@ -236,17 +241,6 @@ EOF
         cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libjpeg-turbo-3.1.1/jmorecfg.h" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
         LIBJPEG_HEADERS_COPIED=true
         echo "Copied libjpeg-turbo headers from pixiewood source directory"
-    fi
-    
-    # If neither build nor source directory has headers, try system fallback
-    if [ "$LIBJPEG_HEADERS_COPIED" = false ] && [ -f "/usr/include/jpeglib.h" ]; then
-        echo "--- Copying libjpeg headers from system (fallback) ---"
-        mkdir -p "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1"
-        cp -f /usr/include/jpeglib.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
-        cp -f /usr/include/jerror.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
-        cp -f /usr/include/jmorecfg.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
-        LIBJPEG_HEADERS_COPIED=true
-        echo "Copied system libjpeg headers as fallback"
     fi
     
     # Create symlink for standard include path
