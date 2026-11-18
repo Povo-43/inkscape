@@ -311,15 +311,19 @@ EOF
     # If neither build nor source directory has headers, search more broadly in pixiewood build
     if [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
         echo "--- Searching for tiff headers in pixiewood build tree ---"
-        find "${PIXIEWOOD_DIR}" -name "tiffio.h" -o -name "tiff.h" -o -name "tiffconf.h" 2>/dev/null | head -10 | while read hdr; do
+        # Use a temp file to store results since while loop runs in subshell
+        find "${PIXIEWOOD_DIR}" -name "tiffio.h" -o -name "tiff.h" -o -name "tiffconf.h" 2>/dev/null | head -10 > /tmp/tiff_headers.txt
+        while read hdr; do
+            [ -z "$hdr" ] && continue
             echo "DEBUG: Found header $hdr"
             cp -f "$hdr" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
             echo "Copied $(basename $hdr) from $(dirname $hdr)"
-        done
+        done < /tmp/tiff_headers.txt
         if [ -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffio.h" ]; then
             LIBTIFF_HEADERS_COPIED=true
             echo "Copied libtiff headers from pixiewood build tree"
         fi
+        rm -f /tmp/tiff_headers.txt
     fi
     
     # If neither build nor source directory has headers, try system fallback
