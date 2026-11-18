@@ -496,7 +496,7 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/freetype2.pc" ]; then
     echo "--- Creating freetype2.pc ---"
     FT_LIB=$(find "$PIXIEWOOD_DIR" -name "libfreetype.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    FT_INCLUDE="${PIXIEWOOD_ROOT}/include"
+    # Use INSTALL_DIR for include path since we copied headers to android-install/include/freetype2
     cat > "$INSTALL_DIR/lib/pkgconfig/freetype2.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
@@ -508,7 +508,7 @@ Description: FreeType 2 font engine
 Version: 2.13.0
 Requires:
 Libs: -L${FT_LIB} -lfreetype
-Cflags: -I${FT_INCLUDE}/freetype2
+Cflags: -I${includedir}/freetype2
 PCEOF
     echo "Created freetype2.pc"
 fi
