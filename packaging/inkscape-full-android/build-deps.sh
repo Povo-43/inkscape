@@ -320,6 +320,26 @@ EOF
         fi
     done
     
+    # If still not found, download libtiff source directly
+    if [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
+        echo "--- Downloading libtiff source directly for headers ---"
+        mkdir -p /tmp/libtiff-source
+        cd /tmp/libtiff-source
+        if [ ! -f "tiff-4.7.0.tar.gz" ]; then
+            wget -q "https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz" -O tiff-4.7.0.tar.gz || echo "Failed to download libtiff source"
+        fi
+        tar -xzf tiff-4.7.0.tar.gz 2>/dev/null || true
+        if [ -d "tiff-4.7.0" ] && [ -f "tiff-4.7.0/libtiff/tiffio.h" ]; then
+            echo "--- Copying libtiff headers from downloaded source ---"
+            mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
+            cp -f tiff-4.7.0/libtiff/tiffio.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+            cp -f tiff-4.7.0/libtiff/tiff.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+            cp -f tiff-4.7.0/libtiff/tiffconf.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+            LIBTIFF_HEADERS_COPIED=true
+            echo "Copied libtiff headers from downloaded source"
+        fi
+    fi
+    
     # If neither build nor source directory has headers, search more broadly in pixiewood build
     if [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
         echo "--- Searching for tiff headers in pixiewood build tree ---"
