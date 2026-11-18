@@ -249,6 +249,23 @@ PCEOF
         echo "WARNING: libz.so.1 not found in install dir, cannot create symlink"
     fi
     
+    # If libz is still missing, try to copy from pixiewood build directory
+    if [ ! -f "${INSTALL_DIR}/lib/libz.so.1" ] && [ -f "${PIXIEWOOD_DIR}/subprojects/zlib/libz.so" ]; then
+        echo "--- Copying libz from pixiewood build directory ---"
+        cp -f "${PIXIEWOOD_DIR}/subprojects/zlib/libz.so"* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        echo "Copied libz from pixiewood build directory"
+    elif [ ! -f "${INSTALL_DIR}/lib/libz.so.1" ] && [ -f "${PIXIEWOOD_ROOT}/lib/libz.so.1" ]; then
+        echo "--- Copying libz from pixiewood install directory ---"
+        cp -f "${PIXIEWOOD_ROOT}/lib/libz.so"* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        echo "Copied libz from pixiewood install directory"
+    fi
+    
+    # Now try to create symlink again
+    if [ -f "${INSTALL_DIR}/lib/libz.so.1" ] && [ ! -f "${INSTALL_DIR}/lib/libz.so" ]; then
+        ln -sf libz.so.1 "${INSTALL_DIR}/lib/libz.so"
+        echo "Created symlink libz.so -> libz.so.1"
+    fi
+    
     # Fallback to system libraries (host libraries - for linking only)
     # Only use if pixiewood didn't provide them
     if [ ! -f "${INSTALL_DIR}/lib/libglib-2.0.so" ] && [ -f "/usr/lib/aarch64-linux-gnu/libglib-2.0.so" ]; then
