@@ -304,6 +304,9 @@ EOF
     # If neither build nor source directory has headers, try system fallback
     if [ "$LIBTIFF_HEADERS_COPIED" = false ] && [ -f "/usr/include/tiffio.h" ]; then
         echo "--- Copying libtiff headers from system (fallback) ---"
+        echo "DEBUG: Checking system tiff headers..."
+        ls -la /usr/include/tiff*.h 2>/dev/null | head -10 || echo "tiff headers not found in /usr/include/"
+        ls -la /usr/include/tiff*/tiffio.h 2>/dev/null | head -10 || echo "tiffio.h not found in tiff subdir"
         mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
         cp -f /usr/include/tiff.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
         cp -f /usr/include/tiffconf.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
