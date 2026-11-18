@@ -208,25 +208,40 @@ EOF
     
     # Also copy libjpeg-turbo headers (jpeglib.h, jerror.h, etc.)
     echo "--- Copying libjpeg-turbo headers ---"
+    LIBJPEG_HEADERS_COPIED=false
+    # Try build directory first
     if [ -d "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1" ]; then
         echo "--- Copying libjpeg-turbo headers from pixiewood build directory ---"
         mkdir -p "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1"
-        cp -r "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1"/*.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
-        # Create symlink for standard include path
+        # Check if actual headers exist in build directory
+        if [ -f "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1/jpeglib.h" ]; then
+            cp -r "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1"/*.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+            LIBJPEG_HEADERS_COPIED=true
+            echo "Copied libjpeg-turbo headers from pixiewood build directory"
+        else
+            echo "Warning: libjpeg-turbo headers (jpeglib.h) not found in build directory"
+        fi
+    fi
+    
+    # If build directory doesn't have headers, try system fallback
+    if [ "$LIBJPEG_HEADERS_COPIED" = false ] && [ -f "/usr/include/jpeglib.h" ]; then
+        echo "--- Copying libjpeg headers from system (fallback) ---"
+        mkdir -p "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1"
+        cp -f /usr/include/jpeglib.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+        cp -f /usr/include/jerror.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+        cp -f /usr/include/jmorecfg.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+        LIBJPEG_HEADERS_COPIED=true
+        echo "Copied system libjpeg headers as fallback"
+    fi
+    
+    # Create symlink for standard include path
+    if [ "$LIBJPEG_HEADERS_COPIED" = true ] && [ -f "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/jpeglib.h" ]; then
         mkdir -p "${INSTALL_DIR}/include"
         ln -sf libjpeg-turbo-3.1.1/jpeglib.h "${INSTALL_DIR}/include/jpeglib.h" 2>/dev/null || true
         ln -sf libjpeg-turbo-3.1.1/jerror.h "${INSTALL_DIR}/include/jerror.h" 2>/dev/null || true
         ln -sf libjpeg-turbo-3.1.1/jmorecfg.h "${INSTALL_DIR}/include/jmorecfg.h" 2>/dev/null || true
-        echo "Copied libjpeg-turbo headers from pixiewood build directory"
-    elif [ -f "/usr/include/jpeglib.h" ]; then
-        echo "--- Copying libjpeg headers from system (fallback) ---"
-        mkdir -p "${INSTALL_DIR}/include"
-        cp -f /usr/include/jpeglib.h "${INSTALL_DIR}/include/" 2>/dev/null || true
-        cp -f /usr/include/jerror.h "${INSTALL_DIR}/include/" 2>/dev/null || true
-        cp -f /usr/include/jmorecfg.h "${INSTALL_DIR}/include/" 2>/dev/null || true
-        echo "Copied system libjpeg headers (fallback)"
-    else
-        echo "Warning: libjpeg headers not found"
+    elif [ "$LIBJPEG_HEADERS_COPIED" = false ]; then
+        echo "Warning: libjpeg headers not found anywhere"
     fi
     
     # Also copy libtiff headers (tiff.h, tiffconf.h, etc.)
