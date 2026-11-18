@@ -332,9 +332,8 @@ EOF
         if [ -d "tiff-4.7.0" ] && [ -f "tiff-4.7.0/libtiff/tiffio.h" ]; then
             echo "--- Copying libtiff headers from downloaded source ---"
             mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
-            cp -f tiff-4.7.0/libtiff/tiffio.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
-            cp -f tiff-4.7.0/libtiff/tiff.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
-            cp -f tiff-4.7.0/libtiff/tiffconf.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+            # Copy all headers from libtiff directory to ensure tiffconf.h and others are included
+            cp -f tiff-4.7.0/libtiff/*.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
             LIBTIFF_HEADERS_COPIED=true
             echo "Copied libtiff headers from downloaded source"
         fi
