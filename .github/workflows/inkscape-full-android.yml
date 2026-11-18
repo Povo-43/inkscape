@@ -279,7 +279,8 @@ jobs:
             glslc \
             libglib2.0-dev \
             libfreetype-dev \
-            libpng-dev
+            libpng-dev \
+            libjpeg-dev
 
       - name: Meson をセットアップ
         run: python3 -m pip install meson ninja
