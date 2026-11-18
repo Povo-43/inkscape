@@ -278,7 +278,7 @@ jobs:
             autoconf automake libtool gettext \
             glslc \
             libglib2.0-dev \
-            libfreetype2-dev \
+            libfreetype-dev \
             libpng-dev
 
       - name: Meson をセットアップ
