@@ -280,7 +280,8 @@ jobs:
             libglib2.0-dev \
             libfreetype-dev \
             libpng-dev \
-            libjpeg-dev
+            libjpeg-dev \
+            libtiff-dev
 
       - name: Meson をセットアップ
         run: python3 -m pip install meson ninja
