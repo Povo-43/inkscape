@@ -360,8 +360,13 @@ EOF
     for lib_dir in "${BUILD_LIB_DIRS[@]}"; do
         if [ -d "${PIXIEWOOD_DIR}/subprojects/${lib_dir}" ]; then
             echo "Copying libraries from ${lib_dir}..."
+            # Copy from main directory
             cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
             cp -f "${PIXIEWOOD_DIR}/subprojects/${lib_dir}"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            # Copy from build subdirectories (like libpng16.so.p for libpng)
+            find "${PIXIEWOOD_DIR}/subprojects/${lib_dir}" -name "*.so" -o -name "*.so.*" 2>/dev/null | while read libfile; do
+                cp -f "$libfile" "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            done
             echo "Copied libraries from ${lib_dir}"
         fi
     done
