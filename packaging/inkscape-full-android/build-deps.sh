@@ -78,14 +78,25 @@ Cflags: -I${GLIB_INCLUDE}/glib-2.0 -I${GLIB_INCLUDE}/glib-2.0/include
 PCEOF
     
     # Copy Freetype headers from pixiewood to our include directory
-    # Try multiple locations: build directory (nested under pango), install directory, then system
+    # Try multiple locations: build directory (freetype subproject), install directory, then system
     echo "--- Copying Freetype headers ---"
     echo "DEBUG: PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
     echo "DEBUG: Checking for freetype in build directory..."
-    ls -la "${PIXIEWOOD_DIR}/subprojects/pango/subprojects/freetype2/include/freetype2/" 2>/dev/null | head -10 || echo "pango/subprojects/freetype2 not found"
-    ls -la "${PIXIEWOOD_DIR}/subprojects/freetype2/include/freetype2/" 2>/dev/null | head -10 || echo "freetype2 not found"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/freetype/include/freetype2/" 2>/dev/null | head -10 || echo "freetype/include/freetype2 not found"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/freetype/include/" 2>/dev/null | head -10 || echo "freetype/include not found"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/freetype/" 2>/dev/null | head -10 || echo "freetype not found"
     
-    if [ -d "${PIXIEWOOD_DIR}/subprojects/pango/subprojects/freetype2/include/freetype2" ]; then
+    if [ -d "${PIXIEWOOD_DIR}/subprojects/freetype/include/freetype2" ]; then
+        echo "--- Copying Freetype headers from pixiewood build directory (freetype subproject) ---"
+        mkdir -p "${INSTALL_DIR}/include/freetype2"
+        cp -r "${PIXIEWOOD_DIR}/subprojects/freetype/include/freetype2"/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
+        echo "Copied Freetype headers from pixiewood build directory (freetype subproject)"
+    elif [ -d "${PIXIEWOOD_DIR}/subprojects/freetype/include" ]; then
+        echo "--- Copying Freetype headers from pixiewood build directory (freetype subproject include) ---"
+        mkdir -p "${INSTALL_DIR}/include/freetype2"
+        cp -r "${PIXIEWOOD_DIR}/subprojects/freetype/include"/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
+        echo "Copied Freetype headers from pixiewood build directory (freetype include)"
+    elif [ -d "${PIXIEWOOD_DIR}/subprojects/pango/subprojects/freetype2/include/freetype2" ]; then
         echo "--- Copying Freetype headers from pixiewood build directory (pango subproject) ---"
         mkdir -p "${INSTALL_DIR}/include/freetype2"
         cp -r "${PIXIEWOOD_DIR}/subprojects/pango/subprojects/freetype2/include/freetype2"/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
