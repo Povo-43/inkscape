@@ -307,6 +307,9 @@ EOF
     ls -la /usr/include/tiffio.h 2>/dev/null | head -5 || echo "tiffio.h not found at /usr/include/tiffio.h"
     ls -la /usr/include/tiff/tiffio.h 2>/dev/null | head -5 || echo "tiffio.h not found at /usr/include/tiff/tiffio.h"
     ls -la /usr/include/tiff/ 2>/dev/null | head -10 || echo "tiff directory not found at /usr/include/tiff/"
+    # Also check libtiff directory which is where libtiff5-dev puts headers
+    ls -la /usr/include/tiff/ 2>/dev/null | head -10 || echo "tiff directory not found at /usr/include/tiff/"
+    ls -la /usr/include/tiff/tiffio.h 2>/dev/null | head -5 || echo "tiffio.h not found at /usr/include/tiff/tiffio.h"
     # Check both locations for tiffio.h
     TIFF_IO_FOUND=false
     TIFF_INCLUDE_PATH=""
@@ -316,6 +319,9 @@ EOF
     elif [ -f "/usr/include/tiff/tiffio.h" ]; then
         TIFF_IO_FOUND=true
         TIFF_INCLUDE_PATH="/usr/include/tiff"
+    elif [ -f "/usr/include/tiff.h" ]; then
+        TIFF_IO_FOUND=true
+        TIFF_INCLUDE_PATH="/usr/include"
     fi
     
     if [ "$LIBTIFF_HEADERS_COPIED" = false ] && [ "$TIFF_IO_FOUND" = true ]; then
