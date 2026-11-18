@@ -246,6 +246,11 @@ EOF
         cp -f /usr/include/jpeglib.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
         cp -f /usr/include/jerror.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
         cp -f /usr/include/jmorecfg.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+        # Also copy jconfig.h from pixiewood build directory (it's generated there)
+        if [ -f "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1/jconfig.h" ]; then
+            cp -f "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1/jconfig.h" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+            echo "Also copied generated jconfig.h from pixiewood build directory"
+        fi
         LIBJPEG_HEADERS_COPIED=true
         echo "Copied system libjpeg headers as fallback"
     fi
