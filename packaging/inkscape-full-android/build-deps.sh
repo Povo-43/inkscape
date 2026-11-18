@@ -80,59 +80,40 @@ Libs: -L${GLIB_LIB} -lglib-2.0
 Cflags: -I${GLIB_INCLUDE}/glib-2.0 -I${GLIB_INCLUDE}/glib-2.0/include
 PCEOF
     
-    # Copy Freetype headers from pixiewood to our include directory
-    # Freetype headers are in the source directory's subprojects/freetype/include/freetype2/
-    # But the subproject is named 'freetype' in the source
-    echo "--- Copying Freetype headers ---"
-    echo "DEBUG: PIXIEWOOD_SOURCE_DIR=${PIXIEWOOD_SOURCE_DIR}"
-    echo "DEBUG: PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
-    echo "DEBUG: Checking for freetype in source directory..."
-    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/" 2>/dev/null | head -10 || echo "freetype source not found"
-    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include/" 2>/dev/null | head -10 || echo "freetype/include not found"
-    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include/freetype2/" 2>/dev/null | head -10 || echo "freetype/include/freetype2 not found"
-    # Also check build directory for generated headers
-    echo "DEBUG: Checking build directory for freetype..."
-    ls -la "${PIXIEWOOD_DIR}/subprojects/freetype/" 2>/dev/null | head -10 || echo "freetype build not found"
-    ls -la "${PIXIEWOOD_DIR}/subprojects/freetype/include/" 2>/dev/null | head -10 || echo "freetype build include not found"
-    
-    # Try to find freetype headers in source directory
-    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include/freetype2" ]; then
-        echo "--- Copying Freetype headers from pixiewood source directory (freetype subproject) ---"
+
+    # Copy Freetype headers - use system headers as primary source (standard for cross-compile)
+    # The pixiewood build directory only has generated config headers, not the main freetype headers
+    # Use system freetype2 headers for compilation, link against pixiewood-built library
+    echo "--- Copying Freetype headers (using system headers for cross-compile) ---"
+    if [ -d "/usr/include/freetype2" ]; then
+        echo "--- Copying Freetype headers from system (for cross-compile) ---"
         mkdir -p "${INSTALL_DIR}/include/freetype2"
-        cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include/freetype2"/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
-        echo "Copied Freetype headers from pixiewood source directory"
-    elif [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include" ]; then
-        echo "--- Copying Freetype headers from pixiewood source directory (freetype include) ---"
-        mkdir -p "${INSTALL_DIR}/include/freetype2"
-        cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include"/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
-        echo "Copied Freetype headers from pixiewood source directory"
-    # Try build directory for generated headers (ftconfig.h, ftmodule.h, ftoption.h)
-    elif [ -d "${PIXIEWOOD_DIR}/subprojects/freetype" ]; then
-        echo "--- Copying generated Freetype headers from pixiewood build directory ---"
-        mkdir -p "${INSTALL_DIR}/include/freetype2"
-        # Copy generated headers
-        cp -f "${PIXIEWOOD_DIR}/subprojects/freetype/ftconfig.h" "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
-        cp -f "${PIXIEWOOD_DIR}/subprojects/freetype/ftmodule.h" "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
-        cp -f "${PIXIEWOOD_DIR}/subprojects/freetype/ftoption.h" "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
-        # Also copy from source
-        if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include/freetype2" ]; then
-            cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/freetype/include/freetype2"/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
-        fi
-        echo "Copied Freetype headers from pixiewood source + build directory"
-    elif [ -d "${PIXIEWOOD_ROOT}/include/freetype2" ]; then
-        echo "--- Copying Freetype headers from pixiewood install directory ---"
-        mkdir -p "${INSTALL_DIR}/include/freetype2"
-        cp -r "${PIXIEWOOD_ROOT}/include/freetype2"/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
-        echo "Copied Freetype headers from pixiewood install directory"
+        cp -r /usr/include/freetype2/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
+        echo "Copied system freetype2 headers"
     else
-        echo "Warning: Freetype headers not found in pixiewood at ${PIXIEWOOD_ROOT}/include/freetype2"
-        # Create a symlink to the system freetype2 if available
-        if [ -d "/usr/include/freetype2" ]; then
-            mkdir -p "${INSTALL_DIR}/include/freetype2"
-            cp -r /usr/include/freetype2/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
-        fi
+        echo "Warning: system freetype2 headers not found"
     fi
-    
+
+    # Also copy generated config headers from pixiewood build directory
+    echo "--- Copying generated Freetype config headers from pixiewood build directory ---"
+    mkdir -p "${INSTALL_DIR}/include/freetype2"
+    if [ -f "${PIXIEWOOD_DIR}/subprojects/freetype/ftconfig.h" ]; then
+        cp -f "${PIXIEWOOD_DIR}/subprojects/freetype/ftconfig.h" "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
+    fi
+    if [ -f "${PIXIEWOOD_DIR}/subprojects/freetype/ftmodule.h" ]; then
+        cp -f "${PIXIEWOOD_DIR}/subprojects/freetype/ftmodule.h" "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
+    fi
+    if [ -f "${PIXIEWOOD_DIR}/subprojects/freetype/ftoption.h" ]; then
+        cp -f "${PIXIEWOOD_DIR}/subprojects/freetype/ftoption.h" "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
+    fi
+    echo "Copied generated Freetype config headers"
+
+    # Create symlink for freetype2 in include (some CMake scripts expect this)
+    if [ ! -e "${INSTALL_DIR}/include/freetype2" ] && [ -d "/usr/include/freetype2" ]; then
+        mkdir -p "${INSTALL_DIR}/include/freetype2"
+        cp -r /usr/include/freetype2/* "${INSTALL_DIR}/include/freetype2/" 2>/dev/null || true
+    fi
+
     # Also copy libpng headers (png.h)
     echo "--- Copying libpng headers ---"
     echo "DEBUG: PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
