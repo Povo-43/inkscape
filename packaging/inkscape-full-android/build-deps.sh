@@ -267,25 +267,60 @@ EOF
     
     # Also copy libtiff headers (tiff.h, tiffconf.h, etc.)
     echo "--- Copying libtiff headers ---"
+    LIBTIFF_HEADERS_COPIED=false
+    # Try build directory first
     if [ -d "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff" ]; then
         echo "--- Copying libtiff headers from pixiewood build directory ---"
         mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
-        cp -r "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff"/*.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
-        # Create symlink for standard include path
-        mkdir -p "${INSTALL_DIR}/include"
-        ln -sf tiff-4.7.0/libtiff/tiff.h "${INSTALL_DIR}/include/tiff.h" 2>/dev/null || true
-        ln -sf tiff-4.7.0/libtiff/tiffconf.h "${INSTALL_DIR}/include/tiffconf.h" 2>/dev/null || true
-        ln -sf tiff-4.7.0/libtiff/tiffio.h "${INSTALL_DIR}/include/tiffio.h" 2>/dev/null || true
-        echo "Copied libtiff headers from pixiewood build directory"
-    elif [ -f "/usr/include/tiff.h" ]; then
+        # Check if actual headers exist in build directory
+        if [ -f "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff/tiffio.h" ]; then
+            cp -r "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff"/*.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+            LIBTIFF_HEADERS_COPIED=true
+            echo "Copied libtiff headers from pixiewood build directory"
+        else
+            echo "Warning: libtiff headers (tiffio.h) not found in build directory"
+        fi
+    fi
+    
+    # Also check source directory for libtiff headers
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff" ] && [ -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffio.h" ]; then
+        if [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
+            echo "--- Copying libtiff headers from pixiewood source directory ---"
+            mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
+        else
+            echo "--- Also copying libtiff headers from pixiewood source directory ---"
+        fi
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiff.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffconf.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffio.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        LIBTIFF_HEADERS_COPIED=true
+        echo "Copied libtiff headers from pixiewood source directory"
+    fi
+    
+    # If neither build nor source directory has headers, try system fallback
+    if [ "$LIBTIFF_HEADERS_COPIED" = false ] && [ -f "/usr/include/tiffio.h" ]; then
         echo "--- Copying libtiff headers from system (fallback) ---"
+        mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
+        cp -f /usr/include/tiff.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f /usr/include/tiffconf.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f /usr/include/tiffio.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        # Also copy to standard include path
         mkdir -p "${INSTALL_DIR}/include"
         cp -f /usr/include/tiff.h "${INSTALL_DIR}/include/" 2>/dev/null || true
         cp -f /usr/include/tiffconf.h "${INSTALL_DIR}/include/" 2>/dev/null || true
         cp -f /usr/include/tiffio.h "${INSTALL_DIR}/include/" 2>/dev/null || true
-        echo "Copied system libtiff headers (fallback)"
-    else
-        echo "Warning: libtiff headers not found"
+        LIBTIFF_HEADERS_COPIED=true
+        echo "Copied system libtiff headers as fallback"
+    fi
+    
+    # Create symlinks for standard include path
+    if [ "$LIBTIFF_HEADERS_COPIED" = true ] && [ -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiff.h" ]; then
+        mkdir -p "${INSTALL_DIR}/include"
+        ln -sf tiff-4.7.0/libtiff/tiff.h "${INSTALL_DIR}/include/tiff.h" 2>/dev/null || true
+        ln -sf tiff-4.7.0/libtiff/tiffconf.h "${INSTALL_DIR}/include/tiffconf.h" 2>/dev/null || true
+        ln -sf tiff-4.7.0/libtiff/tiffio.h "${INSTALL_DIR}/include/tiffio.h" 2>/dev/null || true
+    elif [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
+        echo "Warning: libtiff headers not found anywhere"
     fi
     
     # Create symlink for freetype2 in include (some CMake scripts expect this)
