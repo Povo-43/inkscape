@@ -240,9 +240,13 @@ PCEOF
         echo "Created symlink libtiff.so -> libtiff.so.6"
     fi
     # Also create symlink for libz if needed (zlib)
+    echo "DEBUG: Checking for libz.so.1 before symlink"
+    ls -la "${INSTALL_DIR}/lib/libz.so"* 2>/dev/null || echo "libz not found in install dir"
     if [ -f "${INSTALL_DIR}/lib/libz.so.1" ] && [ ! -f "${INSTALL_DIR}/lib/libz.so" ]; then
         ln -sf libz.so.1 "${INSTALL_DIR}/lib/libz.so"
         echo "Created symlink libz.so -> libz.so.1"
+    else
+        echo "WARNING: libz.so.1 not found in install dir, cannot create symlink"
     fi
     
     # Fallback to system libraries (host libraries - for linking only)
