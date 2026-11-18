@@ -362,6 +362,10 @@ EOF
 #define SIZEOF_LONG 8
 #define SIZEOF_SHORT 2
 #define SIZEOF_VOIDP 8
+/* Define missing types for Android cross-compile */
+#define TIFF_SSIZE_T ssize_t
+#define TIFF_UINT64_T uint64_t
+#define TIFF_INT64_T int64_t
 #endif
 EOF
                 echo "Created minimal tiffconf.h fallback"
