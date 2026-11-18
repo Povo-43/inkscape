@@ -80,6 +80,11 @@ PCEOF
     # Copy Freetype headers from pixiewood to our include directory
     # Try multiple locations: build directory (nested under pango), install directory, then system
     echo "--- Copying Freetype headers ---"
+    echo "DEBUG: PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
+    echo "DEBUG: Checking for freetype in build directory..."
+    ls -la "${PIXIEWOOD_DIR}/subprojects/pango/subprojects/freetype2/include/freetype2/" 2>/dev/null | head -10 || echo "pango/subprojects/freetype2 not found"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/freetype2/include/freetype2/" 2>/dev/null | head -10 || echo "freetype2 not found"
+    
     if [ -d "${PIXIEWOOD_DIR}/subprojects/pango/subprojects/freetype2/include/freetype2" ]; then
         echo "--- Copying Freetype headers from pixiewood build directory (pango subproject) ---"
         mkdir -p "${INSTALL_DIR}/include/freetype2"
