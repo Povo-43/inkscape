@@ -268,7 +268,9 @@ EOF
     # Also copy libtiff headers (tiff.h, tiffconf.h, etc.)
     echo "--- Copying libtiff headers ---"
     LIBTIFF_HEADERS_COPIED=false
-    # Try build directory first
+    # Try build directory first - search more broadly for tiffio.h
+    echo "DEBUG: Searching for tiffio.h in pixiewood build directory..."
+    find "${PIXIEWOOD_DIR}" -name "tiffio.h" 2>/dev/null | head -5 || echo "tiffio.h not found in pixiewood build directory"
     if [ -d "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff" ]; then
         echo "--- Copying libtiff headers from pixiewood build directory ---"
         echo "DEBUG: Checking build directory for tiffio.h"
@@ -281,6 +283,11 @@ EOF
             echo "Copied libtiff headers from pixiewood build directory"
         else
             echo "Warning: libtiff headers (tiffio.h) not found in build directory"
+            # Search for tiffio.h in subdirectories of tiff build
+            find "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0" -name "tiffio.h" 2>/dev/null | head -5 | while read tiffio; do
+                cp -f "$tiffio" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+                echo "Copied tiffio.h from $(dirname $tiffio)"
+            done
         fi
     fi
     
@@ -299,6 +306,19 @@ EOF
         cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffio.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
         LIBTIFF_HEADERS_COPIED=true
         echo "Copied libtiff headers from pixiewood source directory"
+    fi
+    
+    # If neither build nor source directory has headers, search more broadly in pixiewood build
+    if [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
+        echo "--- Searching for tiff headers in pixiewood build tree ---"
+        find "${PIXIEWOOD_DIR}" -name "tiffio.h" -o -name "tiff.h" -o -name "tiffconf.h" 2>/dev/null | head -10 | while read hdr; do
+            cp -f "$hdr" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+            echo "Copied $(basename $hdr) from $(dirname $hdr)"
+        done
+        if [ -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffio.h" ]; then
+            LIBTIFF_HEADERS_COPIED=true
+            echo "Copied libtiff headers from pixiewood build tree"
+        fi
     fi
     
     # If neither build nor source directory has headers, try system fallback
