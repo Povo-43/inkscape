@@ -350,9 +350,12 @@ EOF
             if [ -f "tiff-4.7.0/port/tiffconf.h" ]; then
                 cp -f tiff-4.7.0/port/tiffconf.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
             fi
-            # Create a minimal tiffconf.h if still missing
-            if [ ! -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h" ]; then
-                cat > "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h" << 'EOF'
+            # Ensure tiffconf.h has all required definitions for Android cross-compile
+            echo "Ensuring tiffconf.h has required definitions for Android cross-compile..."
+            TIFFCONF_FILE="${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h"
+            if [ ! -f "$TIFFCONF_FILE" ]; then
+                echo "--- Creating minimal tiffconf.h fallback ---"
+                cat > "$TIFFCONF_FILE" << 'EOF'
 /* tiffconf.h - minimal fallback for Android cross-compile */
 #ifndef _TIFFCONF_
 #define _TIFFCONF_
@@ -376,6 +379,19 @@ EOF
 #endif
 EOF
                 echo "Created minimal tiffconf.h fallback"
+            else
+                # Check if TIFF_SSIZE_T is defined, if not append it
+                if ! grep -q "TIFF_SSIZE_T" "$TIFFCONF_FILE" 2>/dev/null; then
+                    echo "Adding missing TIFF_SSIZE_T definition to tiffconf.h..."
+                    cat >> "$TIFFCONF_FILE" << 'EOF'
+
+/* Added for Android cross-compile */
+#define TIFF_SSIZE_T ssize_t
+#define TIFF_UINT64_T uint64_t
+#define TIFF_INT64_T int64_t
+EOF
+                    echo "Added missing type definitions to tiffconf.h"
+                fi
             fi
             LIBTIFF_HEADERS_COPIED=true
             echo "Copied libtiff headers from downloaded source"
