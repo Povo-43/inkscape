@@ -209,7 +209,7 @@ EOF
     # Also copy libjpeg-turbo headers (jpeglib.h, jerror.h, etc.)
     echo "--- Copying libjpeg-turbo headers ---"
     LIBJPEG_HEADERS_COPIED=false
-    # Try build directory first
+    # Try build directory first (has generated jconfig.h)
     if [ -d "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1" ]; then
         echo "--- Copying libjpeg-turbo headers from pixiewood build directory ---"
         mkdir -p "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1"
@@ -223,7 +223,22 @@ EOF
         fi
     fi
     
-    # If build directory doesn't have headers, try system fallback
+    # Also check source directory for libjpeg-turbo headers (has jpeglib.h, jerror.h, jmorecfg.h)
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/libjpeg-turbo-3.1.1" ] && [ -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libjpeg-turbo-3.1.1/jpeglib.h" ]; then
+        if [ "$LIBJPEG_HEADERS_COPIED" = false ]; then
+            echo "--- Copying libjpeg-turbo headers from pixiewood source directory ---"
+            mkdir -p "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1"
+        else
+            echo "--- Also copying libjpeg-turbo headers from pixiewood source directory ---"
+        fi
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libjpeg-turbo-3.1.1/jpeglib.h" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libjpeg-turbo-3.1.1/jerror.h" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/libjpeg-turbo-3.1.1/jmorecfg.h" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+        LIBJPEG_HEADERS_COPIED=true
+        echo "Copied libjpeg-turbo headers from pixiewood source directory"
+    fi
+    
+    # If neither build nor source directory has headers, try system fallback
     if [ "$LIBJPEG_HEADERS_COPIED" = false ] && [ -f "/usr/include/jpeglib.h" ]; then
         echo "--- Copying libjpeg headers from system (fallback) ---"
         mkdir -p "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1"
