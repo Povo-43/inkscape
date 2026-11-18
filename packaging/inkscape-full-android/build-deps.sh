@@ -124,6 +124,7 @@ PCEOF
     ls -la "${PIXIEWOOD_DIR}/subprojects/libpng-1.6.49/" 2>/dev/null | head -20 || echo "libpng-1.6.49 build not found"
     
     # Try to find and copy libpng headers from any available location
+    # We need png.h and pngconf.h - these are only in the SOURCE directory, not build dir
     LIBPNG_HEADERS_COPIED=false
     
     # Try source directory first (where png.h and pngconf.h actually are)
@@ -140,14 +141,13 @@ PCEOF
     # Also try build directory for generated pnglibconf.h
     if [ -d "${PIXIEWOOD_DIR}/subprojects/libpng-1.6.49" ] && [ -f "${PIXIEWOOD_DIR}/subprojects/libpng-1.6.49/pnglibconf.h" ]; then
         if [ "$LIBPNG_HEADERS_COPIED" = false ]; then
-            echo "--- Copying libpng headers from pixiewood build directory ---"
+            echo "--- Copying generated pnglibconf.h from pixiewood build directory ---"
             mkdir -p "${INSTALL_DIR}/include/libpng16"
         else
             echo "--- Also copying generated pnglibconf.h from pixiewood build directory ---"
         fi
         cp -f "${PIXIEWOOD_DIR}/subprojects/libpng-1.6.49/pnglibconf.h" "${INSTALL_DIR}/include/libpng16/" 2>/dev/null || true
-        LIBPNG_HEADERS_COPIED=true
-        echo "Copied generated pnglibconf.h from pixiewood build directory"
+        # DO NOT set LIBPNG_HEADERS_COPIED=true here - we only have pnglibconf.h, not png.h/pngconf.h
     fi
     
     # Try install directory
@@ -160,9 +160,9 @@ PCEOF
         echo "Copied libpng headers from pixiewood install directory"
     fi
     
-    # If no headers were copied from pixiewood, fall back to system headers
+    # If no headers were copied from pixiewood (png.h and pngconf.h not found), fall back to system headers
     if [ "$LIBPNG_HEADERS_COPIED" = false ]; then
-        echo "Warning: libpng headers not found in pixiewood, using system headers (fallback)"
+        echo "Warning: libpng headers (png.h, pngconf.h) not found in pixiewood, using system headers (fallback)"
         if [ -f "/usr/include/png.h" ]; then
             echo "--- Copying libpng headers from system (fallback) ---"
             mkdir -p "${INSTALL_DIR}/include/libpng16"
