@@ -271,6 +271,8 @@ EOF
     # Try build directory first
     if [ -d "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff" ]; then
         echo "--- Copying libtiff headers from pixiewood build directory ---"
+        echo "DEBUG: Checking build directory for tiffio.h"
+        ls -la "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff/" 2>/dev/null | head -10 || echo "build libtiff directory empty"
         mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
         # Check if actual headers exist in build directory
         if [ -f "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff/tiffio.h" ]; then
@@ -283,6 +285,8 @@ EOF
     fi
     
     # Also check source directory for libtiff headers
+    echo "DEBUG: Checking source directory for tiff"
+    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/" 2>/dev/null | head -10 || echo "source libtiff not found"
     if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff" ] && [ -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffio.h" ]; then
         if [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
             echo "--- Copying libtiff headers from pixiewood source directory ---"
