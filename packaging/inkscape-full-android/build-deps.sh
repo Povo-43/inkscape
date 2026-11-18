@@ -312,6 +312,7 @@ EOF
     if [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
         echo "--- Searching for tiff headers in pixiewood build tree ---"
         find "${PIXIEWOOD_DIR}" -name "tiffio.h" -o -name "tiff.h" -o -name "tiffconf.h" 2>/dev/null | head -10 | while read hdr; do
+            echo "DEBUG: Found header $hdr"
             cp -f "$hdr" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
             echo "Copied $(basename $hdr) from $(dirname $hdr)"
         done
