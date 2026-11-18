@@ -305,16 +305,29 @@ EOF
     echo "DEBUG: LIBTIFF_HEADERS_COPIED=$LIBTIFF_HEADERS_COPIED"
     echo "DEBUG: Checking if /usr/include/tiffio.h exists..."
     ls -la /usr/include/tiffio.h 2>/dev/null | head -5 || echo "tiffio.h not found at /usr/include/tiffio.h"
-    if [ "$LIBTIFF_HEADERS_COPIED" = false ] && [ -f "/usr/include/tiffio.h" ]; then
+    ls -la /usr/include/tiff/tiffio.h 2>/dev/null | head -5 || echo "tiffio.h not found at /usr/include/tiff/tiffio.h"
+    ls -la /usr/include/tiff/ 2>/dev/null | head -10 || echo "tiff directory not found at /usr/include/tiff/"
+    # Check both locations for tiffio.h
+    TIFF_IO_FOUND=false
+    TIFF_INCLUDE_PATH=""
+    if [ -f "/usr/include/tiffio.h" ]; then
+        TIFF_IO_FOUND=true
+        TIFF_INCLUDE_PATH="/usr/include"
+    elif [ -f "/usr/include/tiff/tiffio.h" ]; then
+        TIFF_IO_FOUND=true
+        TIFF_INCLUDE_PATH="/usr/include/tiff"
+    fi
+    
+    if [ "$LIBTIFF_HEADERS_COPIED" = false ] && [ "$TIFF_IO_FOUND" = true ]; then
         echo "--- Copying libtiff headers from system (fallback) ---"
         echo "DEBUG: Checking system tiff headers..."
-        ls -la /usr/include/tiff*.h 2>/dev/null | head -10 || echo "tiff headers not found in /usr/include/"
-        ls -la /usr/include/tiff*/tiffio.h 2>/dev/null | head -10 || echo "tiffio.h not found in tiff subdir"
-        echo "DEBUG: tiffio.h found at /usr/include/tiffio.h"
+        ls -la ${TIFF_INCLUDE_PATH}/tiff*.h 2>/dev/null | head -10 || echo "tiff headers not found in ${TIFF_INCLUDE_PATH}/"
+        ls -la ${TIFF_INCLUDE_PATH}/tiff*/tiffio.h 2>/dev/null | head -10 || echo "tiffio.h not found in tiff subdir"
+        echo "DEBUG: tiffio.h found at ${TIFF_INCLUDE_PATH}/tiffio.h"
         mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
-        cp -f /usr/include/tiff.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
-        cp -f /usr/include/tiffconf.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
-        cp -f /usr/include/tiffio.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f ${TIFF_INCLUDE_PATH}/tiff.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f ${TIFF_INCLUDE_PATH}/tiffconf.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        cp -f ${TIFF_INCLUDE_PATH}/tiffio.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
         # Also copy to standard include path
         mkdir -p "${INSTALL_DIR}/include"
         cp -f /usr/include/tiff.h "${INSTALL_DIR}/include/" 2>/dev/null || true
