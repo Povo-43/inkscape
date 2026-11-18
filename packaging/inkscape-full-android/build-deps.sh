@@ -41,7 +41,8 @@ PIXIEWOOD_ROOT="${GITHUB_WORKSPACE}/.pixiewood/root"
 PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
 
 # PIXIEWOOD_SOURCE_DIR is the source directory from downloaded artifact (contains pixiewood subprojects)
-PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/gtk4-stack-download/packaging/android-gtkmm4"
+# The actual pixiewood source is in .pixiewood/bin-aarch64/subprojects/ in the artifact
+PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/gtk4-stack-download/.pixiewood/bin-aarch64"
 
 # Global PKG_CONFIG_PATH for all builds - IMPORTANT: INSTALL_DIR FIRST so our .pc files take precedence
 export PKG_CONFIG_PATH="${INSTALL_DIR}/lib/pkgconfig:${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}"
@@ -295,16 +296,11 @@ EOF
     echo "DEBUG: Checking source directory for tiff - checking multiple paths"
     ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/" 2>/dev/null | head -20 || echo "source tiff-4.7.0 not found at standard path"
     ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/" 2>/dev/null | head -10 || echo "source libtiff directory not found at standard path"
-    # Also check the artifact's subprojects directory directly
-    ls -la "${GITHUB_WORKSPACE}/gtk4-stack-download/packaging/android-gtkmm4/subprojects/tiff-4.7.0/" 2>/dev/null | head -20 || echo "tiff-4.7.0 not found in artifact subprojects"
-    ls -la "${GITHUB_WORKSPACE}/gtk4-stack-download/packaging/android-gtkmm4/subprojects/tiff-4.7.0/libtiff/" 2>/dev/null | head -10 || echo "source libtiff not found in artifact"
     
-    # Try multiple source paths for tiff headers
+    # Try the correct source paths
     TIFF_SOURCE_PATHS=(
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0"
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff"
-        "${GITHUB_WORKSPACE}/gtk4-stack-download/packaging/android-gtkmm4/subprojects/tiff-4.7.0"
-        "${GITHUB_WORKSPACE}/gtk4-stack-download/packaging/android-gtkmm4/subprojects/tiff-4.7.0/libtiff"
     )
     
     for src_path in "${TIFF_SOURCE_PATHS[@]}"; do
