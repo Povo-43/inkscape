@@ -434,12 +434,12 @@ jobs:
           echo "=== Building Inkscape Minimal Dependencies for Android ==="
           cd $GITHUB_WORKSPACE
           # Copy pixiewood from download dir to expected location
-          # The artifact is at gtk4-stack-download/packaging/android-gtkmm4/.pixiewood
-          cp -r gtk4-stack-download/packaging/android-gtkmm4/.pixiewood . 2>/dev/null || true
+          # The artifact has .pixiewood at the root of the download directory
+          cp -r gtk4-stack-download/.pixiewood . 2>/dev/null || true
           # Also copy subprojects
-          cp -r gtk4-stack-download/packaging/android-gtkmm4/subprojects packaging/android-gtkmm4/ 2>/dev/null || true
+          cp -r gtk4-stack-download/subprojects packaging/android-gtkmm4/ 2>/dev/null || true
           # Also copy bin-* directories if they exist
-          cp -r gtk4-stack-download/packaging/android-gtkmm4/bin-* packaging/android-gtkmm4/ 2>/dev/null || true
+          cp -r gtk4-stack-download/bin-* packaging/android-gtkmm4/ 2>/dev/null || true
           # The .pixiewood directory is already at the correct location
           # (copied from the artifact to the workspace root)
           # Verify the pixiewood root directory exists
