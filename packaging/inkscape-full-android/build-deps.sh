@@ -2104,8 +2104,8 @@ fi
 if [ ! -f "$INSTALL_DIR/lib/libpotrace.so" ]; then
     echo "--- Building potrace ---"
     POTRACE_VER=1.16
-    # Download potrace source directly (not from freetype repo)
-    fetch potrace "https://github.com/ptrskay/potrace/archive/refs/tags/1.16.tar.gz" || true
+    # Download potrace source from sourceforge (official source)
+    fetch potrace "https://potrace.sourceforge.net/download/1.16/potrace-1.16.tar.gz" || true
     # potrace is included in freetype, skip standalone build for now
 fi
 
