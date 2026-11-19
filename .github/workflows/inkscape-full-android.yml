@@ -459,10 +459,10 @@ jobs:
 
           # Debug: check pkg-config and glibmm AFTER build-deps.sh creates .pc files
           echo "=== Debug pkg-config ==="
-          which pkg-config
-          which /usr/local/bin/pkg-config-cross
+          which pkg-config || true
+          which /usr/local/bin/pkg-config-cross || true
           echo "=== Checking .pc files ==="
-          ls -la $INSTALL/lib/pkgconfig/ | grep -i glibmm || echo "No glibmm .pc files found"
+          ls -la $INSTALL/lib/pkgconfig/ 2>/dev/null | grep -i glibmm || echo "No glibmm .pc files found"
           ls -la $INSTALL/lib/pkgconfig/glibmm*.pc 2>/dev/null || echo "No glibmm .pc files found"
           /usr/local/bin/pkg-config-cross --list-all 2>/dev/null | grep -i glibmm || echo "glibmm not found in pkg-config"
           /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.68 2>&1 | head -5 || echo "glibmm-2.68 not found"
