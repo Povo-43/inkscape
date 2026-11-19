@@ -487,6 +487,14 @@ jobs:
           printf '#!/bin/bash\n# Use environment variables for cross-compile pkg-config\n# PKG_CONFIG_LIBDIR and PKG_CONFIG_PATH should be set in environment\nexec /usr/bin/pkg-config "$@"\n' > /usr/local/bin/pkg-config-cross
           chmod +x /usr/local/bin/pkg-config-cross
 
+          # Debug: check pkg-config and glibmm
+          echo "=== Debug pkg-config ==="
+          which pkg-config
+          which /usr/local/bin/pkg-config-cross
+          /usr/local/bin/pkg-config-cross --list-all 2>/dev/null | grep -i glibmm || echo "glibmm not found in pkg-config"
+          /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.68 2>&1 | head -5 || echo "glibmm-2.68 not found"
+          /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.90 2>&1 | head -5 || echo "glibmm-2.90 not found"
+
           cmake .. \
             -G Ninja \
             -DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja \
