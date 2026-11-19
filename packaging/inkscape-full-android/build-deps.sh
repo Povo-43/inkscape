@@ -744,6 +744,10 @@ EOF
 extern "C" {
 #endif
 
+#ifndef __THROW
+#define __THROW
+#endif
+
 extern char *gettext (const char *__msgid) __THROW;
 extern char *dgettext (const char *__domainname, const char *__msgid) __THROW;
 extern char *dcgettext (const char *__domainname, const char *__msgid, int __category) __THROW;
@@ -753,10 +757,6 @@ extern char *dcngettext (const char *__domainname, const char *__msgid1, const c
 extern char *textdomain (const char *__domainname) __THROW;
 extern char *bindtextdomain (const char *__domainname, const char *__dirname) __THROW;
 extern char *bind_textdomain_codeset (const char *__domainname, const char *__codeset) __THROW;
-
-#ifndef __THROW
-#define __THROW
-#endif
 
 #ifdef __cplusplus
 }
