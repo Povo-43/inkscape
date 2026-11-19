@@ -467,16 +467,17 @@ jobs:
           mkdir -p build-android-arm64
           cd build-android-arm64
 
-          # Create pkg-config wrapper for cross-compilation
-          printf '#!/bin/bash\nexport PKG_CONFIG_LIBDIR="/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64"\nexport PKG_CONFIG_PATH="/home/runner/work/inkscape/inkscape/android-install/lib/pkgconfig:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64/meson-private:/home/runner/work/inkscape/inkscape/packaging/android-gtkmm4/.pixiewood/bin-aarch64"\nexec /usr/bin/pkg-config "$@"\n' > /usr/local/bin/pkg-config-cross
-          chmod +x /usr/local/bin/pkg-config-cross
-
           # pixiewood + 手動ビルドの依存を pkg-config に見せる
           # IMPORTANT: Only use our install directory, NOT pixiewood's (their .pc files have wrong paths)
           export PKG_CONFIG_LIBDIR="$INSTALL/lib/pkgconfig"
           export PKG_CONFIG_PATH="$INSTALL/lib/pkgconfig"
           export PKG_CONFIG=/usr/local/bin/pkg-config-cross
           export CMAKE_PREFIX_PATH="$INSTALL"
+
+          # Create pkg-config wrapper for cross-compilation
+          # Use environment variables so they can be overridden
+          printf '#!/bin/bash\n# Use environment variables for cross-compile pkg-config\n# PKG_CONFIG_LIBDIR and PKG_CONFIG_PATH should be set in environment\nexec /usr/bin/pkg-config "$@"\n' > /usr/local/bin/pkg-config-cross
+          chmod +x /usr/local/bin/pkg-config-cross
 
           cmake .. \
             -G Ninja \
