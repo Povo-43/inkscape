@@ -668,28 +668,29 @@ EOF
         echo "Copied glib headers from install directory to ${INSTALL_DIR}/include/glib-2.0"
     fi
     # Copy glibmm headers from pixiewood install directory
-    echo "DEBUG: Checking PIXIEWOOD_ROOT for glibmm: ${PIXIEWOOD_ROOT}/include/glibmm-2.68/"
-    ls -la "${PIXIEWOOD_ROOT}/include/glibmm-2.68/" 2>/dev/null | head -20 || echo "Directory not found in install"
-    if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.68" ]; then
+    # The pixiewood build uses glibmm-2.90.0 (not 2.68)
+    echo "DEBUG: Checking PIXIEWOOD_ROOT for glibmm: ${PIXIEWOOD_ROOT}/include/glibmm-2.90/"
+    ls -la "${PIXIEWOOD_ROOT}/include/glibmm-2.90/" 2>/dev/null | head -20 || echo "Directory not found in install"
+    if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.90" ]; then
         echo "--- Copying glibmm headers from pixiewood install directory ---"
-        echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/include/glibmm-2.68/"
-        ls -la "${PIXIEWOOD_ROOT}/include/glibmm-2.68/" 2>/dev/null | head -20 || echo "Directory not found"
-        mkdir -p "${INSTALL_DIR}/include/glibmm-2.68"
-        cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.68"/* "${INSTALL_DIR}/include/glibmm-2.68/" 2>/dev/null || true
+        echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/include/glibmm-2.90/"
+        ls -la "${PIXIEWOOD_ROOT}/include/glibmm-2.90/" 2>/dev/null | head -20 || echo "Directory not found"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90"
+        cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.90"/* "${INSTALL_DIR}/include/glibmm-2.90/" 2>/dev/null || true
         # Also copy the generated headers
-        if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.68/glibmm" ]; then
-            mkdir -p "${INSTALL_DIR}/include/glibmm-2.68/glibmm"
-            cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.68/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.68/glibmm/" 2>/dev/null || true
+        if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.90/glibmm" ]; then
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.90/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
         fi
-        echo "Copied glibmm headers to ${INSTALL_DIR}/include/glibmm-2.68"
+        echo "Copied glibmm headers to ${INSTALL_DIR}/include/glibmm-2.90"
     else
-        echo "DEBUG: Checking PIXIEWOOD_DIR for glibmm: ${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/"
-        ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/" 2>/dev/null | head -20 || echo "Directory not found in build"
-        if [ -d "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm" ]; then
+        echo "DEBUG: Checking PIXIEWOOD_DIR for glibmm: ${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/"
+        ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/" 2>/dev/null | head -20 || echo "Directory not found in build"
+        if [ -d "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
             echo "--- Copying glibmm headers from pixiewood build directory ---"
-            mkdir -p "${INSTALL_DIR}/include/glibmm-2.68"
-            cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.68/" 2>/dev/null || true
-            echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.68"
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90"
+            cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/" 2>/dev/null || true
+            echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.90"
         else
             echo "Warning: glibmm headers not found in any location"
         fi
@@ -1486,7 +1487,7 @@ includedir=\${prefix}/include
 Name: pangomm-2.48
 Description: C++ wrapper for Pango
 Version: 2.54.0
-Requires: pango-1.0, glibmm-2.68, cairomm-1.16
+Requires: pango-1.0, glibmm-2.90, cairomm-1.16
 Libs: -L${PANGOMM_LIB} -lpangomm-2.48
 Cflags: -I${PANGOMM_INCLUDE}/pangomm-2.48 -I${PANGOMM_INCLUDE}/pangomm-2.48/pangomm
 PCEOF
@@ -1556,25 +1557,25 @@ PCEOF
     echo "Created sigc++-3.0.pc"
 fi
 
-# glibmm-2.68
-if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" ]; then
-    echo "--- Creating glibmm-2.68.pc ---"
-    GLIBMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libglibmm-2.68.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    GLIBMM_INCLUDE="${PIXIEWOOD_ROOT}/include"
-    cat > "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" << PCEOF
+# glibmm-2.90
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.90.pc" ]; then
+    echo "--- Creating glibmm-2.90.pc ---"
+    GLIBMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libglibmm-2.90.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    GLIBMM_INCLUDE="${INSTALL_DIR}/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/glibmm-2.90.pc" << PCEOF
 prefix=$INSTALL_DIR
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/lib
 includedir=\${prefix}/include
 
-Name: glibmm-2.68
+Name: glibmm-2.90
 Description: C++ wrapper for GLib
-Version: 2.80.0
+Version: 2.90.0
 Requires: glib-2.0, gobject-2.0, gio-2.0, sigc++-3.0
-Libs: -L${GLIBMM_LIB} -lglibmm-2.68
-Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.68 -I${GLIBMM_INCLUDE}/glibmm-2.68/glibmm
+Libs: -L${GLIBMM_LIB} -lglibmm-2.90
+Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90 -I${GLIBMM_INCLUDE}/glibmm-2.90/glibmm
 PCEOF
-    echo "Created glibmm-2.68.pc"
+    echo "Created glibmm-2.90.pc"
 fi
 
 # gtk4
@@ -1612,7 +1613,7 @@ includedir=\${prefix}/include
 Name: giomm-2.68
 Description: C++ wrapper for GIO
 Version: 2.80.0
-Requires: glibmm-2.68, gio-2.0
+Requires: glibmm-2.90, gio-2.0
 Libs: -L${GIOMM_LIB} -lgiomm-2.68
 Cflags: -I${GIOMM_INCLUDE}/giomm-2.68 -I${GIOMM_INCLUDE}/giomm-2.68/giomm
 PCEOF
@@ -1633,7 +1634,7 @@ includedir=\${prefix}/include
 Name: gtkmm-4.0
 Description: C++ wrapper for GTK4
 Version: 4.14.0
-Requires: gtk4, cairomm-1.16, pangomm-2.48, glibmm-2.68, giomm-2.68
+Requires: gtk4, cairomm-1.16, pangomm-2.48, glibmm-2.90, giomm-2.68
 Libs: -L${GTKMM_LIB} -lgtkmm-4.0
 Cflags: -I${GTKMM_INCLUDE}/gtkmm-4.0 -I${GTKMM_INCLUDE}/gtkmm-4.0/gtkmm
 PCEOF
