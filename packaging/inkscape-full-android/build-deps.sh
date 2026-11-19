@@ -241,19 +241,63 @@ EOF
     fi
     
     # If neither build nor source directory has headers, try system fallback
-    if [ "$LIBJPEG_HEADERS_COPIED" = false ] && [ -f "/usr/include/jpeglib.h" ]; then
-        echo "--- Copying libjpeg headers from system (fallback) ---"
-        mkdir -p "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1"
-        cp -f /usr/include/jpeglib.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
-        cp -f /usr/include/jerror.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
-        cp -f /usr/include/jmorecfg.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
-        # Also search for jconfig.h in pixiewood build directory (it's generated in build subdirectory)
-        find "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1" -name "jconfig.h" 2>/dev/null | head -1 | while read jconfig; do
-            cp -f "$jconfig" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
-            echo "Also copied generated jconfig.h from $(dirname $jconfig)"
-        done
-        LIBJPEG_HEADERS_COPIED=true
-        echo "Copied system libjpeg headers as fallback"
+    if [ "$LIBJPEG_HEADERS_COPIED" = false ]; then
+        if [ -f "/usr/include/jpeglib.h" ]; then
+            echo "--- Copying libjpeg headers from system (fallback) ---"
+            mkdir -p "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1"
+            cp -f /usr/include/jpeglib.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+            cp -f /usr/include/jerror.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+            cp -f /usr/include/jmorecfg.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+            # Also search for jconfig.h in pixiewood build directory (it's generated in build subdirectory)
+            find "${PIXIEWOOD_DIR}/subprojects/libjpeg-turbo-3.1.1" -name "jconfig.h" 2>/dev/null | head -1 | while read jconfig; do
+                cp -f "$jconfig" "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+                echo "Also copied generated jconfig.h from $(dirname $jconfig)"
+            done
+            LIBJPEG_HEADERS_COPIED=true
+            echo "Copied system libjpeg headers as fallback"
+        else
+            echo "Warning: system libjpeg headers not found, will try to download libjpeg-turbo source"
+            # Download libjpeg-turbo source for headers
+            mkdir -p /tmp/libjpeg-source
+            cd /tmp/libjpeg-source
+            if [ ! -f "libjpeg-turbo-3.1.1.tar.gz" ]; then
+                wget -q --timeout=30 --tries=3 --retry-connrefused --waitretry=5 \
+                    "https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.1.1.tar.gz" -O libjpeg-turbo-3.1.1.tar.gz || \
+                echo "Failed to download libjpeg-turbo source"
+            fi
+            tar -xzf libjpeg-turbo-3.1.1.tar.gz 2>/dev/null || true
+            if [ -d "libjpeg-turbo-3.1.1" ] && [ -f "libjpeg-turbo-3.1.1/jpeglib.h" ]; then
+                echo "--- Copying libjpeg-turbo headers from downloaded source ---"
+                mkdir -p "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1"
+                cp -f libjpeg-turbo-3.1.1/jpeglib.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+                cp -f libjpeg-turbo-3.1.1/jerror.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+                cp -f libjpeg-turbo-3.1.1/jmorecfg.h "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/" 2>/dev/null || true
+                # jconfig.h is generated, create a minimal one
+                cat > "${INSTALL_DIR}/include/libjpeg-turbo-3.1.1/jconfig.h" << 'JCONFIGEOF'
+/* jconfig.h - minimal for Android cross-compile */
+#define HAVE_PROTOTYPES 1
+#define HAVE_UNSIGNED_CHAR 1
+#define HAVE_UNSIGNED_SHORT 1
+#define HAVE_UNSIGNED_LONG 1
+#define HAVE_STDDEF_H 1
+#define HAVE_STDLIB_H 1
+#define NEED_BSD_STRINGS 0
+#define NEED_SYS_TYPES_H 1
+#define NEED_FAR_POINTERS 0
+#define NEED_SHORT_EXTERNAL_NAMES 0
+#define INCOMPLETE_TYPES_BROKEN 0
+#define JPEG_INTERNALS 1
+#define MAX_SAMPLES_PER_PIXEL 16
+#define RIGHT_SHIFT_IS_UNSIGNED 1
+#define INLINE inline
+#define RIGHT_SHIFT(x,shft) ((x) >> (shft))
+#define MEMZERO(target,size) memset((void *)(target),0,(size))
+#define MEMCOPY(dest,src,size) memcpy((void *)(dest),(const void *)(src),(size))
+JCONFIGEOF
+                LIBJPEG_HEADERS_COPIED=true
+                echo "Copied libjpeg-turbo headers from downloaded source"
+            fi
+        fi
     fi
     
     # Create symlink for standard include path
