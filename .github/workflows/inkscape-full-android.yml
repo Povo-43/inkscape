@@ -291,7 +291,10 @@ jobs:
         run: |
           INSTALL=$GITHUB_WORKSPACE/android-install
           mkdir -p $INSTALL/include
+          # Copy all compat headers except format (causes std::format ambiguity with stdlib)
           cp -r packaging/inkscape-full-android/compat/* $INSTALL/include/
+          # Remove format header to avoid conflict with stdlib's std::format
+          rm -f $INSTALL/include/format
           echo "Compatibility headers installed"
 
       - name: Inkscape ソースのパッチを適用
