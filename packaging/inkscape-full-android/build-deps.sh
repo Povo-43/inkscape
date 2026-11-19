@@ -686,6 +686,13 @@ EOF
     else
         echo "Warning: libxml2 headers not found in any location"
     fi
+    # Also ensure libxml2 headers exist by copying from system if not already copied
+    if [ ! -f "${INSTALL_DIR}/include/libxml2/tree.h" ] && [ -d "/usr/include/libxml2" ]; then
+        echo "--- Ensuring libxml2 headers from system ---"
+        mkdir -p "${INSTALL_DIR}/include/libxml2"
+        cp -r /usr/include/libxml2/* "${INSTALL_DIR}/include/libxml2/" 2>/dev/null || true
+        echo "Copied system libxml2 headers as final fallback"
+    fi
     
     # Third try: system glib headers (fallback for cross-compile) - only if neither above worked
     if [ ! -f "${INSTALL_DIR}/include/glib-2.0/glib.h" ] && [ -d "/usr/include/glib-2.0" ]; then
