@@ -359,9 +359,10 @@ EOF
             TIFFCONF_FILE="${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h"
             echo "DEBUG: TIFFCONF_FILE=$TIFFCONF_FILE"
             echo "DEBUG: TIFFCONF_FILE exists: $(test -f "$TIFFCONF_FILE" && echo yes || echo no)"
-            if [ ! -f "$TIFFCONF_FILE" ]; then
-                echo "DEBUG: tiffconf.h not found, creating minimal fallback..."
-                cat > "$TIFFCONF_FILE" << 'EOF'
+            # Always ensure TIFF_SSIZE_T is properly defined by creating a clean fallback
+            # (overwrite any downloaded tiffconf.h which may have #undef TIFF_SSIZE_T)
+            echo "--- Creating clean tiffconf.h with TIFF_SSIZE_T ---"
+            cat > "$TIFFCONF_FILE" << 'EOF'
 /* tiffconf.h - minimal fallback for Android cross-compile */
 #ifndef _TIFFCONF_
 #define _TIFFCONF_
@@ -384,23 +385,7 @@ EOF
 #define TIFF_INT64_T int64_t
 #endif
 EOF
-                echo "Created minimal tiffconf.h fallback"
-            else
-                echo "DEBUG: tiffconf.h exists, checking for TIFF_SSIZE_T..."
-                if ! grep -q "TIFF_SSIZE_T" "$TIFFCONF_FILE" 2>/dev/null; then
-                    echo "Adding missing TIFF_SSIZE_T definition to tiffconf.h..."
-                    cat >> "$TIFFCONF_FILE" << 'EOF'
-
-/* Added for Android cross-compile */
-#define TIFF_SSIZE_T ssize_t
-#define TIFF_UINT64_T uint64_t
-#define TIFF_INT64_T int64_t
-EOF
-                    echo "Added missing type definitions to tiffconf.h"
-                else
-                    echo "DEBUG: TIFF_SSIZE_T already defined in tiffconf.h"
-                fi
-            fi
+            echo "Created clean tiffconf.h with TIFF_SSIZE_T"
             echo "DEBUG: Content of tiffconf.h:"
             cat "$TIFFCONF_FILE" | head -30
             if [ ! -f "$TIFFCONF_FILE" ]; then
