@@ -1,7 +1,7 @@
 #ifndef FORMAT_COMPAT_H
 #define FORMAT_COMPAT_H
 // std::format fallback for C++20 compatibility with clang/Android NDK
-// clang in NDK r27b has incomplete std::format support - provide fallback
+// Only provide fallback if std::format is not available
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -9,6 +9,8 @@
 #include <type_traits>
 #include <tuple>
 
+// Only provide fallback if std::format is NOT available
+#if !defined(__cpp_lib_format) || __cpp_lib_format < 201907L
 namespace std {
 namespace detail {
 template <typename T>
@@ -51,4 +53,5 @@ std::string format(std::string_view fmt, Args&&... args) {
     return detail::vformat_impl(std::string(fmt), arg_strs);
 }
 }
+#endif
 #endif

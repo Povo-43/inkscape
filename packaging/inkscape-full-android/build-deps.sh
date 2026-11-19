@@ -401,6 +401,8 @@ EOF
                     echo "DEBUG: TIFF_SSIZE_T already defined in tiffconf.h"
                 fi
             fi
+            echo "DEBUG: Content of tiffconf.h:"
+            cat "$TIFFCONF_FILE" | head -30
             if [ ! -f "$TIFFCONF_FILE" ]; then
                 echo "--- Creating minimal tiffconf.h fallback ---"
                 cat > "$TIFFCONF_FILE" << 'EOF'
