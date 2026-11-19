@@ -668,11 +668,26 @@ EOF
         echo "Copied glib headers from install directory to ${INSTALL_DIR}/include/glib-2.0"
     fi
     # Copy glibmm headers from pixiewood install directory
-    # The pixiewood build uses glibmm-2.90.0 (not 2.68)
+    # The pixiewood build uses glibmm project name 2.68 but version 2.90
+    # Headers are installed to glibmm-2.68 (project name) not 2.90
+    echo "DEBUG: Checking PIXIEWOOD_ROOT for glibmm: ${PIXIEWOOD_ROOT}/include/glibmm-2.68/"
+    ls -la "${PIXIEWOOD_ROOT}/include/glibmm-2.68/" 2>/dev/null | head -20 || echo "Directory not found in install (2.68)"
     echo "DEBUG: Checking PIXIEWOOD_ROOT for glibmm: ${PIXIEWOOD_ROOT}/include/glibmm-2.90/"
-    ls -la "${PIXIEWOOD_ROOT}/include/glibmm-2.90/" 2>/dev/null | head -20 || echo "Directory not found in install"
-    if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.90" ]; then
-        echo "--- Copying glibmm headers from pixiewood install directory ---"
+    ls -la "${PIXIEWOOD_ROOT}/include/glibmm-2.90/" 2>/dev/null | head -20 || echo "Directory not found in install (2.90)"
+    if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.68" ]; then
+        echo "--- Copying glibmm headers from pixiewood install directory (2.68) ---"
+        echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/include/glibmm-2.68/"
+        ls -la "${PIXIEWOOD_ROOT}/include/glibmm-2.68/" 2>/dev/null | head -20 || echo "Directory not found"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90"
+        cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.68"/* "${INSTALL_DIR}/include/glibmm-2.90/" 2>/dev/null || true
+        # Also copy the generated headers
+        if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.68/glibmm" ]; then
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.68/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        fi
+        echo "Copied glibmm headers to ${INSTALL_DIR}/include/glibmm-2.90"
+    elif [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.90" ]; then
+        echo "--- Copying glibmm headers from pixiewood install directory (2.90) ---"
         echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/include/glibmm-2.90/"
         ls -la "${PIXIEWOOD_ROOT}/include/glibmm-2.90/" 2>/dev/null | head -20 || echo "Directory not found"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90"
@@ -1560,7 +1575,8 @@ fi
 # glibmm-2.90
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.90.pc" ]; then
     echo "--- Creating glibmm-2.90.pc ---"
-    GLIBMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libglibmm-2.90.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    # Library is libglibmm-2.68.so (project name) but we create a 2.90 .pc file
+    GLIBMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libglibmm-2.68.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
     GLIBMM_INCLUDE="${INSTALL_DIR}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/glibmm-2.90.pc" << PCEOF
 prefix=$INSTALL_DIR
@@ -1572,7 +1588,7 @@ Name: glibmm-2.90
 Description: C++ wrapper for GLib
 Version: 2.90.0
 Requires: glib-2.0, gobject-2.0, gio-2.0, sigc++-3.0
-Libs: -L${GLIBMM_LIB} -lglibmm-2.90
+Libs: -L${GLIBMM_LIB} -lglibmm-2.68
 Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90 -I${GLIBMM_INCLUDE}/glibmm-2.90/glibmm
 PCEOF
     echo "Created glibmm-2.90.pc"
