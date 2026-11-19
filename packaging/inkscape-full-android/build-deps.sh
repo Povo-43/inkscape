@@ -665,6 +665,28 @@ EOF
         fi
         echo "Copied glib headers from install directory to ${INSTALL_DIR}/include/glib-2.0"
     fi
+    # Copy libxml2 headers from pixiewood install directory
+    if [ -d "${PIXIEWOOD_ROOT}/include/libxml2" ]; then
+        echo "--- Copying libxml2 headers from pixiewood install directory ---"
+        echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/include/libxml2/"
+        ls -la "${PIXIEWOOD_ROOT}/include/libxml2/" 2>/dev/null | head -20 || echo "Directory not found"
+        mkdir -p "${INSTALL_DIR}/include/libxml2"
+        cp -r "${PIXIEWOOD_ROOT}/include/libxml2"/* "${INSTALL_DIR}/include/libxml2/" 2>/dev/null || true
+        echo "Copied libxml2 headers to ${INSTALL_DIR}/include/libxml2"
+    elif [ -d "${PIXIEWOOD_DIR}/subprojects/libxml2-2.12.6/include" ]; then
+        echo "--- Copying libxml2 headers from pixiewood build directory ---"
+        mkdir -p "${INSTALL_DIR}/include/libxml2"
+        cp -r "${PIXIEWOOD_DIR}/subprojects/libxml2-2.12.6/include"/* "${INSTALL_DIR}/include/libxml2/" 2>/dev/null || true
+        echo "Copied libxml2 headers from build directory to ${INSTALL_DIR}/include/libxml2"
+    elif [ -d "/usr/include/libxml2" ]; then
+        echo "--- Copying libxml2 headers from system (fallback) ---"
+        mkdir -p "${INSTALL_DIR}/include/libxml2"
+        cp -r /usr/include/libxml2/* "${INSTALL_DIR}/include/libxml2/" 2>/dev/null || true
+        echo "Copied system libxml2 headers as fallback"
+    else
+        echo "Warning: libxml2 headers not found in any location"
+    fi
+    
     # Third try: system glib headers (fallback for cross-compile) - only if neither above worked
     if [ ! -f "${INSTALL_DIR}/include/glib-2.0/glib.h" ] && [ -d "/usr/include/glib-2.0" ]; then
         echo "--- Copying glib headers from system (fallback) ---"
@@ -898,8 +920,8 @@ if [ ! -f "$INSTALL_DIR/lib/pkgconfig/libxml-2.0.pc" ]; then
     
     # Find libxml2 from pixiewood
     LIBXML_LIB=$(find "$PIXIEWOOD_DIR" -name "libxml2.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    # libxml is at ${PIXIEWOOD_DIR}/root/include/libxml2
-    LIBXML_INCLUDE="${PIXIEWOOD_ROOT}/include"
+    # libxml headers are copied to INSTALL_DIR/include/libxml2
+    LIBXML_INCLUDE="${INSTALL_DIR}/include"
     
     cat > "$INSTALL_DIR/lib/pkgconfig/libxml-2.0.pc" << PCEOF
 prefix=$INSTALL_DIR
