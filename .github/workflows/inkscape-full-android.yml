@@ -426,11 +426,17 @@ jobs:
           cd $GITHUB_WORKSPACE
           # Copy pixiewood from download dir to expected location
           # The artifact is at gtk4-stack-download/packaging/android-gtkmm4/.pixiewood
+          # We need both the root/ (install) and bin-aarch64/ (build) directories
           cp -r gtk4-stack-download/packaging/android-gtkmm4/.pixiewood . 2>/dev/null || true
           # Also copy subprojects
           cp -r gtk4-stack-download/packaging/android-gtkmm4/subprojects packaging/android-gtkmm4/ 2>/dev/null || true
           # Also copy bin-* directories if they exist
           cp -r gtk4-stack-download/packaging/android-gtkmm4/bin-* packaging/android-gtkmm4/ 2>/dev/null || true
+          # Verify the pixiewood root directory exists
+          echo "=== Verifying pixiewood structure ==="
+          ls -la .pixiewood/ 2>/dev/null || echo ".pixiewood not found"
+          ls -la .pixiewood/root/ 2>/dev/null || echo ".pixiewood/root not found"
+          ls -la .pixiewood/root/lib/arm64-v8a/ 2>/dev/null || echo ".pixiewood/root/lib/arm64-v8a not found"
           bash packaging/inkscape-full-android/build-deps.sh \
             $GITHUB_WORKSPACE/android-install \
             /opt/android-ndk-r27b \
