@@ -718,6 +718,9 @@ EOF
     fi
     
     # Copy libintl headers from pixiewood install directory
+    echo "DEBUG: Searching for libintl.h in pixiewood..."
+    find "${PIXIEWOOD_ROOT}/include" -name "libintl.h" 2>/dev/null | head -5 || echo "Not in root/include"
+    find "${PIXIEWOOD_DIR}" -name "libintl.h" 2>/dev/null | head -5 || echo "Not in build dir"
     if [ -f "${PIXIEWOOD_ROOT}/include/libintl.h" ]; then
         echo "--- Copying libintl.h from pixiewood install directory ---"
         cp -f "${PIXIEWOOD_ROOT}/include/libintl.h" "${INSTALL_DIR}/include/" 2>/dev/null || true
@@ -728,10 +731,40 @@ EOF
         echo "Copied libintl.h from build directory to ${INSTALL_DIR}/include/"
     elif [ -f "/usr/include/libintl.h" ]; then
         echo "--- Copying libintl.h from system (fallback) ---"
-        cp -f /usr/include/libintl.h "${INSTALL_DIR}/include/" 2>/dev/null || true
-        echo "Copied system libintl.h as fallback"
-    else
-        echo "Warning: libintl.h not found in any location"
+        # System libintl.h has glibc-specific macros, create a minimal one instead
+        echo "Creating minimal libintl.h for Android cross-compile..."
+        cat > "${INSTALL_DIR}/include/libintl.h" << 'INTLEOF'
+/* libintl.h - minimal for Android cross-compile */
+#ifndef _LIBINTL_H
+#define _LIBINTL_H 1
+
+#include <stddef.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern char *gettext (const char *__msgid) __THROW;
+extern char *dgettext (const char *__domainname, const char *__msgid) __THROW;
+extern char *dcgettext (const char *__domainname, const char *__msgid, int __category) __THROW;
+extern char *ngettext (const char *__msgid1, const char *__msgid2, unsigned long int __n) __THROW;
+extern char *dngettext (const char *__domainname, const char *__msgid1, const char *__msgid2, unsigned long int __n) __THROW;
+extern char *dcngettext (const char *__domainname, const char *__msgid1, const char *__msgid2, unsigned long int __n, int __category) __THROW;
+extern char *textdomain (const char *__domainname) __THROW;
+extern char *bindtextdomain (const char *__domainname, const char *__dirname) __THROW;
+extern char *bind_textdomain_codeset (const char *__domainname, const char *__codeset) __THROW;
+
+#ifndef __THROW
+#define __THROW
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _LIBINTL_H */
+INTLEOF
+        echo "Created minimal libintl.h for Android"
     fi
     
     # Third try: system glib headers (fallback for cross-compile) - only if neither above worked
