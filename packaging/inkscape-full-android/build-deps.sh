@@ -32,17 +32,19 @@ SRC_DIR=$(mktemp -d)
 mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 
 # Fix PIXIEWOOD paths - headers are in root/, libs are in bin-ARCH/
-# PIXIEWOOD_DIR is the build directory (e.g., .pixiewood/bin-aarch64)
-# PIXIEWOOD_ROOT is the install directory (e.g., .pixiewood/root)
-# PIXIEWOOD_DIR is the build directory (e.g., .pixiewood/bin-aarch64)
-# The artifact is downloaded to the workspace root with full paths
-# The .pixiewood directory is at the workspace root
-PIXIEWOOD_ROOT="${GITHUB_WORKSPACE}/.pixiewood/root"
+# PIXIEWOOD_DIR is the build directory (e.g., gtk4-stack-download/.pixiewood/bin-aarch64)
+# PIXIEWOOD_ROOT is the install directory (e.g., gtk4-stack-download/.pixiewood/root)
+# PIXIEWOOD_SOURCE_DIR is the source directory from downloaded artifact
+PIXIEWOOD_ROOT="${PIXIEWOOD_DIR%/bin-aarch64}/root"
 PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
+PIXIEWOOD_SOURCE_DIR="${PIXIEWOOD_DIR}"
 
-# PIXIEWOOD_SOURCE_DIR is the source directory from downloaded artifact (contains pixiewood subprojects)
-# The actual pixiewood source is in .pixiewood/bin-aarch64/subprojects/ in the artifact
-PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/gtk4-stack-download/.pixiewood/bin-aarch64"
+# If no PIXIEWOOD_DIR provided, fall back to workspace paths
+if [ -z "$PIXIEWOOD_DIR" ]; then
+    PIXIEWOOD_ROOT="${GITHUB_WORKSPACE}/.pixiewood/root"
+    PIXIEWOOD_DIR="${GITHUB_WORKSPACE}/.pixiewood/bin-aarch64"
+    PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/gtk4-stack-download/.pixiewood/bin-aarch64"
+fi
 
 # Global PKG_CONFIG_PATH for all builds - IMPORTANT: INSTALL_DIR FIRST so our .pc files take precedence
 export PKG_CONFIG_PATH="${INSTALL_DIR}/lib/pkgconfig:${PIXIEWOOD_DIR}/meson-private:${PIXIEWOOD_DIR}"
