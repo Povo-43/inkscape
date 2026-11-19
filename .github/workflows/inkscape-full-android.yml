@@ -425,8 +425,12 @@ jobs:
           echo "=== Building Inkscape Minimal Dependencies for Android ==="
           cd $GITHUB_WORKSPACE
           # Copy pixiewood from download dir to expected location
-          cp -r gtk4-stack-download/.pixiewood . 2>/dev/null || true
-          cp -r gtk4-stack-download/packaging/android-gtkmm4/.pixiewood packaging/android-gtkmm4/ 2>/dev/null || true
+          # The artifact is at gtk4-stack-download/packaging/android-gtkmm4/.pixiewood
+          cp -r gtk4-stack-download/packaging/android-gtkmm4/.pixiewood . 2>/dev/null || true
+          # Also copy subprojects
+          cp -r gtk4-stack-download/packaging/android-gtkmm4/subprojects packaging/android-gtkmm4/ 2>/dev/null || true
+          # Also copy bin-* directories if they exist
+          cp -r gtk4-stack-download/packaging/android-gtkmm4/bin-* packaging/android-gtkmm4/ 2>/dev/null || true
           bash packaging/inkscape-full-android/build-deps.sh \
             $GITHUB_WORKSPACE/android-install \
             /opt/android-ndk-r27b \
