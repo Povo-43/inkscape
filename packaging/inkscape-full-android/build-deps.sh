@@ -60,12 +60,11 @@ if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glib-2.0.pc" ]; then
     
     # Get library paths from pixiewood build output
     PIXIEWOOD_LIB="$PIXIEWOOD_DIR"
-    PIXIEWOOD_INCLUDE="${PIXIEWOOD_ROOT}/include"
     
     # Find actual library locations
     GLIB_LIB=$(find "$PIXIEWOOD_DIR" -name "libglib-2.0.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    # glib.h is at ${PIXIEWOOD_ROOT}/include/glib-2.0/glib.h
-    GLIB_INCLUDE="${PIXIEWOOD_ROOT}/include"
+    # glib headers are copied to INSTALL_DIR/include/glib-2.0/
+    GLIB_INCLUDE="${INSTALL_DIR}/include"
     
     cat > "$INSTALL_DIR/lib/pkgconfig/glib-2.0.pc" << PCEOF
 prefix=$INSTALL_DIR
