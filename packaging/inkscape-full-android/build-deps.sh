@@ -642,8 +642,7 @@ EOF
             cp /usr/include/glib-2.0/glibconfig.h "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
         fi
         echo "Copied system glib headers to ${INSTALL_DIR}/include/glib-2.0 (fallback)"
-    fi
-    else
+    elif [ ! -f "${INSTALL_DIR}/include/glib-2.0/glib.h" ]; then
         echo "Warning: glib-2.0 headers not found in any location"
     fi
     
