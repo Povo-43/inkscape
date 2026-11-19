@@ -694,6 +694,29 @@ EOF
         echo "Copied system libxml2 headers as final fallback"
     fi
     
+    # Copy ICU headers from pixiewood install directory
+    if [ -d "${PIXIEWOOD_ROOT}/include/unicode" ]; then
+        echo "--- Copying ICU headers from pixiewood install directory ---"
+        echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/include/unicode/"
+        ls -la "${PIXIEWOOD_ROOT}/include/unicode/" 2>/dev/null | head -20 || echo "Directory not found"
+        mkdir -p "${INSTALL_DIR}/include/unicode"
+        cp -r "${PIXIEWOOD_ROOT}/include/unicode"/* "${INSTALL_DIR}/include/unicode/" 2>/dev/null || true
+        echo "Copied ICU headers to ${INSTALL_DIR}/include/unicode"
+    elif [ -d "${PIXIEWOOD_DIR}/subprojects/icu-75.1/source/common" ]; then
+        echo "--- Copying ICU headers from pixiewood build directory ---"
+        mkdir -p "${INSTALL_DIR}/include/unicode"
+        cp -r "${PIXIEWOOD_DIR}/subprojects/icu-75.1/source/common/unicode"/* "${INSTALL_DIR}/include/unicode/" 2>/dev/null || true
+        cp -r "${PIXIEWOOD_DIR}/subprojects/icu-75.1/source/i18n/unicode"/* "${INSTALL_DIR}/include/unicode/" 2>/dev/null || true
+        echo "Copied ICU headers from build directory to ${INSTALL_DIR}/include/unicode"
+    elif [ -d "/usr/include/unicode" ]; then
+        echo "--- Copying ICU headers from system (fallback) ---"
+        mkdir -p "${INSTALL_DIR}/include/unicode"
+        cp -r /usr/include/unicode/* "${INSTALL_DIR}/include/unicode/" 2>/dev/null || true
+        echo "Copied system ICU headers as fallback"
+    else
+        echo "Warning: ICU headers not found in any location"
+    fi
+    
     # Third try: system glib headers (fallback for cross-compile) - only if neither above worked
     if [ ! -f "${INSTALL_DIR}/include/glib-2.0/glib.h" ] && [ -d "/usr/include/glib-2.0" ]; then
         echo "--- Copying glib headers from system (fallback) ---"
