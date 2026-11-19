@@ -457,6 +457,17 @@ jobs:
             31 \
             "$GITHUB_WORKSPACE/.pixiewood/bin-aarch64"
 
+          # Debug: check pkg-config and glibmm AFTER build-deps.sh creates .pc files
+          echo "=== Debug pkg-config ==="
+          which pkg-config
+          which /usr/local/bin/pkg-config-cross
+          echo "=== Checking .pc files ==="
+          ls -la $INSTALL/lib/pkgconfig/ | grep -i glibmm || echo "No glibmm .pc files found"
+          ls -la $INSTALL/lib/pkgconfig/glibmm*.pc 2>/dev/null || echo "No glibmm .pc files found"
+          /usr/local/bin/pkg-config-cross --list-all 2>/dev/null | grep -i glibmm || echo "glibmm not found in pkg-config"
+          /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.68 2>&1 | head -5 || echo "glibmm-2.68 not found"
+          /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.90 2>&1 | head -5 || echo "glibmm-2.90 not found"
+
       - name: Inkscape C++ コアをクロスコンパイル（フルビルド）
         run: |
           echo "=== Building Inkscape C++ Core for Android (FULL) ==="
@@ -486,17 +497,6 @@ jobs:
           # Use environment variables so they can be overridden
           printf '#!/bin/bash\n# Use environment variables for cross-compile pkg-config\n# PKG_CONFIG_LIBDIR and PKG_CONFIG_PATH should be set in environment\nexec /usr/bin/pkg-config "$@"\n' > /usr/local/bin/pkg-config-cross
           chmod +x /usr/local/bin/pkg-config-cross
-
-          # Debug: check pkg-config and glibmm
-          echo "=== Debug pkg-config ==="
-          which pkg-config
-          which /usr/local/bin/pkg-config-cross
-          echo "=== Checking .pc files ==="
-          ls -la $INSTALL/lib/pkgconfig/ | grep -i glibmm || echo "No glibmm .pc files found"
-          ls -la $INSTALL/lib/pkgconfig/glibmm*.pc 2>/dev/null || echo "No glibmm .pc files found"
-          /usr/local/bin/pkg-config-cross --list-all 2>/dev/null | grep -i glibmm || echo "glibmm not found in pkg-config"
-          /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.68 2>&1 | head -5 || echo "glibmm-2.68 not found"
-          /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.90 2>&1 | head -5 || echo "glibmm-2.90 not found"
 
           cmake .. \
             -G Ninja \
