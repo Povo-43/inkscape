@@ -1,7 +1,7 @@
 #ifndef FORMAT_COMPAT_H
 #define FORMAT_COMPAT_H
 // std::format fallback for C++20 compatibility with clang/Android NDK
-// Only provide fallback if std::format is not available
+// clang in NDK r27b has incomplete std::format support - provide fallback ONLY when not available
 #include <sstream>
 #include <string>
 #include <string_view>
