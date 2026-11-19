@@ -596,9 +596,10 @@ EOF
         if [ -f "${PIXIEWOOD_DIR}/subprojects/glib/glib/glibconfig.h" ]; then
             cp "${PIXIEWOOD_DIR}/subprojects/glib/glib/glibconfig.h" "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
         fi
-        echo "Copied glib headers to ${INSTALL_DIR}/include/glib-2.0"
-    # Second try: pixiewood install directory (root/include/glib-2.0/)
-    elif [ -d "${PIXIEWOOD_ROOT}/include/glib-2.0" ]; then
+        echo "Copied glib headers from build directory to ${INSTALL_DIR}/include/glib-2.0"
+    fi
+    # Also copy from pixiewood install directory (root/include/glib-2.0/) - this has glib.h!
+    if [ -d "${PIXIEWOOD_ROOT}/include/glib-2.0" ]; then
         echo "--- Copying glib headers from pixiewood install directory ---"
         echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/include/glib-2.0/"
         ls -la "${PIXIEWOOD_ROOT}/include/glib-2.0/" 2>/dev/null | head -20 || echo "Directory not found"
@@ -616,9 +617,10 @@ EOF
             mkdir -p "${INSTALL_DIR}/include/glib-2.0/glib"
             cp "${PIXIEWOOD_ROOT}/include/glib-2.0/glibconfig.h" "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
         fi
-        echo "Copied glib headers to ${INSTALL_DIR}/include/glib-2.0"
-    # Third try: system glib headers (fallback for cross-compile)
-    elif [ -d "/usr/include/glib-2.0" ]; then
+        echo "Copied glib headers from install directory to ${INSTALL_DIR}/include/glib-2.0"
+    fi
+    # Third try: system glib headers (fallback for cross-compile) - only if neither above worked
+    if [ ! -f "${INSTALL_DIR}/include/glib-2.0/glib.h" ] && [ -d "/usr/include/glib-2.0" ]; then
         echo "--- Copying glib headers from system (fallback) ---"
         echo "DEBUG: Checking /usr/include/glib-2.0/"
         ls -la /usr/include/glib-2.0/ 2>/dev/null | head -20 || echo "Directory not found"
@@ -640,6 +642,7 @@ EOF
             cp /usr/include/glib-2.0/glibconfig.h "${INSTALL_DIR}/include/glib-2.0/glib/" 2>/dev/null || true
         fi
         echo "Copied system glib headers to ${INSTALL_DIR}/include/glib-2.0 (fallback)"
+    fi
     else
         echo "Warning: glib-2.0 headers not found in any location"
     fi
