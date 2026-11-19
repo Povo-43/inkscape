@@ -547,9 +547,12 @@ EOF
     # Create symlinks for standard include path
     if [ "$LIBTIFF_HEADERS_COPIED" = true ] && [ -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiff.h" ]; then
         mkdir -p "${INSTALL_DIR}/include"
+        # Create symlinks so that all tiff headers are accessible from the include root
         ln -sf tiff-4.7.0/libtiff/tiff.h "${INSTALL_DIR}/include/tiff.h" 2>/dev/null || true
         ln -sf tiff-4.7.0/libtiff/tiffconf.h "${INSTALL_DIR}/include/tiffconf.h" 2>/dev/null || true
         ln -sf tiff-4.7.0/libtiff/tiffio.h "${INSTALL_DIR}/include/tiffio.h" 2>/dev/null || true
+        # Also copy tiffconf.h to the same directory as tiffio.h for #include "tiffconf.h" to work
+        cp -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h" 2>/dev/null || true
     elif [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
         echo "Warning: libtiff headers not found anywhere"
     fi

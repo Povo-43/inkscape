@@ -1,57 +1,5 @@
 #ifndef FORMAT_COMPAT_H
 #define FORMAT_COMPAT_H
-// std::format fallback for C++20 compatibility with clang/Android NDK
-// Only provide fallback if std::format is not available
-#include <sstream>
-#include <string>
-#include <string_view>
-#include <vector>
-#include <type_traits>
-#include <tuple>
-
-// Only provide fallback if std::format is NOT available
-#if !defined(__cpp_lib_format) || __cpp_lib_format < 201907L
-namespace std {
-namespace detail {
-template <typename T>
-void collect_arg(std::vector<std::string>& args, const T& val) {
-    std::ostringstream oss;
-    oss << val;
-    args.push_back(oss.str());
-}
-template <typename... Args>
-void collect_all_args(std::vector<std::string>& args, Args&&... vals) {
-    (collect_arg(args, std::forward<Args>(vals)), ...);
-}
-std::string vformat_impl(const std::string& fmt, const std::vector<std::string>& args) {
-    std::string result;
-    size_t pos = 0;
-    size_t arg_index = 0;
-    while (pos < fmt.size()) {
-        if (fmt[pos] == '{') {
-            if (pos + 1 < fmt.size() && fmt[pos+1] == '{') { result += '{'; pos += 2; continue; }
-            size_t close = fmt.find('}', pos);
-            if (close == std::string::npos) { result += fmt[pos]; pos++; continue; }
-            std::string spec = fmt.substr(pos+1, close-pos-1);
-            size_t idx;
-            if (spec.empty()) { idx = arg_index++; }
-            else { idx = std::stoul(spec); arg_index = idx + 1; }
-            if (idx < args.size()) result += args[idx];
-            pos = close + 1;
-        } else if (fmt[pos] == '}') {
-            if (pos + 1 < fmt.size() && fmt[pos+1] == '}') { result += '}'; pos += 2; }
-            else { result += fmt[pos]; pos++; }
-        } else { result += fmt[pos]; pos++; }
-    }
-    return result;
-}
-}
-template <typename... Args>
-std::string format(std::string_view fmt, Args&&... args) {
-    std::vector<std::string> arg_strs;
-    if constexpr (sizeof...(args) > 0) detail::collect_all_args(arg_strs, std::forward<Args>(args)...);
-    return detail::vformat_impl(std::string(fmt), arg_strs);
-}
-}
-#endif
+// Do NOT provide std::format fallback - clang 21 (NDK r27b) has proper std::format support
+// This header intentionally left empty to avoid conflicts with standard library's std::format
 #endif
