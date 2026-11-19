@@ -717,6 +717,23 @@ EOF
         echo "Warning: ICU headers not found in any location"
     fi
     
+    # Copy libintl headers from pixiewood install directory
+    if [ -f "${PIXIEWOOD_ROOT}/include/libintl.h" ]; then
+        echo "--- Copying libintl.h from pixiewood install directory ---"
+        cp -f "${PIXIEWOOD_ROOT}/include/libintl.h" "${INSTALL_DIR}/include/" 2>/dev/null || true
+        echo "Copied libintl.h to ${INSTALL_DIR}/include/"
+    elif [ -f "${PIXIEWOOD_DIR}/subprojects/gettext-0.22.5/gettext-runtime/intl/libintl.h" ]; then
+        echo "--- Copying libintl.h from pixiewood build directory ---"
+        cp -f "${PIXIEWOOD_DIR}/subprojects/gettext-0.22.5/gettext-runtime/intl/libintl.h" "${INSTALL_DIR}/include/" 2>/dev/null || true
+        echo "Copied libintl.h from build directory to ${INSTALL_DIR}/include/"
+    elif [ -f "/usr/include/libintl.h" ]; then
+        echo "--- Copying libintl.h from system (fallback) ---"
+        cp -f /usr/include/libintl.h "${INSTALL_DIR}/include/" 2>/dev/null || true
+        echo "Copied system libintl.h as fallback"
+    else
+        echo "Warning: libintl.h not found in any location"
+    fi
+    
     # Third try: system glib headers (fallback for cross-compile) - only if neither above worked
     if [ ! -f "${INSTALL_DIR}/include/glib-2.0/glib.h" ] && [ -d "/usr/include/glib-2.0" ]; then
         echo "--- Copying glib headers from system (fallback) ---"
