@@ -1620,9 +1620,35 @@ PCEOF
 fi
 
 # glibmm-2.90
+echo "DEBUG: Checking for glibmm-2.68.pc creation..."
+if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" ]; then
+    echo "--- Creating glibmm-2.68.pc ---"
+    # Library is libglibmm-2.68.so (project name) but we create a 2.68 .pc file for CMake compatibility
+    # CMake pkg_check_modules looks for glibmm-2.68
+    GLIBMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libglibmm-2.68.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
+    GLIBMM_INCLUDE="${INSTALL_DIR}/include"
+    cat > "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" << PCEOF
+prefix=$INSTALL_DIR
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: glibmm-2.68
+Description: C++ wrapper for GLib
+Version: 2.68.0
+Requires: glib-2.0, gobject-2.0, gio-2.0, sigc++-3.0
+Libs: -L${GLIBMM_LIB} -lglibmm-2.68
+Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90 -I${GLIBMM_INCLUDE}/glibmm-2.90/glibmm
+PCEOF
+    echo "Created glibmm-2.68.pc"
+else
+    echo "DEBUG: glibmm-2.68.pc already exists"
+fi
+
+# Also create 2.90 version for other packages
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.90.pc" ]; then
     echo "--- Creating glibmm-2.90.pc ---"
-    # Library is libglibmm-2.68.so (project name) but we create a 2.90 .pc file
+    # Library is libglibmm-2.68.so (project name) but we create a 2.90 .pc file for other packages
     GLIBMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libglibmm-2.68.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
     GLIBMM_INCLUDE="${INSTALL_DIR}/include"
     cat > "$INSTALL_DIR/lib/pkgconfig/glibmm-2.90.pc" << PCEOF
