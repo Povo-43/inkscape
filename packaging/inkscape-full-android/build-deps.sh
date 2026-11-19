@@ -551,7 +551,35 @@ EOF
         ln -sf tiff-4.7.0/libtiff/tiff.h "${INSTALL_DIR}/include/tiff.h" 2>/dev/null || true
         ln -sf tiff-4.7.0/libtiff/tiffconf.h "${INSTALL_DIR}/include/tiffconf.h" 2>/dev/null || true
         ln -sf tiff-4.7.0/libtiff/tiffio.h "${INSTALL_DIR}/include/tiffio.h" 2>/dev/null || true
-        # Also copy tiffconf.h to the same directory as tiffio.h for #include "tiffconf.h" to work
+        # Also ensure tiffconf.h exists in libtiff directory for #include "tiffconf.h" to work
+        if [ ! -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h" ]; then
+            echo "--- Creating tiffconf.h fallback in libtiff directory ---"
+            mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
+            cat > "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h" << 'EOF'
+/* tiffconf.h - minimal fallback for Android cross-compile */
+#ifndef _TIFFCONF_
+#define _TIFFCONF_
+#define HAVE_FCNTL_H 1
+#define HAVE_IEEEFP 1
+#define HAVE_MMAP 1
+#define HAVE_SEARCH_H 1
+#define HAVE_STRING_H 1
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_UNISTD_H 1
+#define HOST_FILLORDER FILLORDER_LSB2MSB
+#define SIZEOF_FLOAT 4
+#define SIZEOF_INT 4
+#define SIZEOF_LONG 8
+#define SIZEOF_SHORT 2
+#define SIZEOF_VOIDP 8
+/* Define missing types for Android cross-compile */
+#define TIFF_SSIZE_T ssize_t
+#define TIFF_UINT64_T uint64_t
+#define TIFF_INT64_T int64_t
+#endif
+EOF
+            echo "Created minimal tiffconf.h fallback in libtiff directory"
+        fi
         cp -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h" 2>/dev/null || true
     elif [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
         echo "Warning: libtiff headers not found anywhere"
