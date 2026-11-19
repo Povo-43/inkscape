@@ -451,6 +451,11 @@ jobs:
           ls -la .pixiewood/root/lib/arm64-v8a/ 2>/dev/null || echo ".pixiewood/root/lib/arm64-v8a not found"
           # Also check for glibmm headers in build directory
           ls -la .pixiewood/bin-aarch64/subprojects/glibmm-2.90.0/glib/glibmm/ 2>/dev/null | head -10 || echo "glibmm headers not found in build directory"
+          
+          # Create pkg-config wrapper for cross-compilation (needed for debug)
+          printf '#!/bin/bash\n# Use environment variables for cross-compile pkg-config\n# PKG_CONFIG_LIBDIR and PKG_CONFIG_PATH should be set in environment\nexec /usr/bin/pkg-config "$@"\n' > /usr/local/bin/pkg-config-cross
+          chmod +x /usr/local/bin/pkg-config-cross
+          
           bash packaging/inkscape-full-android/build-deps.sh \
             $GITHUB_WORKSPACE/android-install \
             /opt/android-ndk-r27b \
