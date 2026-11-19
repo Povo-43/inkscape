@@ -340,7 +340,11 @@ EOF
             echo "--- Copying libtiff headers from downloaded source ---"
             mkdir -p "${INSTALL_DIR}/include/tiff-4.7.0/libtiff"
             # Copy all headers from libtiff directory
+            echo "DEBUG: Copying headers from tiff-4.7.0/libtiff/"
+            ls -la tiff-4.7.0/libtiff/*.h 2>/dev/null | head -20 || echo "No .h files found in libtiff"
             cp -f tiff-4.7.0/libtiff/*.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+            echo "DEBUG: Checking if tiffio.h was copied..."
+            ls -la "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffio.h" 2>/dev/null | head -5 || echo "tiffio.h not found in install dir"
             # Also check for tiffconf.h.in or similar generated headers
             if [ -f "tiff-4.7.0/libtiff/tiffconf.h.in" ]; then
                 cp -f tiff-4.7.0/libtiff/tiffconf.h.in "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h" 2>/dev/null || true
@@ -353,6 +357,50 @@ EOF
             # Ensure tiffconf.h has all required definitions for Android cross-compile
             echo "Ensuring tiffconf.h has required definitions for Android cross-compile..."
             TIFFCONF_FILE="${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffconf.h"
+            echo "DEBUG: TIFFCONF_FILE=$TIFFCONF_FILE"
+            echo "DEBUG: TIFFCONF_FILE exists: $(test -f "$TIFFCONF_FILE" && echo yes || echo no)"
+            if [ ! -f "$TIFFCONF_FILE" ]; then
+                echo "DEBUG: tiffconf.h not found, creating minimal fallback..."
+                cat > "$TIFFCONF_FILE" << 'EOF'
+/* tiffconf.h - minimal fallback for Android cross-compile */
+#ifndef _TIFFCONF_
+#define _TIFFCONF_
+#define HAVE_FCNTL_H 1
+#define HAVE_IEEEFP 1
+#define HAVE_MMAP 1
+#define HAVE_SEARCH_H 1
+#define HAVE_STRING_H 1
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_UNISTD_H 1
+#define HOST_FILLORDER FILLORDER_LSB2MSB
+#define SIZEOF_FLOAT 4
+#define SIZEOF_INT 4
+#define SIZEOF_LONG 8
+#define SIZEOF_SHORT 2
+#define SIZEOF_VOIDP 8
+/* Define missing types for Android cross-compile */
+#define TIFF_SSIZE_T ssize_t
+#define TIFF_UINT64_T uint64_t
+#define TIFF_INT64_T int64_t
+#endif
+EOF
+                echo "Created minimal tiffconf.h fallback"
+            else
+                echo "DEBUG: tiffconf.h exists, checking for TIFF_SSIZE_T..."
+                if ! grep -q "TIFF_SSIZE_T" "$TIFFCONF_FILE" 2>/dev/null; then
+                    echo "Adding missing TIFF_SSIZE_T definition to tiffconf.h..."
+                    cat >> "$TIFFCONF_FILE" << 'EOF'
+
+/* Added for Android cross-compile */
+#define TIFF_SSIZE_T ssize_t
+#define TIFF_UINT64_T uint64_t
+#define TIFF_INT64_T int64_t
+EOF
+                    echo "Added missing type definitions to tiffconf.h"
+                else
+                    echo "DEBUG: TIFF_SSIZE_T already defined in tiffconf.h"
+                fi
+            fi
             if [ ! -f "$TIFFCONF_FILE" ]; then
                 echo "--- Creating minimal tiffconf.h fallback ---"
                 cat > "$TIFFCONF_FILE" << 'EOF'
@@ -380,7 +428,7 @@ EOF
 EOF
                 echo "Created minimal tiffconf.h fallback"
             else
-                # Check if TIFF_SSIZE_T is defined, if not append it
+                echo "DEBUG: tiffconf.h exists, checking for TIFF_SSIZE_T..."
                 if ! grep -q "TIFF_SSIZE_T" "$TIFFCONF_FILE" 2>/dev/null; then
                     echo "Adding missing TIFF_SSIZE_T definition to tiffconf.h..."
                     cat >> "$TIFFCONF_FILE" << 'EOF'
@@ -391,6 +439,8 @@ EOF
 #define TIFF_INT64_T int64_t
 EOF
                     echo "Added missing type definitions to tiffconf.h"
+                else
+                    echo "DEBUG: TIFF_SSIZE_T already defined in tiffconf.h"
                 fi
             fi
             LIBTIFF_HEADERS_COPIED=true
