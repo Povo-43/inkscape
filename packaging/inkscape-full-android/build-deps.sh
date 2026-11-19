@@ -1621,6 +1621,9 @@ fi
 
 # glibmm-2.90
 echo "DEBUG: Checking for glibmm-2.68.pc creation..."
+echo "DEBUG: INSTALL_DIR=$INSTALL_DIR"
+echo "DEBUG: Checking if $INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc exists..."
+ls -la "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" 2>/dev/null || echo "File does not exist"
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" ]; then
     echo "--- Creating glibmm-2.68.pc ---"
     # Library is libglibmm-2.68.so (project name) but we create a 2.68 .pc file for CMake compatibility
@@ -1641,6 +1644,7 @@ Libs: -L${GLIBMM_LIB} -lglibmm-2.68
 Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90 -I${GLIBMM_INCLUDE}/glibmm-2.90/glibmm
 PCEOF
     echo "Created glibmm-2.68.pc"
+    ls -la "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" || echo "File creation failed"
 else
     echo "DEBUG: glibmm-2.68.pc already exists"
 fi
@@ -1665,6 +1669,7 @@ Libs: -L${GLIBMM_LIB} -lglibmm-2.68
 Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90 -I${GLIBMM_INCLUDE}/glibmm-2.90/glibmm
 PCEOF
     echo "Created glibmm-2.90.pc"
+    ls -la "$INSTALL_DIR/lib/pkgconfig/glibmm-2.90.pc" || echo "File creation failed"
 fi
 
 # gtk4
