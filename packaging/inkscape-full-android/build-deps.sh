@@ -720,36 +720,28 @@ EOF
     if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.68" ]; then
         echo "--- Copying glibmm headers from pixiewood install directory (2.68) ---"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90"
-        cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.68"/* "${INSTALL_DIR}/include/glibmm-2.90/" 2>/dev/null || true
-        # Also copy the generated headers
-        if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.68/glibmm" ]; then
-            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-            cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.68/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-        fi
-        echo "Copied glibmm headers from install directory to ${INSTALL_DIR}/include/glibmm-2.90"
+        # Copy to glibmm-2.90/glibmm/ to match .pc file expectations
+        cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.68"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmm headers from install directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
     elif [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.90" ]; then
         echo "--- Copying glibmm headers from pixiewood install directory (2.90) ---"
-        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90"
-        cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.90"/* "${INSTALL_DIR}/include/glibmm-2.90/" 2>/dev/null || true
-        # Also copy the generated headers
-        if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.90/glibmm" ]; then
-            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-            cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.90/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-        fi
-        echo "Copied glibmm headers from install directory to ${INSTALL_DIR}/include/glibmm-2.90"
+        # Copy to glibmm-2.90/glibmm/ to match .pc file expectations
+        cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.90"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmm headers from install directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
     else
         echo "DEBUG: Checking for glibmm headers in build directory..."
         ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/" 2>/dev/null | head -10 || echo "Directory not found"
         if [ -d "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm" ]; then
             echo "--- Copying glibmm headers from pixiewood build directory ---"
-            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90"
-            cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/" 2>/dev/null || true
-            echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.90"
+            # Copy to glibmm-2.90/glibmm/ to match .pc file expectations
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         elif [ -d "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
             echo "--- Copying glibmm headers from pixiewood build directory (glibmm dir) ---"
-            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90"
-            cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/" 2>/dev/null || true
-            echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.90"
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         else
             echo "Warning: glibmm headers not found in any location"
         fi
