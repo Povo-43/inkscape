@@ -668,6 +668,8 @@ EOF
         echo "Copied glib headers from install directory to ${INSTALL_DIR}/include/glib-2.0"
     fi
     # Copy glibmm headers from pixiewood install directory
+    echo "DEBUG: Checking PIXIEWOOD_ROOT for glibmm: ${PIXIEWOOD_ROOT}/include/glibmm-2.68/"
+    ls -la "${PIXIEWOOD_ROOT}/include/glibmm-2.68/" 2>/dev/null | head -20 || echo "Directory not found in install"
     if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.68" ]; then
         echo "--- Copying glibmm headers from pixiewood install directory ---"
         echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/include/glibmm-2.68/"
@@ -680,13 +682,17 @@ EOF
             cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.68/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.68/glibmm/" 2>/dev/null || true
         fi
         echo "Copied glibmm headers to ${INSTALL_DIR}/include/glibmm-2.68"
-    elif [ -d "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm" ]; then
-        echo "--- Copying glibmm headers from pixiewood build directory ---"
-        mkdir -p "${INSTALL_DIR}/include/glibmm-2.68"
-        cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.68/" 2>/dev/null || true
-        echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.68"
     else
-        echo "Warning: glibmm headers not found in any location"
+        echo "DEBUG: Checking PIXIEWOOD_DIR for glibmm: ${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/"
+        ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/" 2>/dev/null | head -20 || echo "Directory not found in build"
+        if [ -d "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm" ]; then
+            echo "--- Copying glibmm headers from pixiewood build directory ---"
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.68"
+            cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.68/" 2>/dev/null || true
+            echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.68"
+        else
+            echo "Warning: glibmm headers not found in any location"
+        fi
     fi
     
     # Copy libxml2 headers from pixiewood install directory
