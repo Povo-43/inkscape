@@ -1978,9 +1978,6 @@ echo "Target: $TRIPLE (API $API)"
 echo "Jobs: $JOBS"
 echo ""
 
-# Close the main .pc file creation block (started at line 58)
-fi
-
 # =========================================================
 # Helper functions
 # =========================================================
