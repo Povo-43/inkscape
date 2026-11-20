@@ -809,6 +809,20 @@ EOF
         echo "Warning: glibmm headers not found in any location"
     fi
     
+    # Copy generated glibmm headers (unicode.h, etc.) from build directory
+    # These are generated during pixiewood build and not in source directory
+    if [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/unicode.h" ]; then
+        echo "--- Copying generated glibmm headers (unicode.h) from build directory ---"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        cp -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/unicode.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied unicode.h from build directory"
+    elif [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/unicode.h" ]; then
+        echo "--- Copying generated glibmm headers (unicode.h) from build directory (glibmm dir) ---"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        cp -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/unicode.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied unicode.h from build directory (glibmm dir)"
+    fi
+    
     # Also copy glibmmconfig.h if it exists in build directory
     if [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/glibmmconfig.h" ]; then
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
