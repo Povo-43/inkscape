@@ -333,6 +333,11 @@ JCONFIGEOF
         # Check if actual headers exist in build directory
         if [ -f "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff/tiffio.h" ]; then
             cp -r "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff"/*.h "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+            # Also copy tiffvers.h if it exists in build directory
+            if [ -f "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff/tiffvers.h" ]; then
+                cp -f "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff/tiffvers.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+                echo "Copied tiffvers.h from pixiewood build directory"
+            fi
             LIBTIFF_HEADERS_COPIED=true
             echo "Copied libtiff headers from pixiewood build directory"
         else
