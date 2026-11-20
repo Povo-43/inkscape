@@ -815,10 +815,21 @@ EOF
         fi
     done
     
+    # Also try to find generated headers in meson build directories (deep paths with untracked_)
+    if [ "$GLIBMM_BUILD_FOUND" = false ]; then
+        echo "--- Searching for generated glibmm headers in meson build directories ---"
+        find "${PIXIEWOOD_DIR}" -maxdepth 7 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) -path "*glibmm*" 2>/dev/null | while read hdr; do
+            echo "Found generated header: $hdr"
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -f "$hdr" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            GLIBMM_BUILD_FOUND=true
+        done
+    fi
+    
     if [ "$GLIBMM_BUILD_FOUND" = false ]; then
         echo "Warning: glibmm headers not found in any build location"
         # Try broader search with deeper depth
-        find "${PIXIEWOOD_DIR}" -maxdepth 6 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -10
+        find "${PIXIEWOOD_DIR}" -maxdepth 7 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -10
     fi
     
     # Also copy generated glibmm headers (unicode.h, etc.) from build directory
