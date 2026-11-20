@@ -2115,6 +2115,34 @@ if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR
     fi
 fi
 
+# Also copy glibmmconfig.h from build directory or create minimal one
+if [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/glibmmconfig.h" ]; then
+    mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+    cp "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/glibmmconfig.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+    echo "Copied glibmmconfig.h from build directory"
+elif [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/glibmmconfig.h" ]; then
+    mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+    cp "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/glibmmconfig.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+    echo "Copied glibmmconfig.h from build directory"
+else
+    echo "--- Creating minimal glibmmconfig.h ---"
+    mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+    cat > "${INSTALL_DIR}/include/glibmm-2.90/glibmm/glibmmconfig.h" << 'GLIBMM_CONFIG_EOF'
+/* glibmmconfig.h - minimal config for Android cross-compile */
+#ifndef GLIBMM_CONFIG_H
+#define GLIBMM_CONFIG_H
+
+/* Define platform-specific macros */
+#define GLIBMM_DISABLE_DEPRECATED
+
+/* For Android NDK */
+#define GLIBMM_DISABLE_DEPRECATED_WARNINGS
+
+#endif /* GLIBMM_CONFIG_H */
+GLIBMM_CONFIG_EOF
+    echo "Created minimal glibmmconfig.h"
+fi
+
 # =========================================================
 # 2. GSL (scientific library)
 # =========================================================
