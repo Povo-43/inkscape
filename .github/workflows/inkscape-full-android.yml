@@ -463,10 +463,10 @@ jobs:
             "$GITHUB_WORKSPACE/.pixiewood/bin-aarch64"
 
           # Debug: check pkg-config and glibmm AFTER build-deps.sh creates .pc files
-          echo "=== Debug pkg-config ==="
+          echo "=== Debug pkg-config (AFTER build-deps.sh) ==="
           which pkg-config || true
           which /usr/local/bin/pkg-config-cross || true
-          echo "=== Checking .pc files ==="
+          echo "=== Checking .pc files (AFTER build-deps.sh) ==="
           ls -la $INSTALL/lib/pkgconfig/ 2>/dev/null | grep -i glibmm || echo "No glibmm .pc files found"
           ls -la $INSTALL/lib/pkgconfig/glibmm*.pc 2>/dev/null || echo "No glibmm .pc files found"
           /usr/local/bin/pkg-config-cross --list-all 2>/dev/null | grep -i glibmm || echo "glibmm not found in pkg-config"
