@@ -397,7 +397,7 @@ jobs:
           # 10. Skip INKSCAPE_DEP (pixiewood target) - we provide dependencies manually
           sed -i '/pkg_check_modules(INKSCAPE_DEP REQUIRED IMPORTED_TARGET harfbuzz/,/lcms2)/c\    set(INKSCAPE_DEP_FOUND TRUE)\n    message("- Found '\''INKSCAPE_DEP'\'' (provided manually)")\n    # We manually add the libraries instead of using PkgConfig::INKSCAPE_DEP\n    list(APPEND INKSCAPE_LIBS \n        PkgConfig::CAIROMM\n        PkgConfig::PANGOMM\n        PkgConfig::GDK_PIXBUF\n        PkgConfig::GRAPHENE\n    )' CMakeScripts/DefineDependsandFlags.cmake
 
-          # 11. Remove the INKSCAPE_DEP from INKSCAPE_LIBS
+          # 10. Remove the INKSCAPE_DEP from INKSCAPE_LIBS
           sed -i '/list(APPEND INKSCAPE_LIBS PkgConfig::INKSCAPE_DEP)/d' CMakeScripts/DefineDependsandFlags.cmake
 
           # 12. Skip ICU_UC pkg_search_module - we provide it via CMake variables
@@ -434,14 +434,33 @@ jobs:
           echo "=== Building Inkscape Minimal Dependencies for Android ==="
           cd $GITHUB_WORKSPACE
           # Copy pixiewood from download dir to expected location
-          # The artifact is at gtk4-stack-download/packaging/android-gtkmm4/.pixiewood
-          cp -r gtk4-stack-download/packaging/android-gtkmm4/.pixiewood . 2>/dev/null || true
+          # The artifact is downloaded to gtk4-stack-download/ with .pixiewood at the root
+          echo "=== Copying pixiewood from download directory ==="
+          ls -la gtk4-stack-download/ 2>/dev/null | head -20
+          if [ -d "gtk4-stack-download/.pixiewood" ]; then
+            echo "Found .pixiewood at download root, copying to workspace..."
+            cp -r gtk4-stack-download/.pixiewood . 2>&1 || echo "Copy failed"
+            echo "Copy complete, verifying..."
+            ls -la .pixiewood/ 2>/dev/null | head -20 || echo ".pixiewood not found in workspace"
+          elif [ -d "gtk4-stack-download/packaging/android-gtkmm4/.pixiewood" ]; then
+            echo "Found .pixiewood at packaging/android-gtkmm4/, copying to workspace..."
+            cp -r gtk4-stack-download/packaging/android-gtkmm4/.pixiewood . 2>&1 || echo "Copy failed"
+            echo "Copy complete, verifying..."
+            ls -la .pixiewood/ 2>/dev/null | head -20 || echo ".pixiewood not found in workspace"
+          else
+            echo "ERROR: .pixiewood not found in download directory!"
+            find gtk4-stack-download -name ".pixiewood" -type d 2>/dev/null | head -10
+          fi
+          
           # Also copy subprojects
+          cp -r gtk4-stack-download/subprojects packaging/android-gtkmm4/ 2>/dev/null || true
           cp -r gtk4-stack-download/packaging/android-gtkmm4/subprojects packaging/android-gtkmm4/ 2>/dev/null || true
+          
           # Also copy bin-* directories if they exist
+          cp -r gtk4-stack-download/bin-* packaging/android-gtkmm4/ 2>/dev/null || true
           cp -r gtk4-stack-download/packaging/android-gtkmm4/bin-* packaging/android-gtkmm4/ 2>/dev/null || true
-          # The .pixiewood directory is already at the correct location
-          # (copied from the artifact to the workspace root)
+          
+          # The .pixiewood directory should now be at the workspace root
           # Verify the pixiewood root directory exists
           echo "=== Verifying pixiewood structure ==="
           ls -la .pixiewood/ 2>/dev/null || echo ".pixiewood not found"
@@ -460,7 +479,7 @@ jobs:
             /opt/android-ndk-r27b \
             31 \
             "$GITHUB_WORKSPACE/.pixiewood/bin-aarch64"
-
+          
           # Debug: check pkg-config and glibmm AFTER build-deps.sh creates .pc files
           echo "=== Debug pkg-config (AFTER build-deps.sh) ==="
           which pkg-config || true
