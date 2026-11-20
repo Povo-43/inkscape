@@ -749,8 +749,17 @@ EOF
             echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
             ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
         else
-            echo "Warning: glibmm headers not found in any location"
+            echo "Warning: glibmm headers not found in build directory"
         fi
+    fi
+    
+    # Also check source directory for glibmm headers (in case build directory doesn't have them)
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
+        echo "--- Copying glibmm headers from pixiewood source directory ---"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmm headers from source directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
     fi
     
     # Also copy glibmmconfig.h if it exists in build directory
