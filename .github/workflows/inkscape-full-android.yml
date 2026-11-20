@@ -469,6 +469,9 @@ jobs:
           echo "=== Checking .pc files (AFTER build-deps.sh) ==="
           ls -la $GITHUB_WORKSPACE/android-install/lib/pkgconfig/ 2>/dev/null | grep -i glibmm || echo "No glibmm .pc files found"
           ls -la $GITHUB_WORKSPACE/android-install/lib/pkgconfig/glibmm*.pc 2>/dev/null || echo "No glibmm .pc files found"
+          export PKG_CONFIG_LIBDIR="$GITHUB_WORKSPACE/android-install/lib/pkgconfig"
+          export PKG_CONFIG_PATH="$GITHUB_WORKSPACE/android-install/lib/pkgconfig"
+          export PKG_CONFIG=/usr/local/bin/pkg-config-cross
           /usr/local/bin/pkg-config-cross --list-all 2>/dev/null | grep -i glibmm || echo "glibmm not found in pkg-config"
           /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.68 2>&1 | head -5 || echo "glibmm-2.68 not found"
           /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.90 2>&1 | head -5 || echo "glibmm-2.90 not found"
@@ -502,17 +505,6 @@ jobs:
           export PKG_CONFIG_PATH="$INSTALL/lib/pkgconfig"
           export PKG_CONFIG=/usr/local/bin/pkg-config-cross
           export CMAKE_PREFIX_PATH="$INSTALL"
-
-          # Debug: check pkg-config and glibmm BEFORE cmake
-          echo "=== Debug pkg-config (BEFORE cmake) ==="
-          which pkg-config || true
-          which /usr/local/bin/pkg-config-cross || true
-          echo "=== Checking .pc files (BEFORE cmake) ==="
-          ls -la $GITHUB_WORKSPACE/android-install/lib/pkgconfig/ 2>/dev/null | grep -i glibmm || echo "No glibmm .pc files found"
-          ls -la $GITHUB_WORKSPACE/android-install/lib/pkgconfig/glibmm*.pc 2>/dev/null || echo "No glibmm .pc files found"
-          /usr/local/bin/pkg-config-cross --list-all 2>/dev/null | grep -i glibmm || echo "glibmm not found in pkg-config"
-          /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.68 2>&1 | head -5 || echo "glibmm-2.68 not found"
-          /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.90 2>&1 | head -5 || echo "glibmm-2.90 not found"
 
           cmake .. \
             -G Ninja \
