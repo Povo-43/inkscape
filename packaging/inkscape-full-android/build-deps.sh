@@ -901,28 +901,6 @@ INTLEOF
         echo "Warning: glib-2.0 headers not found in any location"
     fi
     
-    # Download glibmm source for headers if not already available
-    if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR}/include/glibmm-2.90/glibmm/ustring.h" ]; then
-        echo "--- Downloading glibmm source for headers ---"
-        GLIBMM_VER=2.90.0
-        fetch glibmm-${GLIBMM_VER} "https://download.gnome.org/sources/glibmm/2.90/glibmm-${GLIBMM_VER}.tar.xz" || true
-        if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" ]; then
-            echo "--- Copying glibmm headers from downloaded source ---"
-            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-            cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-            echo "Copied glibmm headers from downloaded source to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-            ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
-        elif [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm" ]; then
-            echo "--- Copying glibmm headers from downloaded source (glib/glibmm) ---"
-            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-            cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-            echo "Copied glibmm headers from downloaded source to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-            ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
-        else
-            echo "Warning: glibmm headers not found in any location"
-        fi
-    fi
-    
     # Copy all required libraries from pixiewood build directory to android-install/lib/
     echo "--- Copying all libraries from pixiewood ---"
     mkdir -p "${INSTALL_DIR}/lib"
@@ -2110,6 +2088,30 @@ Version: $BOOST_VER
 Libs: -L\${libdir} -lboost_system -lboost_filesystem -lboost_thread -lboost_chrono -lboost_stacktrace_noop
 Cflags: -I\${includedir}
 PC
+    fi
+fi
+
+# =========================================================
+# Download glibmm source for headers if not already available
+# =========================================================
+if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR}/include/glibmm-2.90/glibmm/ustring.h" ]; then
+    echo "--- Downloading glibmm source for headers ---"
+    GLIBMM_VER=2.90.0
+    fetch glibmm-${GLIBMM_VER} "https://download.gnome.org/sources/glibmm/2.90/glibmm-${GLIBMM_VER}.tar.xz" || true
+    if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" ]; then
+        echo "--- Copying glibmm headers from downloaded source ---"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmm headers from downloaded source to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
+    elif [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm" ]; then
+        echo "--- Copying glibmm headers from downloaded source (glib/glibmm) ---"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmm headers from downloaded source to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
+    else
+        echo "Warning: glibmm headers not found in any location"
     fi
 fi
 
