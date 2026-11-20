@@ -791,15 +791,15 @@ EOF
     GLIBMM_SOURCE_FOUND=false
     # Try multiple possible source directory structures
     for src_path in \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm" \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src/glibmm" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm"; do
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src"; do
         if [ -d "$src_path" ] && [ ! "$GLIBMM_SOURCE_FOUND" = true ]; then
             echo "--- Copying glibmm headers from pixiewood source directory ($src_path) ---"
             mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
