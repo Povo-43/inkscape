@@ -932,13 +932,36 @@ INTLEOF
         cp -f "${PIXIEWOOD_ROOT}/lib/arm64-v8a"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
         cp -f "${PIXIEWOOD_ROOT}/lib/arm64-v8a"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
         echo "Copied libraries from pixiewood root/arm64-v8a"
+        ls -la "${INSTALL_DIR}/lib/" | head -30
     elif [ -d "${PIXIEWOOD_ROOT}/lib" ]; then
         echo "DEBUG: Checking ${PIXIEWOOD_ROOT}/lib/"
         ls -la "${PIXIEWOOD_ROOT}/lib/" 2>/dev/null | head -20 || echo "lib directory not found"
         cp -f "${PIXIEWOOD_ROOT}/lib"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
         cp -f "${PIXIEWOOD_ROOT}/lib"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
         echo "Copied libraries from pixiewood root"
+        ls -la "${INSTALL_DIR}/lib/" | head -30
+    else
+        echo "WARNING: Neither ${PIXIEWOOD_ROOT}/lib/arm64-v8a nor ${PIXIEWOOD_ROOT}/lib exists!"
     fi
+    
+    # Also try the build directory for glib libraries (they may be in subprojects build dir)
+    echo "--- Checking pixiewood build directory for glib libraries ---"
+    if [ -d "${PIXIEWOOD_DIR}/subprojects/glib/glib" ]; then
+        ls -la "${PIXIEWOOD_DIR}/subprojects/glib/glib/" | head -20
+        cp -f "${PIXIEWOOD_DIR}/subprojects/glib/glib"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        cp -f "${PIXIEWOOD_DIR}/subprojects/glib/glib"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+        echo "Copied glib libraries from build directory"
+        ls -la "${INSTALL_DIR}/lib/" | head -30
+    fi
+    
+    # Also try gobject, gio, gmodule, gthread
+    for glib_lib in "glib/gobject" "glib/gio" "glib/gmodule" "glib/gthread"; do
+        if [ -d "${PIXIEWOOD_DIR}/subprojects/${glib_lib}" ]; then
+            cp -f "${PIXIEWOOD_DIR}/subprojects/${glib_lib}"/*.so "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            cp -f "${PIXIEWOOD_DIR}/subprojects/${glib_lib}"/*.so.* "${INSTALL_DIR}/lib/" 2>/dev/null || true
+            echo "Copied ${glib_lib} libraries from build directory"
+        fi
+    done
     
     # Also try the Android app's merged native libs (where the final APK libs are)
     ANDROID_LIBS="${GITHUB_WORKSPACE}/.pixiewood/bin-aarch64/../../android/app/build/intermediates/merged_native_libs/release/mergeReleaseNativeLibs/out/lib/arm64-v8a"
