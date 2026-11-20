@@ -1625,7 +1625,7 @@ PCEOF
     echo "Created sigc++-3.0.pc"
 fi
 
-# glibmm-2.90
+# glibmm .pc files
 echo "DEBUG: Reached .pc file creation section for glibmm..."
 echo "DEBUG: INSTALL_DIR=$INSTALL_DIR"
 echo "DEBUG: PIXIEWOOD_DIR=$PIXIEWOOD_DIR"
@@ -1659,41 +1659,7 @@ PCEOF
 else
     echo "DEBUG: glibmm-2.68.pc already exists"
 fi
-echo "DEBUG: INSTALL_DIR=$INSTALL_DIR"
-echo "DEBUG: Checking if $INSTALL_DIR/lib/pkgconfig/ directory exists..."
-ls -la "$INSTALL_DIR/lib/pkgconfig/" 2>/dev/null || echo "Directory does not exist, creating..."
-mkdir -p "$INSTALL_DIR/lib/pkgconfig/"
-echo "DEBUG: Checking if $INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc exists..."
-ls -la "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" 2>/dev/null || echo "File does not exist"
-if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" ]; then
-    echo "--- Creating glibmm-2.68.pc ---"
-    # Library is libglibmm-2.68.so (project name) but we create a 2.68 .pc file for CMake compatibility
-    # CMake pkg_check_modules looks for glibmm-2.68
-    GLIBMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libglibmm-2.68.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
-    GLIBMM_INCLUDE="${INSTALL_DIR}/include"
-    echo "DEBUG: Writing to $INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc"
-    cat > "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" << PCEOF
-prefix=${INSTALL_DIR}
-exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib
-includedir=\${prefix}/include
 
-Name: glibmm-2.68
-Description: C++ wrapper for GLib
-Version: 2.68.0
-Requires: glib-2.0, gobject-2.0, gio-2.0, sigc++-3.0
-Libs: -L${GLIBMM_LIB} -lglibmm-2.68
-Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90
-PCEOF
-    echo "Created glibmm-2.68.pc"
-    ls -la "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" || echo "File creation failed"
-else
-    echo "DEBUG: glibmm-2.68.pc already exists"
-fi
-
-echo "DEBUG: About to create glibmm-2.90.pc..."
-# Also create 2.90 version for other packages
-echo "DEBUG: About to create glibmm-2.90.pc..."
 # Also create 2.90 version for other packages
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.90.pc" ]; then
     echo "--- Creating glibmm-2.90.pc ---"
