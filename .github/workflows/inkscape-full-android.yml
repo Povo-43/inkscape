@@ -472,10 +472,6 @@ jobs:
           /usr/local/bin/pkg-config-cross --list-all 2>/dev/null | grep -i glibmm || echo "glibmm not found in pkg-config"
           /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.68 2>&1 | head -5 || echo "glibmm-2.68 not found"
           /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.90 2>&1 | head -5 || echo "glibmm-2.90 not found"
-          
-          # Additional debug: check if .pc files were actually created
-          echo "=== Checking if .pc files exist in $INSTALL/lib/pkgconfig/ ==="
-          ls -la $INSTALL/lib/pkgconfig/ 2>/dev/null | head -20 || echo "Directory not found"
 
       - name: Inkscape C++ コアをクロスコンパイル（フルビルド）
         run: |
