@@ -2222,7 +2222,22 @@ if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR
     done
     if [ "$GLIBMM_COPIED" = false ]; then
         echo "Warning: glibmm headers not found in any artifact source location"
-    fi
+        echo "--- Downloading glibmm source from GNOME as fallback ---"
+        GLIBMM_VER=2.90.0
+        fetch glibmm-${GLIBMM_VER} "https://download.gnome.org/sources/glibmm/2.90/glibmm-${GLIBMM_VER}.tar.xz" || true
+        if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" ]; then
+            echo "--- Copying glibmm headers from downloaded GNOME source ---"
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            echo "Copied glibmm headers from GNOME source to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        elif [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm/src/glibmm" ]; then
+            echo "--- Copying glibmm headers from downloaded GNOME source (src/glibmm) ---"
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm/src/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            echo "Copied glibmm headers from GNOME source to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        else
+            echo "ERROR: Failed to download and find glibmm headers from GNOME"
+        fi
     fi
     ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
     
