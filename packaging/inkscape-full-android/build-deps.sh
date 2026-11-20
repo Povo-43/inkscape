@@ -789,17 +789,14 @@ EOF
     find "${PIXIEWOOD_SOURCE_DIR}" -maxdepth 3 -type d -name "*glibmm*" 2>/dev/null | head -20
     
     GLIBMM_SOURCE_FOUND=false
-    # Try multiple possible source directory structures
+    # Try multiple possible source directory structures - headers are in glibmm/ subdirectory
     for src_path in \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src"; do
