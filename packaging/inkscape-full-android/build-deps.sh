@@ -1622,6 +1622,9 @@ fi
 # glibmm-2.90
 echo "DEBUG: Checking for glibmm-2.68.pc creation..."
 echo "DEBUG: INSTALL_DIR=$INSTALL_DIR"
+echo "DEBUG: Checking if $INSTALL_DIR/lib/pkgconfig/ directory exists..."
+ls -la "$INSTALL_DIR/lib/pkgconfig/" 2>/dev/null || echo "Directory does not exist, creating..."
+mkdir -p "$INSTALL_DIR/lib/pkgconfig/"
 echo "DEBUG: Checking if $INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc exists..."
 ls -la "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" 2>/dev/null || echo "File does not exist"
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" ]; then
@@ -1630,8 +1633,9 @@ if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" ]; then
     # CMake pkg_check_modules looks for glibmm-2.68
     GLIBMM_LIB=$(find "$PIXIEWOOD_DIR" -name "libglibmm-2.68.so" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "$PIXIEWOOD_LIB")
     GLIBMM_INCLUDE="${INSTALL_DIR}/include"
+    echo "DEBUG: Writing to $INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc"
     cat > "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" << PCEOF
-prefix=$INSTALL_DIR
+prefix=${INSTALL_DIR}
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/lib
 includedir=\${prefix}/include
