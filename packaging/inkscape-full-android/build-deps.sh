@@ -643,6 +643,13 @@ EOF
         echo "Warning: libtiff headers not found anywhere"
     fi
     
+    # Final check: ensure tiffvers.h is copied (generated during source checks)
+    if [ -f "tiffvers.h" ] && [ ! -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffvers.h" ]; then
+        echo "--- Copying tiffvers.h from current directory (generated during build) ---"
+        cp -f "tiffvers.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        echo "Copied tiffvers.h from current directory"
+    fi
+    
     # Create symlink for freetype2 in include (some CMake scripts expect this)
     echo "--- Searching for glib headers ---"
     echo "PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
