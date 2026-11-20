@@ -46,7 +46,8 @@ PIXIEWOOD_SOURCE_DIR="${PIXIEWOOD_DIR}"
 if [ -z "$PIXIEWOOD_DIR" ]; then
     PIXIEWOOD_ROOT="${GITHUB_WORKSPACE}/.pixiewood/root"
     PIXIEWOOD_DIR="${GITHUB_WORKSPACE}/.pixiewood/bin-aarch64"
-    PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/gtk4-stack-download/.pixiewood/bin-aarch64"
+    # The source directory is at the pixiewood root in the downloaded artifact
+    PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/.pixiewood/bin-aarch64"
 fi
 
 # Global PKG_CONFIG_PATH for all builds - IMPORTANT: INSTALL_DIR FIRST so our .pc files take precedence
@@ -754,8 +755,20 @@ EOF
     fi
     
     # Also check source directory for glibmm headers (in case build directory doesn't have them)
-    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
+    echo "DEBUG: Checking source directory for glibmm headers..."
+    echo "DEBUG: PIXIEWOOD_SOURCE_DIR=${PIXIEWOOD_SOURCE_DIR}"
+    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/" 2>/dev/null | head -20 || echo "Source subprojects directory not found"
+    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/" 2>/dev/null | head -20 || echo "Source glib directory not found"
+    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/" 2>/dev/null | head -10 || echo "Source glib/glibmm directory not found"
+    
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm" ]; then
         echo "--- Copying glibmm headers from pixiewood source directory ---"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmm headers from source directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
+    elif [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
+        echo "--- Copying glibmm headers from pixiewood source directory (glibmm dir) ---"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
         echo "Copied glibmm headers from source directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
