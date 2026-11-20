@@ -2206,14 +2206,15 @@ if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR
     # Try multiple possible source directory structures
     GLIBMM_COPIED=false
     for src_path in \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src" \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src/glibmm" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm"; do
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src"; do
         if [ -d "$src_path" ] && [ "$GLIBMM_COPIED" = false ]; then
             cp -r "$src_path"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
             echo "Copied glibmm headers from pixiewood artifact source ($src_path) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
