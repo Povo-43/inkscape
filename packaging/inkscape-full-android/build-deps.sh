@@ -353,6 +353,11 @@ JCONFIGEOF
             fi
             LIBTIFF_HEADERS_COPIED=true
             echo "Copied libtiff headers from pixiewood build directory"
+            # Also copy tiffvers.h if it exists in build directory
+            if [ -f "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff/tiffvers.h" ] && [ ! -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffvers.h" ]; then
+                cp -f "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff/tiffvers.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+                echo "Copied tiffvers.h from pixiewood build directory"
+            fi
         else
             echo "Warning: libtiff headers (tiffio.h) not found in build directory"
             # Search for tiffio.h in subdirectories of tiff build
@@ -387,9 +392,23 @@ JCONFIGEOF
             cp -f "$src_path/tiffconf.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
             LIBTIFF_HEADERS_COPIED=true
             echo "Copied libtiff headers from pixiewood source directory ($src_path)"
+            # Also copy tiffvers.h if it exists in source directory
+            if [ -f "$src_path/tiffvers.h" ] && [ ! -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffvers.h" ]; then
+                cp -f "$src_path/tiffvers.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+                echo "Copied tiffvers.h from pixiewood source directory ($src_path)"
+            fi
             break
         fi
     done
+    
+    # After source directory checks, copy tiffvers.h if generated
+    if [ -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffvers.h" ] && [ ! -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffvers.h" ]; then
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/libtiff/tiffvers.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        echo "Copied tiffvers.h from pixiewood source directory"
+    elif [ -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/tiffvers.h" ] && [ ! -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffvers.h" ]; then
+        cp -f "${PIXIEWOOD_SOURCE_DIR}/subprojects/tiff-4.7.0/tiffvers.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+        echo "Copied tiffvers.h from pixiewood source directory (root)"
+    fi
     
     # If still not found, download libtiff source directly
     if [ "$LIBTIFF_HEADERS_COPIED" = false ]; then
@@ -503,9 +522,14 @@ EOF
             fi
             LIBTIFF_HEADERS_COPIED=true
             echo "Copied libtiff headers from downloaded source"
-        else
-            echo "Failed to download or extract libtiff source"
+        # Also copy tiffvers.h if it was generated during download/extract
+        if [ -f "tiffvers.h" ] && [ ! -f "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/tiffvers.h" ]; then
+            cp -f "tiffvers.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+            echo "Copied tiffvers.h from downloaded source directory"
         fi
+        fi
+    else
+        echo "Failed to download or extract libtiff source"
     fi
     
     # If neither build nor source directory has headers, search more broadly in pixiewood build
