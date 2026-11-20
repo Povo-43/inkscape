@@ -787,6 +787,15 @@ EOF
     echo "DEBUG: PIXIEWOOD_SOURCE_DIR=${PIXIEWOOD_SOURCE_DIR}"
     # Search broadly for glibmm in source directory
     find "${PIXIEWOOD_SOURCE_DIR}" -maxdepth 3 -type d -name "*glibmm*" 2>/dev/null | head -20
+    # Check the actual structure of glibmm-2.90.0
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0" ]; then
+        echo "DEBUG: Contents of glibmm-2.90.0:"
+        ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/" 2>/dev/null | head -30
+    fi
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
+        echo "DEBUG: Contents of glibmm-2.90.0/glibmm:"
+        ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/" 2>/dev/null | head -30
+    fi
     
     GLIBMM_SOURCE_FOUND=false
     # Try multiple possible source directory structures - headers are in glibmm/ subdirectory
@@ -2203,6 +2212,16 @@ fi
 if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR}/include/glibmm-2.90/glibmm/ustring.h" ]; then
     echo "--- Copying glibmm headers from pixiewood artifact source ---"
     mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+    # Debug: check what's in the artifact source
+    echo "DEBUG: Checking artifact source for glibmm..."
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0" ]; then
+        echo "DEBUG: Contents of glibmm-2.90.0:"
+        ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/" 2>/dev/null | head -30
+    fi
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
+        echo "DEBUG: Contents of glibmm-2.90.0/glibmm:"
+        ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/" 2>/dev/null | head -30
+    fi
     # Try multiple possible source directory structures - headers are in glibmm/ subdirectory
     GLIBMM_COPIED=false
     for src_path in \
