@@ -2206,18 +2206,15 @@ fi
 if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR}/include/glibmm-2.90/glibmm/ustring.h" ]; then
     echo "--- Copying glibmm headers from pixiewood artifact source ---"
     mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-    # Try multiple possible source directory structures
+    # Try multiple possible source directory structures - headers are in glibmm/ subdirectory
     GLIBMM_COPIED=false
     for src_path in \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src/glibmm" \
         "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src"; do
