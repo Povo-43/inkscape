@@ -782,48 +782,34 @@ EOF
         echo "Warning: glibmm headers not found in build directory"
     fi
     
-    # Also check source directory for glibmm headers (in case build directory doesn't have them)
-    echo "DEBUG: Checking source directory for glibmm headers..."
-    echo "DEBUG: PIXIEWOOD_SOURCE_DIR=${PIXIEWOOD_SOURCE_DIR}"
-    # Search broadly for glibmm in source directory
-    find "${PIXIEWOOD_SOURCE_DIR}" -maxdepth 3 -type d -name "*glibmm*" 2>/dev/null | head -20
-    # Check the actual structure of glibmm-2.90.0
-    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0" ]; then
-        echo "DEBUG: Contents of glibmm-2.90.0:"
-        ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/" 2>/dev/null | head -30
-    fi
-    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
-        echo "DEBUG: Contents of glibmm-2.90.0/glibmm:"
-        ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/" 2>/dev/null | head -30
-    fi
+    # Also check BUILD directory for glibmm headers (generated during pixiewood build)
+    echo "DEBUG: Checking build directory for glibmm headers..."
+    echo "DEBUG: PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
+    # Search for glibmm headers in build directory - they are generated during build
+    find "${PIXIEWOOD_DIR}" -maxdepth 4 -type f -name "ustring.h" 2>/dev/null | head -5
+    find "${PIXIEWOOD_DIR}" -maxdepth 4 -type f -name "refptr.h" 2>/dev/null | head -5
+    find "${PIXIEWOOD_DIR}" -maxdepth 4 -type f -name "unicode.h" 2>/dev/null | head -5
     
-    GLIBMM_SOURCE_FOUND=false
-    # Try multiple possible source directory structures - headers are in glibmm/ subdirectory
-    for src_path in \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src/glibmm" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src/glibmm" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src/glibmm" \
-        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src"; do
-        if [ -d "$src_path" ] && [ ! "$GLIBMM_SOURCE_FOUND" = true ]; then
-            echo "--- Copying glibmm headers from pixiewood source directory ($src_path) ---"
+    GLIBMM_BUILD_FOUND=false
+    # Try multiple possible build directory structures - headers are generated in build subdirectories
+    for build_path in         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm"         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm"         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm"         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm"         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/gio/giomm"         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm_generate_extra_defs"         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm_generate_extra_defs"; do
+        if [ -d "$build_path" ] && [ ! "$GLIBMM_BUILD_FOUND" = true ]; then
+            echo "--- Copying glibmm headers from pixiewood build directory ($build_path) ---"
             mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-            cp -r "$src_path"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-            echo "Copied glibmm headers from source directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -r "$build_path"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
             ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
-            GLIBMM_SOURCE_FOUND=true
+            GLIBMM_BUILD_FOUND=true
         fi
     done
     
-    if [ "$GLIBMM_SOURCE_FOUND" = false ]; then
-        echo "Warning: glibmm headers not found in any source location"
+    if [ "$GLIBMM_BUILD_FOUND" = false ]; then
+        echo "Warning: glibmm headers not found in any build location"
+        # Try broader search
+        find "${PIXIEWOOD_DIR}" -maxdepth 5 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -10
     fi
     
-    # Copy generated glibmm headers (unicode.h, etc.) from build directory
+    # Also copy generated glibmm headers (unicode.h, etc.) from build directory
     # These are generated during pixiewood build and not in source directory
     echo "DEBUG: Searching for unicode.h in build directory..."
     echo "DEBUG: PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
@@ -860,7 +846,6 @@ inline bool unichar_isdigit(gunichar c) { return g_unichar_isdigit(c); }
 inline bool unichar_isgraph(gunichar c) { return g_unichar_isgraph(c); }
 inline bool unichar_islower(gunichar c) { return g_unichar_islower(c); }
 inline bool unichar_isprint(gunichar c) { return g_unichar_isprint(c); }
-inline bool unichar_ispunct(gunichar c) { return g_unichar_ispunct(c); }
 inline bool unichar_isspace(gunichar c) { return g_unichar_isspace(c); }
 inline bool unichar_isupper(gunichar c) { return g_unichar_isupper(c); }
 inline bool unichar_isxdigit(gunichar c) { return g_unichar_isxdigit(c); }
