@@ -37,17 +37,18 @@ mkdir -p $INSTALL_DIR/lib/pkgconfig $INSTALL_DIR/include
 # Fix PIXIEWOOD paths - headers are in root/, libs are in bin-ARCH/
 # PIXIEWOOD_DIR is the build directory (e.g., gtk4-stack-download/.pixiewood/bin-aarch64)
 # PIXIEWOOD_ROOT is the install directory (e.g., gtk4-stack-download/.pixiewood/root)
-# PIXIEWOOD_SOURCE_DIR is the source directory from downloaded artifact (gtk4-stack-download/subprojects/)
+# PIXIEWOOD_SOURCE_DIR is the source directory from downloaded artifact 
+# The artifact is at gtk4-stack-download/packaging/android-gtkmm4/subprojects/
 PIXIEWOOD_ROOT="${PIXIEWOOD_DIR%/bin-aarch64}/root"
 PIXIEWOOD_LIB="${PIXIEWOOD_DIR}"
-PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/gtk4-stack-download/subprojects"
+PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/gtk4-stack-download/packaging/android-gtkmm4/subprojects"
 
 # If no PIXIEWOOD_DIR provided, fall back to workspace paths
 if [ -z "$PIXIEWOOD_DIR" ]; then
     PIXIEWOOD_ROOT="${GITHUB_WORKSPACE}/.pixiewood/root"
     PIXIEWOOD_DIR="${GITHUB_WORKSPACE}/.pixiewood/bin-aarch64"
     # The source directory is at the pixiewood root in the downloaded artifact
-    PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/gtk4-stack-download/subprojects"
+    PIXIEWOOD_SOURCE_DIR="${GITHUB_WORKSPACE}/gtk4-stack-download/packaging/android-gtkmm4/subprojects"
 fi
 
 # Global PKG_CONFIG_PATH for all builds - IMPORTANT: INSTALL_DIR FIRST so our .pc files take precedence
