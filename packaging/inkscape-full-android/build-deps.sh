@@ -767,18 +767,13 @@ EOF
     
     # Copy glibmm headers from pixiewood build directory (where meson builds them)
     # The pixiewood build uses project name glibmm-2.68 but version 2.90.0
-    # Headers are in subprojects/glibmm-2.68/glib/glibmm/
+    # Headers are in subprojects/glibmm-2.68/glibmm/ (not glib/glibmm/)
     echo "DEBUG: Checking for glibmm headers in build directory..."
-    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm/" 2>/dev/null | head -10 || echo "Directory not found"
-    if [ -d "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm" ]; then
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/" 2>/dev/null | head -20 || echo "glibmm-2.68 not found in build directory"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/" 2>/dev/null | head -20 || echo "glibmm not found in build directory"
+    if [ -d "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm" ]; then
         echo "--- Copying glibmm headers from pixiewood build directory ---"
         # Copy to glibmm-2.90/glibmm/ to match .pc file expectations
-        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-        cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-        echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-        ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
-    elif [ -d "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm" ]; then
-        echo "--- Copying glibmm headers from pixiewood build directory (glibmm dir) ---"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
         echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
@@ -791,37 +786,27 @@ EOF
     echo "DEBUG: Checking source directory for glibmm headers..."
     echo "DEBUG: PIXIEWOOD_SOURCE_DIR=${PIXIEWOOD_SOURCE_DIR}"
     ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/" 2>/dev/null | head -20 || echo "Source subprojects directory not found"
-    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/" 2>/dev/null | head -20 || echo "Source glib directory not found"
-    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/" 2>/dev/null | head -10 || echo "Source glib/glibmm directory not found"
+    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/" 2>/dev/null | head -20 || echo "Source glibmm directory not found"
+    ls -la "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src/" 2>/dev/null | head -20 || echo "Source glibmm/src directory not found"
     
-    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm" ]; then
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src/glibmm" ]; then
         echo "--- Copying glibmm headers from pixiewood source directory ---"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         # Headers are in src/glibmm/ subdirectory
-        if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/src/glibmm" ]; then
-            cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/src/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-            echo "Copied glibmm headers from source directory (src/glibmm/) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-        elif [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/src" ]; then
-            cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/src"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-            echo "Copied glibmm headers from source directory (src/) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-        else
-            cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-            echo "Copied glibmm headers from source directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-        fi
+        cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmm headers from source directory (src/glibmm/) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
+    elif [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src" ]; then
+        echo "--- Copying glibmm headers from pixiewood source directory (src dir) ---"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmm headers from source directory (src/) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
     elif [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
         echo "--- Copying glibmm headers from pixiewood source directory (glibmm dir) ---"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-        if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src/glibmm" ]; then
-            cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-            echo "Copied glibmm headers from source directory (src/glibmm/) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-        elif [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src" ]; then
-            cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-            echo "Copied glibmm headers from source directory (src/) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-        else
-            cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-            echo "Copied glibmm headers from source directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-        fi
+        cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmm headers from source directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
     else
         echo "Warning: glibmm headers not found in any location"
@@ -832,19 +817,19 @@ EOF
     echo "DEBUG: Searching for unicode.h in build directory..."
     echo "DEBUG: PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
     ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/" 2>/dev/null | head -20 || echo "glibmm-2.68 not found in build directory"
-    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/" 2>/dev/null | head -20 || echo "glib not found in build directory"
-    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm/" 2>/dev/null | head -20 || echo "glib/glibmm not found in build directory"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/" 2>/dev/null | head -20 || echo "glibmm not found in build directory"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm_generate_extra_defs/" 2>/dev/null | head -20 || echo "glibmm_generate_extra_defs not found in build directory"
     find "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68" -name "unicode.h" 2>/dev/null | head -5
-    if [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm/unicode.h" ]; then
+    if [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/unicode.h" ]; then
         echo "--- Copying generated glibmm headers (unicode.h) from build directory ---"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-        cp -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm/unicode.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-        echo "Copied unicode.h from build directory"
-    elif [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/unicode.h" ]; then
-        echo "--- Copying generated glibmm headers (unicode.h) from build directory (glibmm dir) ---"
-        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         cp -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/unicode.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-        echo "Copied unicode.h from build directory (glibmm dir)"
+        echo "Copied unicode.h from build directory"
+    elif [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm_generate_extra_defs/unicode.h" ]; then
+        echo "--- Copying generated glibmm headers (unicode.h) from build directory (generate_extra_defs) ---"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        cp -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm_generate_extra_defs/unicode.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied unicode.h from build directory (glibmm_generate_extra_defs)"
     else
         # Search more broadly in build directory
         UNICODE_H=$(find "${PIXIEWOOD_DIR}" -name "unicode.h" -path "*glibmm*" 2>/dev/null | head -1)
@@ -857,9 +842,9 @@ EOF
     fi
     
     # Also copy glibmmconfig.h if it exists in build directory
-    if [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm/glibmmconfig.h" ]; then
+    if [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmmconfig.h" ]; then
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-        cp "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm/glibmmconfig.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        cp "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmmconfig.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
         echo "Copied glibmmconfig.h"
     elif [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/glibmmconfig.h" ]; then
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
