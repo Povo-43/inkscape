@@ -829,6 +829,10 @@ EOF
     # Copy generated glibmm headers (unicode.h, etc.) from build directory
     # These are generated during pixiewood build and not in source directory
     echo "DEBUG: Searching for unicode.h in build directory..."
+    echo "DEBUG: PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/" 2>/dev/null | head -20 || echo "glibmm-2.90.0 not found in build directory"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/" 2>/dev/null | head -20 || echo "glib not found in build directory"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/" 2>/dev/null | head -20 || echo "glib/glibmm not found in build directory"
     find "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0" -name "unicode.h" 2>/dev/null | head -5
     if [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/unicode.h" ]; then
         echo "--- Copying generated glibmm headers (unicode.h) from build directory ---"
