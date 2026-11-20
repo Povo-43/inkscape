@@ -2203,18 +2203,31 @@ fi
 if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR}/include/glibmm-2.90/glibmm/ustring.h" ]; then
     echo "--- Copying glibmm headers from pixiewood artifact source ---"
     mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm" ]; then
-        cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-        echo "Copied glibmm headers from pixiewood artifact source (glib/glibmm) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-    elif [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
-        cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-        echo "Copied glibmm headers from pixiewood artifact source (glibmm/) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+    # Try multiple possible source directory structures
+    GLIBMM_COPIED=false
+    for src_path in \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src/glibmm" \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm/src" \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src/glibmm" \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.68/glibmm/src" \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src/glibmm" \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm/src" \
+        "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm/glibmm"; do
+        if [ -d "$src_path" ] && [ "$GLIBMM_COPIED" = false ]; then
+            cp -r "$src_path"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            echo "Copied glibmm headers from pixiewood artifact source ($src_path) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            GLIBMM_COPIED=true
+        fi
+    done
+    if [ "$GLIBMM_COPIED" = false ]; then
+        echo "Warning: glibmm headers not found in any artifact source location"
+    fi
     fi
     ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
     
     # Also copy glibmmconfig.h from build directory or create minimal one
     if [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm/glibmmconfig.h" ]; then
-        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         cp "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm/glibmmconfig.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
         echo "Copied glibmmconfig.h from build directory"
     elif [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/glibmmconfig.h" ]; then
@@ -2238,22 +2251,7 @@ if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR
 #endif /* GLIBMM_CONFIG_H */
 GLIBMM_CONFIG_EOF
         echo "Created minimal glibmmconfig.h"
-    fi
 fi
-    cat > "${INSTALL_DIR}/include/glibmm-2.90/glibmm/glibmmconfig.h" << 'GLIBMM_CONFIG_EOF'
-/* glibmmconfig.h - minimal config for Android cross-compile */
-#ifndef GLIBMM_CONFIG_H
-#define GLIBMM_CONFIG_H
-
-/* Define platform-specific macros */
-#define GLIBMM_DISABLE_DEPRECATED
-
-/* For Android NDK */
-#define GLIBMM_DISABLE_DEPRECATED_WARNINGS
-
-#endif /* GLIBMM_CONFIG_H */
-GLIBMM_CONFIG_EOF
-    echo "Created minimal glibmmconfig.h"
 
 # =========================================================
 # 2. GSL (scientific library)
