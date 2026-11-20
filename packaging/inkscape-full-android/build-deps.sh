@@ -337,6 +337,14 @@ JCONFIGEOF
             if [ -f "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff/tiffvers.h" ]; then
                 cp -f "${PIXIEWOOD_DIR}/subprojects/tiff-4.7.0/libtiff/tiffvers.h" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
                 echo "Copied tiffvers.h from pixiewood build directory"
+            else
+                # Search more broadly for tiffvers.h in pixiewood build directory
+                TIFFVERS_H=$(find "${PIXIEWOOD_DIR}" -name "tiffvers.h" 2>/dev/null | head -1)
+                if [ -n "$TIFFVERS_H" ]; then
+                    echo "Found tiffvers.h at $TIFFVERS_H"
+                    cp -f "$TIFFVERS_H" "${INSTALL_DIR}/include/tiff-4.7.0/libtiff/" 2>/dev/null || true
+                    echo "Copied tiffvers.h from $TIFFVERS_H to ${INSTALL_DIR}/include/tiff-4.7.0/libtiff/"
+                fi
             fi
             LIBTIFF_HEADERS_COPIED=true
             echo "Copied libtiff headers from pixiewood build directory"
