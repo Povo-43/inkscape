@@ -722,10 +722,11 @@ EOF
     ls -la "${PIXIEWOOD_ROOT}/include/glibmm-2.90/" 2>/dev/null | head -20 || echo "Directory not found in install (2.90)"
     if [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.68" ]; then
         echo "--- Copying glibmm headers from pixiewood install directory (2.68) ---"
-        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         # Copy to glibmm-2.90/glibmm/ to match .pc file expectations
         cp -r "${PIXIEWOOD_ROOT}/include/glibmm-2.68"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
         echo "Copied glibmm headers from install directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
     elif [ -d "${PIXIEWOOD_ROOT}/include/glibmm-2.90" ]; then
         echo "--- Copying glibmm headers from pixiewood install directory (2.90) ---"
         # Copy to glibmm-2.90/glibmm/ to match .pc file expectations
@@ -740,11 +741,13 @@ EOF
             mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
             cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
             echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
         elif [ -d "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
             echo "--- Copying glibmm headers from pixiewood build directory (glibmm dir) ---"
             mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
             cp -r "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
             echo "Copied glibmm headers from build directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
         else
             echo "Warning: glibmm headers not found in any location"
         fi
