@@ -757,6 +757,25 @@ EOF
         cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
         echo "Copied glibmm headers from source directory to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
+    else
+        echo "--- Downloading glibmm source for headers ---"
+        GLIBMM_VER=2.90.0
+        fetch glibmm-${GLIBMM_VER} "https://download.gnome.org/sources/glibmm/2.90/glibmm-${GLIBMM_VER}.tar.xz" || true
+        if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" ]; then
+            echo "--- Copying glibmm headers from downloaded source ---"
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            echo "Copied glibmm headers from downloaded source to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
+        elif [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm" ]; then
+            echo "--- Copying glibmm headers from downloaded source (glib/glibmm) ---"
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            echo "Copied glibmm headers from downloaded source to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
+        else
+            echo "Warning: glibmm headers not found in any location"
+        fi
     fi
     
     # Also copy glibmmconfig.h if it exists in build directory
