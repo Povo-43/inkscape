@@ -1649,7 +1649,7 @@ Description: C++ wrapper for GLib
 Version: 2.68.0
 Requires: glib-2.0, gobject-2.0, gio-2.0, sigc++-3.0
 Libs: -L${GLIBMM_LIB} -lglibmm-2.68
-Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90 -I${GLIBMM_INCLUDE}/glibmm-2.90/glibmm
+Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90
 PCEOF
     echo "Created glibmm-2.68.pc"
     ls -la "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" || echo "File creation failed"
@@ -1680,7 +1680,7 @@ Description: C++ wrapper for GLib
 Version: 2.68.0
 Requires: glib-2.0, gobject-2.0, gio-2.0, sigc++-3.0
 Libs: -L${GLIBMM_LIB} -lglibmm-2.68
-Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90 -I${GLIBMM_INCLUDE}/glibmm-2.90/glibmm
+Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90
 PCEOF
     echo "Created glibmm-2.68.pc"
     ls -la "$INSTALL_DIR/lib/pkgconfig/glibmm-2.68.pc" || echo "File creation failed"
@@ -1688,6 +1688,8 @@ else
     echo "DEBUG: glibmm-2.68.pc already exists"
 fi
 
+echo "DEBUG: About to create glibmm-2.90.pc..."
+# Also create 2.90 version for other packages
 echo "DEBUG: About to create glibmm-2.90.pc..."
 # Also create 2.90 version for other packages
 if [ ! -f "$INSTALL_DIR/lib/pkgconfig/glibmm-2.90.pc" ]; then
@@ -1706,7 +1708,7 @@ Description: C++ wrapper for GLib
 Version: 2.90.0
 Requires: glib-2.0, gobject-2.0, gio-2.0, sigc++-3.0
 Libs: -L${GLIBMM_LIB} -lglibmm-2.68
-Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90 -I${GLIBMM_INCLUDE}/glibmm-2.90/glibmm
+Cflags: -I${GLIBMM_INCLUDE}/glibmm-2.90
 PCEOF
     echo "Created glibmm-2.90.pc"
     ls -la "$INSTALL_DIR/lib/pkgconfig/glibmm-2.90.pc" || echo "File creation failed"
