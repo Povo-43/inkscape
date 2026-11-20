@@ -2268,6 +2268,8 @@ GLIBMM_CONFIG_EOF
         echo "Created minimal glibmmconfig.h"
 fi
 
+fi
+
 # =========================================================
 # 2. GSL (scientific library)
 # =========================================================
