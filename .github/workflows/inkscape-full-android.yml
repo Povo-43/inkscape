@@ -467,8 +467,8 @@ jobs:
           which pkg-config || true
           which /usr/local/bin/pkg-config-cross || true
           echo "=== Checking .pc files (AFTER build-deps.sh) ==="
-          ls -la $INSTALL/lib/pkgconfig/ 2>/dev/null | grep -i glibmm || echo "No glibmm .pc files found"
-          ls -la $INSTALL/lib/pkgconfig/glibmm*.pc 2>/dev/null || echo "No glibmm .pc files found"
+          ls -la $GITHUB_WORKSPACE/android-install/lib/pkgconfig/ 2>/dev/null | grep -i glibmm || echo "No glibmm .pc files found"
+          ls -la $GITHUB_WORKSPACE/android-install/lib/pkgconfig/glibmm*.pc 2>/dev/null || echo "No glibmm .pc files found"
           /usr/local/bin/pkg-config-cross --list-all 2>/dev/null | grep -i glibmm || echo "glibmm not found in pkg-config"
           /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.68 2>&1 | head -5 || echo "glibmm-2.68 not found"
           /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.90 2>&1 | head -5 || echo "glibmm-2.90 not found"
@@ -491,6 +491,11 @@ jobs:
           mkdir -p build-android-arm64
           cd build-android-arm64
 
+          # Create pkg-config wrapper for cross-compilation FIRST (needed for cmake)
+          # Use environment variables so they can be overridden
+          printf '#!/bin/bash\n# Use environment variables for cross-compile pkg-config\n# PKG_CONFIG_LIBDIR and PKG_CONFIG_PATH should be set in environment\nexec /usr/bin/pkg-config "$@"\n' > /usr/local/bin/pkg-config-cross
+          chmod +x /usr/local/bin/pkg-config-cross
+
           # pixiewood + 手動ビルドの依存を pkg-config に見せる
           # IMPORTANT: Only use our install directory, NOT pixiewood's (their .pc files have wrong paths)
           export PKG_CONFIG_LIBDIR="$INSTALL/lib/pkgconfig"
@@ -498,10 +503,16 @@ jobs:
           export PKG_CONFIG=/usr/local/bin/pkg-config-cross
           export CMAKE_PREFIX_PATH="$INSTALL"
 
-          # Create pkg-config wrapper for cross-compilation
-          # Use environment variables so they can be overridden
-          printf '#!/bin/bash\n# Use environment variables for cross-compile pkg-config\n# PKG_CONFIG_LIBDIR and PKG_CONFIG_PATH should be set in environment\nexec /usr/bin/pkg-config "$@"\n' > /usr/local/bin/pkg-config-cross
-          chmod +x /usr/local/bin/pkg-config-cross
+          # Debug: check pkg-config and glibmm BEFORE cmake
+          echo "=== Debug pkg-config (BEFORE cmake) ==="
+          which pkg-config || true
+          which /usr/local/bin/pkg-config-cross || true
+          echo "=== Checking .pc files (BEFORE cmake) ==="
+          ls -la $GITHUB_WORKSPACE/android-install/lib/pkgconfig/ 2>/dev/null | grep -i glibmm || echo "No glibmm .pc files found"
+          ls -la $GITHUB_WORKSPACE/android-install/lib/pkgconfig/glibmm*.pc 2>/dev/null || echo "No glibmm .pc files found"
+          /usr/local/bin/pkg-config-cross --list-all 2>/dev/null | grep -i glibmm || echo "glibmm not found in pkg-config"
+          /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.68 2>&1 | head -5 || echo "glibmm-2.68 not found"
+          /usr/local/bin/pkg-config-cross --cflags --libs glibmm-2.90 2>&1 | head -5 || echo "glibmm-2.90 not found"
 
           cmake .. \
             -G Ninja \
