@@ -2109,6 +2109,19 @@ if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR
         echo "Copied glibmm headers from downloaded source (glib/glibmm) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
     fi
     ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
+    
+    # Check if unicode.h is missing and try to find it
+    if [ ! -f "${INSTALL_DIR}/include/glibmm-2.90/glibmm/unicode.h" ]; then
+        echo "WARNING: unicode.h not found, searching in downloaded source..."
+        find "${SRC_DIR}/glibmm-${GLIBMM_VER}" -name "unicode.h" 2>/dev/null | head -10
+        # Also check if it's in a subdirectory
+        if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" ]; then
+            find "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" -name "unicode.h" 2>/dev/null | head -10
+        fi
+        if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm" ]; then
+            find "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm" -name "unicode.h" 2>/dev/null | head -10
+        fi
+    fi
 fi
 
 # Also copy glibmmconfig.h from build directory or create minimal one
