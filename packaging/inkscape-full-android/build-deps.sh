@@ -2113,7 +2113,12 @@ if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR
     # Check if unicode.h is missing and try to find it
     if [ ! -f "${INSTALL_DIR}/include/glibmm-2.90/glibmm/unicode.h" ]; then
         echo "WARNING: unicode.h not found, searching in downloaded source..."
-        find "${SRC_DIR}/glibmm-${GLIBMM_VER}" -name "unicode.h" 2>/dev/null | head -10
+        UNICODE_H=$(find "${SRC_DIR}/glibmm-${GLIBMM_VER}" -name "unicode.h" 2>/dev/null | head -1)
+        if [ -n "$UNICODE_H" ]; then
+            echo "Found unicode.h at $UNICODE_H"
+            cp "$UNICODE_H" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            echo "Copied unicode.h to ${INSTALL_DIR}/include/glibmm-2.90/glibmm/"
+        fi
         # Also check if it's in a subdirectory
         if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" ]; then
             find "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" -name "unicode.h" 2>/dev/null | head -10
