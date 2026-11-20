@@ -2092,40 +2092,46 @@ PC
 fi
 
 # =========================================================
-# Download glibmm source for headers if not already available
+# Ensure glibmm headers are available (use artifact's source)
 # =========================================================
 if [ ! -d "${INSTALL_DIR}/include/glibmm-2.90/glibmm" ] || [ ! -f "${INSTALL_DIR}/include/glibmm-2.90/glibmm/ustring.h" ]; then
-    echo "--- Downloading glibmm source for headers ---"
-    GLIBMM_VER=2.90.0
-    fetch glibmm-${GLIBMM_VER} "https://download.gnome.org/sources/glibmm/2.90/glibmm-${GLIBMM_VER}.tar.xz" || true
-    echo "--- Copying glibmm headers from downloaded source ---"
+    echo "--- Copying glibmm headers from pixiewood artifact source ---"
     mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-    if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" ]; then
-        cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-        echo "Copied glibmm headers from downloaded source (glibmm/) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
-    fi
-    if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm" ]; then
-        cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-        echo "Copied glibmm headers from downloaded source (glib/glibmm) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+    if [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm" ]; then
+        cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmm headers from pixiewood artifact source (glib/glibmm) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+    elif [ -d "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm" ]; then
+        cp -r "${PIXIEWOOD_SOURCE_DIR}/subprojects/glibmm-2.90.0/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmm headers from pixiewood artifact source (glibmm/) to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
     fi
     ls -la "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" | head -20 || echo "Directory not found or empty"
     
-    # Check if unicode.h is missing and try to find it
-    if [ ! -f "${INSTALL_DIR}/include/glibmm-2.90/glibmm/unicode.h" ]; then
-        echo "WARNING: unicode.h not found, searching in downloaded source..."
-        UNICODE_H=$(find "${SRC_DIR}/glibmm-${GLIBMM_VER}" -name "unicode.h" 2>/dev/null | head -1)
-        if [ -n "$UNICODE_H" ]; then
-            echo "Found unicode.h at $UNICODE_H"
-            cp "$UNICODE_H" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
-            echo "Copied unicode.h to ${INSTALL_DIR}/include/glibmm-2.90/glibmm/"
-        fi
-        # Also check if it's in a subdirectory
-        if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" ]; then
-            find "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" -name "unicode.h" 2>/dev/null | head -10
-        fi
-        if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm" ]; then
-            find "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm" -name "unicode.h" 2>/dev/null | head -10
-        fi
+    # Also copy glibmmconfig.h from build directory or create minimal one
+    if [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/glibmmconfig.h" ]; then
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        cp "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/glibmmconfig.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmmconfig.h from build directory"
+    elif [ -f "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/glibmmconfig.h" ]; then
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        cp "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/glibmmconfig.h" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+        echo "Copied glibmmconfig.h from build directory"
+    else
+        echo "--- Creating minimal glibmmconfig.h ---"
+        mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        cat > "${INSTALL_DIR}/include/glibmm-2.90/glibmm/glibmmconfig.h" << 'GLIBMM_CONFIG_EOF'
+/* glibmmconfig.h - minimal config for Android cross-compile */
+#ifndef GLIBMM_CONFIG_H
+#define GLIBMM_CONFIG_H
+
+/* Define platform-specific macros */
+#define GLIBMM_DISABLE_DEPRECATED
+
+/* For Android NDK */
+#define GLIBMM_DISABLE_DEPRECATED_WARNINGS
+
+#endif /* GLIBMM_CONFIG_H */
+GLIBMM_CONFIG_EOF
+        echo "Created minimal glibmmconfig.h"
     fi
 fi
 
