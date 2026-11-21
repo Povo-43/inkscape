@@ -830,10 +830,16 @@ EOF
     ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/" 2>/dev/null | head -20 || echo "glib/glibmm not found"
     ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/libglibmm-2.68.so.p/" 2>/dev/null | head -20 || echo "libglibmm-2.68.so.p not found"
     ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/libglibmm-2.68.so.p/.._.._untracked_glib_glibmm/" 2>/dev/null | head -20 || echo "untracked dir not found"
-    # Increase maxdepth to 9 to catch deep meson build directories like libglibmm-2.68.so.p/.._.._untracked_glib_glibmm/
-    find "${PIXIEWOOD_DIR}" -maxdepth 9 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>&1 | head -20
+    # Also check for include directory in glibmm build
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/include/" 2>/dev/null | head -20 || echo "include dir not found"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/include/glibmm-2.90/" 2>/dev/null | head -20 || echo "include/glibmm-2.90 not found"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/include/glibmm-2.90/glibmm/" 2>/dev/null | head -20 || echo "include/glibmm-2.90/glibmm not found"
+    # Also check giomm build directory
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/gio/giomm/include/" 2>/dev/null | head -20 || echo "giomm include dir not found"
+    # Increase maxdepth to 10 to catch deep meson build directories
+    find "${PIXIEWOOD_DIR}" -maxdepth 10 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>&1 | head -20
     # Use for loop with find results to avoid subshell issues
-    for hdr in $(find "${PIXIEWOOD_DIR}" -maxdepth 9 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>&1 | head -20); do
+    for hdr in $(find "${PIXIEWOOD_DIR}" -maxdepth 10 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>&1 | head -20); do
         echo "Found generated header: $hdr"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         cp -f "$hdr" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
