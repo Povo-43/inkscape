@@ -836,10 +836,17 @@ EOF
     ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/include/glibmm-2.90/glibmm/" 2>/dev/null | head -20 || echo "include/glibmm-2.90/glibmm not found"
     # Also check giomm build directory
     ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/gio/giomm/include/" 2>/dev/null | head -20 || echo "giomm include dir not found"
-    # Increase maxdepth to 10 to catch deep meson build directories
-    find "${PIXIEWOOD_DIR}" -maxdepth 10 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>&1 | head -20
+    # Check for generated headers in the build root include directory
+    ls -la "${PIXIEWOOD_DIR}/include/" 2>/dev/null | head -20 || echo "build root include dir not found"
+    ls -la "${PIXIEWOOD_DIR}/include/glibmm-2.90/" 2>/dev/null | head -20 || echo "include/glibmm-2.90 not found at build root"
+    ls -la "${PIXIEWOOD_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null | head -20 || echo "include/glibmm-2.90/glibmm not found at build root"
+    # Check giomm build directory
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/gio/giomm/include/" 2>/dev/null | head -20 || echo "giomm include dir not found"
+    ls -la "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/gio/giomm/include/giomm-2.68/" 2>/dev/null | head -20 || echo "giomm-2.68 include dir not found"
+    # Increase maxdepth to 12 to catch deep meson build directories
+    find "${PIXIEWOOD_DIR}" -maxdepth 12 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>&1 | head -20
     # Use for loop with find results to avoid subshell issues
-    for hdr in $(find "${PIXIEWOOD_DIR}" -maxdepth 10 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>&1 | head -20); do
+    for hdr in $(find "${PIXIEWOOD_DIR}" -maxdepth 12 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>&1 | head -20); do
         echo "Found generated header: $hdr"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         cp -f "$hdr" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
@@ -849,7 +856,7 @@ EOF
     if [ ! -f "${INSTALL_DIR}/include/glibmm-2.90/glibmm/ustring.h" ]; then
         echo "Warning: glibmm/ustring.h still not found after build directory search"
         # Try broader search with deeper depth
-        find "${PIXIEWOOD_DIR}" -maxdepth 9 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -10
+        find "${PIXIEWOOD_DIR}" -maxdepth 12 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -10
     fi
     
     # Also copy generated glibmm headers (unicode.h, etc.) from build directory
@@ -857,8 +864,8 @@ EOF
     echo "DEBUG: Searching for unicode.h in build directory..."
     echo "DEBUG: PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
     # Search broadly for unicode.h in build directory
-    find "${PIXIEWOOD_DIR}" -name "unicode.h" 2>/dev/null | head -10
-    UNICODE_H=$(find "${PIXIEWOOD_DIR}" -name "unicode.h" -path "*glibmm*" 2>/dev/null | head -1)
+    find "${PIXIEWOOD_DIR}" -maxdepth 12 -name "unicode.h" 2>/dev/null | head -10
+    UNICODE_H=$(find "${PIXIEWOOD_DIR}" -maxdepth 12 -name "unicode.h" -path "*glibmm*" 2>/dev/null | head -1)
     if [ -n "$UNICODE_H" ]; then
         echo "--- Copying generated unicode.h from $UNICODE_H ---"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
