@@ -819,9 +819,10 @@ EOF
     echo "--- Searching for generated glibmm headers in meson build directories ---"
     # Debug: show what find returns
     echo "DEBUG: Running find command..."
-    find "${PIXIEWOOD_DIR}" -maxdepth 7 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -20
+    # Increase maxdepth to 9 to catch deep meson build directories like libglibmm-2.68.so.p/.._.._untracked_glib_glibmm/
+    find "${PIXIEWOOD_DIR}" -maxdepth 9 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -20
     # Use for loop with find results to avoid subshell issues
-    for hdr in $(find "${PIXIEWOOD_DIR}" -maxdepth 7 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -20); do
+    for hdr in $(find "${PIXIEWOOD_DIR}" -maxdepth 9 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -20); do
         echo "Found generated header: $hdr"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         cp -f "$hdr" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
@@ -831,7 +832,7 @@ EOF
     if [ ! -f "${INSTALL_DIR}/include/glibmm-2.90/glibmm/ustring.h" ]; then
         echo "Warning: glibmm/ustring.h still not found after build directory search"
         # Try broader search with deeper depth
-        find "${PIXIEWOOD_DIR}" -maxdepth 7 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -10
+        find "${PIXIEWOOD_DIR}" -maxdepth 9 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -10
     fi
     
     # Also copy generated glibmm headers (unicode.h, etc.) from build directory
