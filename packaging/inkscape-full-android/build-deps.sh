@@ -821,9 +821,10 @@ EOF
     # Debug: show what find returns
     echo "DEBUG: Running find command..."
     # Increase maxdepth to 9 to catch deep meson build directories like libglibmm-2.68.so.p/.._.._untracked_glib_glibmm/
-    find "${PIXIEWOOD_DIR}" -maxdepth 9 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -20
+    echo "DEBUG: PIXIEWOOD_DIR=${PIXIEWOOD_DIR}"
+    find "${PIXIEWOOD_DIR}" -maxdepth 9 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>&1 | head -20
     # Use for loop with find results to avoid subshell issues
-    for hdr in $(find "${PIXIEWOOD_DIR}" -maxdepth 9 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -20); do
+    for hdr in $(find "${PIXIEWOOD_DIR}" -maxdepth 9 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>&1 | head -20); do
         echo "Found generated header: $hdr"
         mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
         cp -f "$hdr" "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
