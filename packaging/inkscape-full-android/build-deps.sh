@@ -844,6 +844,24 @@ EOF
         echo "Warning: glibmm/ustring.h still not found after build directory search"
         # Try broader search with deeper depth
         find "${PIXIEWOOD_DIR}" -maxdepth 9 -type f \( -name "ustring.h" -o -name "refptr.h" -o -name "unicode.h" \) 2>/dev/null | head -10
+        
+        # Fallback: Download glibmm source and extract headers
+        echo "--- Downloading glibmm source as fallback ---"
+        GLIBMM_VER=2.90.0
+        fetch glibmm-${GLIBMM_VER} "https://download.gnome.org/sources/glibmm/2.90/glibmm-${GLIBMM_VER}.tar.xz" || true
+        if [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm" ]; then
+            echo "--- Copying glibmm headers from downloaded source ---"
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            echo "Copied glibmm headers from downloaded source to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        elif [ -d "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm" ]; then
+            echo "--- Copying glibmm headers from downloaded source (glib/glibmm) ---"
+            mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+            cp -r "${SRC_DIR}/glibmm-${GLIBMM_VER}/glib/glibmm"/* "${INSTALL_DIR}/include/glibmm-2.90/glibmm/" 2>/dev/null || true
+            echo "Copied glibmm headers from downloaded source to ${INSTALL_DIR}/include/glibmm-2.90/glibmm"
+        else
+            echo "ERROR: Failed to find glibmm headers in downloaded source"
+        fi
     fi
     
     # Also copy generated glibmm headers (unicode.h, etc.) from build directory
