@@ -793,7 +793,6 @@ EOF
     
     GLIBMM_BUILD_FOUND=false
     # Try multiple possible build directory structures - headers are generated in build subdirectories
-    # We iterate through ALL paths and copy from each, not stopping at the first match
     for build_path in \
         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm" \
         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm" \
@@ -805,7 +804,9 @@ EOF
         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/libglibmm-2.68.so.p" \
         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/libglibmm-2.68.so.p/.._.._untracked_glib_glibmm" \
         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/libglibmm-2.68.so.p" \
-        "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/libglibmm-2.68.so.p/.._.._untracked_glib_glibmm"; do
+        "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/libglibmm-2.68.so.p/.._.._untracked_glib_glibmm" \
+        "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/libglibmm-2.68.so.p/.._.._untracked_glib_glibmm/" \
+        "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/libglibmm-2.68.so.p/.._.._untracked_glib_glibmm/"; do
         if [ -d "$build_path" ]; then
             echo "--- Copying glibmm headers from pixiewood build directory ($build_path) ---"
             mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
