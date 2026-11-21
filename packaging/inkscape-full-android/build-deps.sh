@@ -807,12 +807,7 @@ EOF
         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/libglibmm-2.68.so.p" \
         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/libglibmm-2.68.so.p/.._.._untracked_glib_glibmm" \
         "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/libglibmm-2.68.so.p/.._.._untracked_glib_glibmm/" \
-        "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/libglibmm-2.68.so.p/.._.._untracked_glib_glibmm/" \
-        # Meson generated headers are typically in include/glibmm-2.90/glibmm/ subdirectory
-        "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glib/glibmm/include/glibmm-2.90/glibmm" \
-        "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/include/glibmm-2.90/glibmm" \
-        "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glib/glibmm/include/glibmm-2.90/glibmm" \
-        "${PIXIEWOOD_DIR}/subprojects/glibmm-2.68/glibmm/include/glibmm-2.90/glibmm"; do
+        "${PIXIEWOOD_DIR}/subprojects/glibmm-2.90.0/glibmm/libglibmm-2.68.so.p/.._.._untracked_glib_glibmm/"; do
         if [ -d "$build_path" ]; then
             echo "--- Copying glibmm headers from pixiewood build directory ($build_path) ---"
             mkdir -p "${INSTALL_DIR}/include/glibmm-2.90/glibmm"
